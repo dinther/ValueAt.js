@@ -13,7 +13,7 @@
 //  If interpolated is requirested a lerp is performed between it and the value for the next slice.
 
 
-class ValueKey{
+export class ValueKey{
     #time;
     #value;
     #easing;
@@ -67,7 +67,7 @@ class ValueKey{
     }
 }
 
-class ValueAtTime{
+export class ValueAtTime{
     #valueKeys=[];
     #minTime;
     #maxTime;
@@ -183,7 +183,7 @@ class ValueAtTime{
     }
 }
 
-class LookupAtTime extends ValueAtTime{ 
+export class LookupAtTime extends ValueAtTime{ 
     #valueList;
     #interval;
     #className;
@@ -217,7 +217,7 @@ class LookupAtTime extends ValueAtTime{
             case 'Int32Array': return new Int32Array(length);
             case 'Int16Array': return new Int16Array(length);
             case 'Int8Array': return new Int8Array(length);
-            default : return [];
+            default : return new Array(length);
         }
     }
     update(valueKey){
@@ -240,7 +240,8 @@ class LookupAtTime extends ValueAtTime{
     getValueAt(time){   //  bit slower
         time = this.clampTime(time);
         let beforeIndex = this.#getIndexBefore(time);
-        let afterIndex = this.#getIndexAfter(time);
+        //let afterIndex = this.#getIndexAfter(time);
+        let afterIndex = Math.min(this.#valueList.length-1, beforeIndex + 1);
         let t = (time - this.minTime - (beforeIndex * this.#interval)) / this.#interval;
         if (beforeIndex === afterIndex) return this.#valueList[afterIndex];
         return this.lerp(this.#valueList[beforeIndex], this.#valueList[afterIndex], t/(afterIndex - beforeIndex));
