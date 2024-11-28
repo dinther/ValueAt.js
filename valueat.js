@@ -187,7 +187,7 @@ class LookupAtTime extends ValueAtTime{
     #valueList;
     #interval;
     #className;
-    constructor(className='default'){
+    constructor(className=null){
         super();
         this.#className = className;
     }
@@ -217,6 +217,7 @@ class LookupAtTime extends ValueAtTime{
             case 'Int32Array': return new Int32Array(length);
             case 'Int16Array': return new Int16Array(length);
             case 'Int8Array': return new Int8Array(length);
+            default : return [];
         }
     }
     update(valueKey){
