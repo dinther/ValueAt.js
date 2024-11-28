@@ -15,10 +15,6 @@ For example UInt32
 
 ```
 var valueAt = new LookupAtTime();
-
-or
-
-var valueAt = new LookupAtTime();
 ```
 
 By default the internal lookup array is a regular array list. It is possible to specify
