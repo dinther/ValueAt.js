@@ -10,11 +10,23 @@ And it does not matter how many keyframes are used to animate the value.
 
 ##  usage
 
-Create an instance of the list type you require.
-For example UInt32
+First load the required javascript modules.
 
 ```
-var valueAt = new LookupAtTime();
+        <script type="module">
+            import * as ValueAt from "./lib/value-at-time.js"
+            import * as Easings from "./lib/easings.js";
+
+            ...
+
+        </script>
+```
+
+Now we can instantiate the LookupAtTime object.
+
+```
+  var valueAt = new ValueAt.LookupAtTime();
+  var valueAt = new LookupAtTime();
 ```
 
 By default the internal lookup array is a regular array list. It is possible to specify
