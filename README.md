@@ -20,7 +20,7 @@ By default values between value keys are linear interpolated but you can pass yo
 
 ```
   valueAt.add(400, 2048);
-  valueAt.addValueKey(1000,4096, Easings.easeOutBounce, 0.5);  //  time,  value,  Easing function,  optional magnitude parameter
+  valueAt.addValueKey(1000,4096, Easings.easeOutBounce, 0.5);  // time, value, Easing function, optional magnitude param
   valueAt.addValueKey(2000,3005, Easings.easeInOutQuad);
   valueAt.addValueKey(3000,0,Easings.easeInCirc);
 ```
