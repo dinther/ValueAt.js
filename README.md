@@ -14,7 +14,7 @@ First load the required javascript modules.
 
 ```
         <script type="module">
-            import * as ValueAt from "./lib/value-at-time.js"
+            import * as ValueAt from "./lib/valueat.js"
             import * as Easings from "./lib/easings.js";
 
             ...
