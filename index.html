@@ -13,7 +13,7 @@
         <script type="module">
             import * as Easings from "./lib/easings.js";
 
-            var valueAt = new UInt32AtTime();
+            var valueAt = new LookupAtTime('Float64Array');
 
             window.valueAt = valueAt;  //  So you can play with it in the console
 
@@ -29,7 +29,7 @@
             //  Easing functions can be from anywhere
             valueAt.addValueKey(400,2048);
             valueAt.addValueKey(1000,4096, Easings.easeOutBounce, 0.5);
-            valueAt.addValueKey(2000,3005, Easings.easeInOutQuad, null);
+            valueAt.addValueKey(2000,3005, Easings.easeInOutQuad);
             valueAt.addValueKey(3000,0,Easings.easeInCirc);
             valueAt.init(1);
 
@@ -38,10 +38,10 @@
             console.log('Performance test. Cycles:' + c);
             let s = performance.now();
             for (let i=0; i< c; i++){
-                valueAt.getValueBefore(valueAt.minTime + Math.random()*2600);
+                valueAt.getValueFast(valueAt.minTime + Math.random()*2600);
             }
             let e = performance.now();
-            console.log('getValueBefore',e-s);
+            console.log('getValueFast',e-s);
 
             s = performance.now();
             for (let i=0; i< c; i++){
@@ -146,10 +146,9 @@
                     let time =  valueAt.minTime + timeRange * f;
                     var v;
                     switch(mode){
-                        case 0: v = valueAt.getValueBefore(time); break;        //  Fastest
-                        case 1: v = valueAt.getValueAfter(time); break;         //  Same
-                        case 3: v = valueAt.getValueAt(time); break;            //  Medium
-                        case 4: v = valueAt.getValueAtKeyframe(time); break;    //  Slow as it re-computes every time
+                        case 0: v = valueAt.getValueFast(time); break;        //  Fastest
+                        case 1: v = valueAt.getValueAt(time); break;            //  Medium
+                        case 2: v = valueAt.getValueAtKeyframe(time); break;    //  Slow as it re-computes every time
                     }
                     ctx.lineTo(m + (time- valueAt.minTime) * xScale, h-b-(v-valueAt.minValue) * yScale);
                     ctx.stroke();
