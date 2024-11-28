@@ -11,8 +11,7 @@
 //  and the value returned.
 
 //  If interpolated is requirested a lerp is performed between it and the value for the next slice.
-//  https://github.com/dinther/ValueAt.js
-//  By Paul van Dinther
+
 
 class ValueKey{
     #time;
@@ -184,11 +183,13 @@ class ValueAtTime{
     }
 }
 
-class UInt32AtTime extends ValueAtTime{ 
+class LookupAtTime extends ValueAtTime{ 
     #valueList;
     #interval;
-    constructor(){
+    #className;
+    constructor(className='default'){
         super();
+        this.#className = className;
     }
     #populateValueList(interval){
         for(let i=0; i<this.#valueList.length; i++){
@@ -203,10 +204,25 @@ class UInt32AtTime extends ValueAtTime{
         afterIndex = afterIndex < this.#valueList.length - 1? afterIndex + 1 : afterIndex;
         return afterIndex;
     }
+    #createValueObject(className, length){
+        switch(className){
+            case 'Float64Array': return new Float64Array(length);
+            case 'Float32Array': return new Float32Array(length);
+            case 'Float16Array': return new Float16Array(length);
+            case 'BigUint64Array': return new BigUint64Array(length);     
+            case 'UInt32Array': return new UInt32Array(length);
+            case 'UInt16Array': return new UInt16Array(length);
+            case 'UInt8Array': return new UInt8Array(length);;
+            case 'BigInt64Array': return new BigInt64Array(length);
+            case 'Int32Array': return new Int32Array(length);
+            case 'Int16Array': return new Int16Array(length);
+            case 'Int8Array': return new Int8Array(length);
+        }
+    }
     update(valueKey){
         super.update();
         let length = Math.floor((this.maxTime - this.minTime)/this.#interval)+1;
-        this.#valueList = new Uint32Array(length);
+        this.#valueList = this.#createValueObject(this.#className, length);
         this.#populateValueList(this.#interval);
     }
     init(interval){
@@ -216,15 +232,11 @@ class UInt32AtTime extends ValueAtTime{
         this.#interval = interval;
         super.init();
     }
-    getValueBefore(time){  //  fastest
+    getValueFast(time){  //  fastest
         time = this.clampTime(time);
         return this.#valueList[this.#getIndexBefore(time)];
     }
-    getValueAfter(time){  //   second fastest
-        time = this.clampTime(time);
-        return this.#valueList[this.#getIndexAfter(time)];
-    }
-    getValueAt(time){  //  fourth fastest pretty accurate
+    getValueAt(time){   //  bit slower
         time = this.clampTime(time);
         let beforeIndex = this.#getIndexBefore(time);
         let afterIndex = this.#getIndexAfter(time);
@@ -236,12 +248,12 @@ class UInt32AtTime extends ValueAtTime{
         time = this.clampTime(time);
         return this.getSourceValueAt(time);
     }
-    getValueRange(interval, startTime=null, endTime=null){
+    getValueRange(interval, startTime=null, endTime=null, className=null){
         if( interval == 0 ){  throw new Error('Interval can not be zero.')  }
         startTime = startTime!=null? startTime : this.minTime;
         endTime = endTime!=null? endTime : this.maxTime;
         let length = Math.floor((endTime - startTime) /  interval) + 1;
-        let values = new Uint32Array(length);
+        let values = this.#createValueObject(className || this.#className, length);
         for (let i = 0; i < length; i++){
             values[i] = this.getValueAt(startTime + i * interval);
         }
