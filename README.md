@@ -1,13 +1,12 @@
 # ValueAt.js
 
-![{B761C25F-3039-4C01-B0BA-9B1B5887E57E}](https://github.com/user-attachments/assets/bf081ad8-f117-4afa-9a5d-026c9b749ae4)
-
-
 Extremely fast precomputed single value animation.
 
 Check this out if you need to animate a value lightning fast through a range of keyframes.
 Depending on the accuracy desired an output of 100 million points in 500ms is possible.
 And it does not matter how many keyframes are used to animate the value.
+
+![{B761C25F-3039-4C01-B0BA-9B1B5887E57E}](https://github.com/user-attachments/assets/bf081ad8-f117-4afa-9a5d-026c9b749ae4)
 
 ##  usage
 
