@@ -39,14 +39,19 @@ So internally valueKey keeps a loopup list that contains 260+1 = 261 values. All
 
 Now the class is ready to output animation values. This can be done at different fidelity each with it's own performance benefit.
 
-The fastest value lookup is `getValueBefore(time)` as it takes your time and converts in into a lookp index and returns the value closest before the given time.
+```
+console.log(valueAt.getValueAt(1200);
+```
+
+The fastest value lookup is `getValueFast(time)` as it takes your time and converts in into a lookup index and returns the value closest before the given time. No calculations required.
+This works best if you slice your time in small units. Also consider the value data type UInt32 might not be ideal in your case.
 A little more accurate is `getValueAt(time)` as it takes the value closest before and after the given time and linear interpolates between the two. Much more accurate but also slower.
 Finally there is `getValueAtKeyframe(time)' it computes the values every time based on the current value key and it's easing function. The is accurate but the slowest.
 
 ```
 Performance test. Cycles:100000000
 Navigated to http://127.0.0.1:5501/valueat.html
-valueat.html:44 getValueBefore 606.3999998569489
-valueat.html:51 getValueAt 984.6999998092651
-valueat.html:59 getValueAtKeyframe 3594.7000000476837
+valueat.html:44 getValueFast 612.7999999523163
+valueat.html:51 getValueAt 974.4000000953674
+valueat.html:59 getValueAtKeyframe 3591.399999856949
 ```
