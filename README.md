@@ -14,8 +14,22 @@ Create an instance of the list type you require.
 For example UInt32
 
 ```
-var valueAt = new UInt32AtTime();
+var valueAt = new LookupAtTime();
+
+or
+
+var valueAt = new LookupAtTime();
 ```
+
+By default the internal lookup array is a regular array list. It is possible to specify
+a specific TypedArray class in the constructor like
+
+```
+val valueAt = new LookupAtTime('Int32Array');
+```
+
+In this case the LookupAt class handles Integers only. Use this for extremely large lists when the memory footprint becomes an issue.
+Performance wize it makes no difference. You have to make sure that the values remain in the range of the TypedArray list used.
 
 Now you add your animation key frames. They are called valueKeys since we don't really deal with frames at this level.
 For a value key you need to specify at what time you want a value to be at the specified value.
