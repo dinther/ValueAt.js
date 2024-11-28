@@ -26,7 +26,6 @@ Now we can instantiate the LookupAtTime object.
 
 ```
   var valueAt = new ValueAt.LookupAtTime();
-  var valueAt = new LookupAtTime();
 ```
 
 By default the internal lookup array is a regular array list. It is possible to specify
