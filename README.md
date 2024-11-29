@@ -79,3 +79,10 @@ valueat.html:44 getValueFast 612.7999999523163
 valueat.html:51 getValueAt 974.4000000953674
 valueat.html:59 getValueAtKeyframe 3591.399999856949
 ```
+
+## UI (In progress)
+
+ValueAt.js comes with a UI value key editor. 
+
+![{450BB189-3720-428F-B8B6-2FA1A3229F5B}](https://github.com/user-attachments/assets/723226ce-b6f2-42e6-b30a-9b88c81eb702)
+ 
