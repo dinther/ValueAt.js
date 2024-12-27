@@ -68,16 +68,18 @@ export class ValueKey{
 }
 
 export class ValueAtTime{
+    #name;
     #valueKeys=[];
     #minTime;
     #maxTime;
-    #minValue;
-    #maxValue;
+    #minValueKey;
+    #maxValueKey;
     #onValueKeyChange;
     #onChange;
-    constructor(){
-
+    constructor(name=''){
+        this.#name = name;
     }
+
     lerp(a, b, t){
         return a + (b - a) * t;
     }
@@ -85,9 +87,7 @@ export class ValueAtTime{
     #sortKeyTimes(){
         this.#valueKeys.sort((a, b) => a.time - b.time);
     }
-    #sortKeyValues(){
-        this.#valueKeys.sort((a, b) => a.value - b.value);
-    }
+
     #handleValueKeyChange(valueKey){
         this.update(valueKey);
         this.#handleChange(valueKey);
@@ -97,19 +97,29 @@ export class ValueAtTime{
             this.#onChange(this, prop);
         }
     }
+
     clampTime(time){
         return Math.max(this.minTime, Math.min(this.maxTime,time));
     }
+
     addValueKey(time, value, easing = null, magnitude=null){
         let valueKey = new ValueKey(time, value, easing, magnitude);
         valueKey.onChange = this.#handleValueKeyChange.bind(this);
         this.#valueKeys.push(valueKey);
         return valueKey;
     }
+
     update(valueKey){
-        this.#sortKeyValues();
-        this.#minValue = this.#valueKeys.length==0? 0 : this.#valueKeys[0].value;
-        this.#maxValue = this.#valueKeys.length==0? 0 : this.#valueKeys[this.#valueKeys.length-1].value;
+        for(let i=0; i<this.#valueKeys.length; i++){
+            let value = this.#valueKeys[i].value;
+            if (i==0){
+                this.#minValueKey = value;
+                this.#maxValueKey = value;
+            } else {
+                this.#minValueKey = Math.min(this.#minValueKey, value);
+                this.#maxValueKey = Math.max(this.#maxValueKey, value);
+            }
+        }
         this.#sortKeyTimes();
         this.#minTime = this.#valueKeys.length==0? 0 : this.#valueKeys[0].time;
         this.#maxTime = this.#valueKeys.length==0? 0 : this.#valueKeys[this.#valueKeys.length-1].time;
@@ -117,13 +127,29 @@ export class ValueAtTime{
     init(){
         this.update(null)
     }
-    getValueAt(time){
-        this.getSourceValueAt(time);  //  We ignore mode as Original is the only option
-    }
-    getSourceValueAt(time){
+
+    getValueKeyAt(time, tolerance=0){
         time = this.clampTime(time);
         let low = 0, high = this.#valueKeys.length - 1;
-        let beforeIndex = -1, afterIndex = -1;
+        let index = -1;
+    
+        // Find the last index of a number <= the given number
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+            if (this.#valueKeys[mid].time <= time + tolerance || this.#valueKeys[mid].time >= time - tolerance) {
+                index = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return this.#valueKeys[index];
+    }
+
+    getBeforeValueKey(time){
+        time = this.clampTime(time);
+        let low = 0, high = this.#valueKeys.length - 1;
+        let beforeIndex = -1;
     
         // Find the last index of a number <= the given number
         while (low <= high) {
@@ -135,10 +161,13 @@ export class ValueAtTime{
                 high = mid - 1;
             }
         }
-    
-        // Reset low and high for the next search
-        low = 0;
-        high = this.#valueKeys.length - 1;
+        return this.#valueKeys[beforeIndex];
+    }
+
+    getAfterValueKey(time){
+        time = this.clampTime(time);
+        let low = 0, high = this.#valueKeys.length - 1;
+        let afterIndex = -1;
     
         // Find the first index of a number >= the given number
         while (low <= high) {
@@ -150,12 +179,26 @@ export class ValueAtTime{
                 low = mid + 1;
             }
         }
+        return this.#valueKeys[afterIndex];
+    }
+
+    getValueAt(time){
+        this.getSourceValueAt(time);  //  We ignore mode as Original is the only option
+    }
+
+    getSourceValueAt(time){
+        let beforeKey = this.getBeforeValueKey(time);
+        let afterKey = this.getAfterValueKey(time);
         
-        let deltaTime = (this.#valueKeys[afterIndex].time - this.#valueKeys[beforeIndex].time);
-        if (deltaTime==0) return this.#valueKeys[afterIndex].value;
-        let t = (time - this.#valueKeys[beforeIndex].time) / deltaTime;
-        t = this.#valueKeys[afterIndex].easing? this.#valueKeys[afterIndex].easing(t,this.#valueKeys[afterIndex].magnitude) : t;
-        return this.lerp(this.#valueKeys[beforeIndex].value, this.#valueKeys[afterIndex].value, t);
+        let deltaTime = (afterKey.time - beforeKey.time);
+        if (deltaTime==0) return afterKey.value;
+        let t = (time - beforeKey.time) / deltaTime;
+        t = afterKey.easing? afterKey.easing(t,afterKey.magnitude) : t;
+        return this.lerp(beforeKey.value, afterKey.value, t);
+    }
+
+    get name(){
+        return this.#name;
     }
 
     get valueKeys(){
@@ -168,11 +211,11 @@ export class ValueAtTime{
     get maxTime(){
         return this.#maxTime;
     }
-    get minValue(){
-        return this.#minValue;
+    get minValueKey(){
+        return this.#minValueKey;
     }
-    get maxValue(){
-        return this.#maxValue;
+    get maxValueKey(){
+        return this.#maxValueKey;
     }
     get onChange(){
         return this.#onChange;
@@ -187,13 +230,23 @@ export class LookupAtTime extends ValueAtTime{
     #valueList;
     #interval;
     #className;
-    constructor(className=null){
-        super();
+    #minValue;
+    #maxValue;    
+    constructor(name, className=null){
+        super(name);
         this.#className = className;
     }
     #populateValueList(interval){
         for(let i=0; i<this.#valueList.length; i++){
-            this.#valueList[i] = this.getSourceValueAt((i * interval) + this.minTime);
+            let value = this.getSourceValueAt((i * interval) + this.minTime);
+            if (i==0){
+                this.#minValue = value;
+                this.#maxValue = value;
+            } else {
+                this.#minValue = Math.min(this.#minValue, value);
+                this.#maxValue = Math.max(this.#maxValue, value);
+            }
+            this.#valueList[i] = value;
         }
     }
     #getIndexBefore(time){
@@ -263,6 +316,12 @@ export class LookupAtTime extends ValueAtTime{
     }
     get interval(){
         return this.#interval;
+    }
+    get minValue(){
+        return this.#minValue;
+    }
+    get maxValue(){
+        return this.#maxValue;
     }
     get valueList(){
         return this.#valueList;

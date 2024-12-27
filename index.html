@@ -4,62 +4,53 @@
 		<meta name="description" content="Beam editor for show lasers.">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>ValueAt.js</title>
-
+        <link rel="stylesheet" href="index.css">
 	</head>
 	<body>
-        <div>
-            <canvas width="1280" height="720"></canvas>
+        <div class="value-container">
+            <div class="value-header"></div>
+            <div class="scroll-values">
+                <div class="value-lines">       
+                    <div class="v-size"></div>
+                </div>
+            </div>
         </div>
+
         <script type="module">
             import * as ValueAt from "./valueat.js"
             import * as Easings from "./easings.js";
+            import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
 
-            var valueAt = new ValueAt.LookupAtTime();
+            var grid = document.querySelector('.value-container .value-lines');
+            var valueAt_x = new ValueAt.LookupAtTime('X pos');
 
-            window.valueAt = valueAt;  //  So you can play with it in the console
+            window.valueAt_x = valueAt_x;  //  So you can play with it in the console
 
             //  Fires when any of the valueKeys has been changed
             //  Internal value list is automatically re-calculated
-            valueAt.onChange = ()=>{
-                drawAxis();
-                drawValueKeys(valueAt, '#ff0');
-                drawValues(valueAt, '#f00');
-                drawValuesAtStep(valueAt,1,3,'#00f');
+            valueAt_x.onChange = ()=>{
+                drawValueAtOnSVG(valueAt_x, '#svg0', 300);
+                //drawAxis();
+                //drawValueKeys(valueAt, '#ff0');
+                //drawValues(valueAt, '#f00');
+                //drawValuesAtStep(valueAt,1,3,'#00f');
             }
 
             //  Easing functions can be from anywhere
-            valueAt.addValueKey(400,2048);
-            valueAt.addValueKey(1000,4096, Easings.easeOutBounce, 0.5);
-            valueAt.addValueKey(2500,3005, Easings.easeInOutQuad);
-            valueAt.addValueKey(3000,0,Easings.easeOutCirc);
-            valueAt.init(10);
+            valueAt_x.addValueKey(0,-50);
+            valueAt_x.addValueKey(30,100, Easings.easeOutBounce, 0.5);
+            valueAt_x.addValueKey(75,60, Easings.easeInOutQuad);
+            valueAt_x.addValueKey(100,0,Easings.easeOutCirc);
+            valueAt_x.init(1);
 
-            //  Some performance tests on one million points
-            let c = 1000000;
-            console.log('Performance test. Cycles:' + c);
-            let s = performance.now();
-            for (let i=0; i< c; i++){
-                valueAt.getValueFast(valueAt.minTime + Math.random()*2600);
-            }
-            let e = performance.now();
-            console.log('getValueFast',e-s);
-
-            s = performance.now();
-            for (let i=0; i< c; i++){
-                valueAt.getValueAt(valueAt.minTime + Math.random()*2600);
-            }
-            e = performance.now();
-            console.log('getValueAt',e-s);
-
-            s = performance.now();
-            for (let i=0; i< c; i++){
-                valueAt.getValueAtKeyframe(valueAt.minTime + Math.random()*2600);
-            }
-            e = performance.now();
-            console.log('getValueAtKeyframe', e-s);
-
-            var canvas = document.querySelector('canvas');
-            var ctx = canvas.getContext('2d',{willReadFrequently: true});
+            var valueAt_y = new ValueAt.LookupAtTime('Y pos');
+            valueAt_y.addValueKey(0,-50);
+            valueAt_y.addValueKey(30,100, Easings.easeOutCirc, 0.5);
+            valueAt_y.addValueKey(70,100);
+            valueAt_y.addValueKey(100,0,Easings.easeInCirc);
+            valueAt_y.init(1);
+            //var canvas = document.querySelector('canvas');
+            //var ctx = canvas.getContext('2d',{willReadFrequently: true});
 
             //  Let's paint the curves
             function drawAxis(){
@@ -98,8 +89,7 @@
                     let x = m+(key.time - valueAt.minTime) * xScale;
                     let y = h-b-(key.value-valueAt.minValue) * yScale;
                     ctx.moveTo(x+6,y);
-                    ctx.arc(x, y, 6, 0, 2 * Math.PI);
-                    
+                    ctx.arc(x, y, 6, 0, 2 * Math.PI);                   
                     ctx.fill();
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = "black";
@@ -121,7 +111,7 @@
                 let yScale = (h-b-b)/valueRange;                
                 ctx.moveTo(m, h-b);
                 ctx.strokeStyle = color;
-                for (let i=0; i<=valueAt.valueList.length; i++){
+                for (let i=10; i<=valueAt.valueList.length; i++){
                     let time = i * valueAt.interval + valueAt.minTime;
                     var v = valueAt.valueList[i];
                     let x = m+(time - valueAt.minTime) * xScale;
@@ -160,11 +150,64 @@
                 
             }
 
-            drawAxis();
-            drawValueKeys(valueAt, '#ff0');
-            drawValues(valueAt, '#f00');
-            drawValuesAtStep(valueAt,6,1,'#00f');
+            function performanceDrawTest(c){
+                console.log('Performance test: cycles:' + c);
+                let s = performance.now();
+                for (let i=0; i< c; i++){
+                    //drawValueAtOnCanvas(valueAt, canvas, 5);
+                    drawValueAtOnSVG(valueAt, '#svg0');
+                }
+                let e = performance.now();
+                console.log('drawValueAtOnSVG: ',e-s);
+            }
                 
+            function performanceReadTest(c){
+                console.log('Performance test. Cycles:' + c);
+                let s = performance.now();
+                for (let i=0; i< c; i++){
+                    valueAt.getValueFast(valueAt.minTime + Math.random()*2600);
+                }
+                let e = performance.now();
+                console.log('getValueFast',e-s);
+
+                s = performance.now();
+                for (let i=0; i< c; i++){
+                    valueAt.getValueAt(valueAt.minTime + Math.random()*2600);
+                }
+                e = performance.now();
+                console.log('getValueAt',e-s);
+
+                s = performance.now();
+                for (let i=0; i< c; i++){
+                    valueAt.getValueAtKeyframe(valueAt.minTime + Math.random()*2600);
+                }
+                e = performance.now();
+                console.log('getValueAtKeyframe: ', e-s);
+            }
+
+            function performanceSVGReadTest(c){
+                let svg = document.querySelector('#svg0');
+                let path = svg.querySelector('path')
+                let s = performance.now();
+                for (let i=0; i< c; i++){
+                    path.getPointAtLength(0.5)
+                }
+                let e = performance.now();
+                console.log('getValueOnSVGAt',e-s);
+            }
+
+            //drawAxis();
+            //drawValueKeys(valueAt, '#ff0');
+            //drawValues(valueAt, '#f00');
+            //drawValuesAtStep(valueAt,6,1,'#00f');
+            //drawValueAtOnCanvas(valueAt, canvas);
+            createValueAtUILine(valueAt_x, grid);
+            createValueAtUILine(valueAt_y, grid);
+            //drawValueAtOnSVG(valueAt, document.querySelector('#svg0'));
+            //performanceDrawTest(1000000);
+            //performanceSVGReadTest(1000000);
+            //performanceReadTest(1000000);
+            
         </script>
     </body>
 </html>
