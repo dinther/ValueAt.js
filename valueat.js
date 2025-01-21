@@ -236,7 +236,8 @@ export class LookupAtTime extends ValueAtTime{
         super(name);
         this.#className = className;
     }
-    #populateValueList(interval){
+
+    #populateValueList(interval, asInteger=false){
         for(let i=0; i<this.#valueList.length; i++){
             let value = this.getSourceValueAt((i * interval) + this.minTime);
             if (i==0){
@@ -249,14 +250,17 @@ export class LookupAtTime extends ValueAtTime{
             this.#valueList[i] = value;
         }
     }
+
     #getIndexBefore(time){
         return Math.floor((time - this.minTime) / this.#interval);
     }
+
     #getIndexAfter(time){
         let afterIndex = Math.floor((time - this.minTime) / this.#interval);
         afterIndex = afterIndex < this.#valueList.length - 1? afterIndex + 1 : afterIndex;
         return afterIndex;
     }
+
     #createValueObject(className, length){
         switch(className){
             case 'Float64Array': return new Float64Array(length);
@@ -273,12 +277,14 @@ export class LookupAtTime extends ValueAtTime{
             default : return new Array(length);
         }
     }
+
     update(valueKey){
         super.update();
         let length = Math.floor((this.maxTime - this.minTime)/this.#interval)+1;
         this.#valueList = this.#createValueObject(this.#className, length);
         this.#populateValueList(this.#interval);
     }
+
     init(interval){
         if (!interval) {
             throw new Error('Interval can not be zero.');
@@ -286,10 +292,40 @@ export class LookupAtTime extends ValueAtTime{
         this.#interval = interval;
         super.init();
     }
+
+    computeStepList(pulseRatePerSec){
+        let interval = 1 / pulseRatePerSec;
+        let time = this.minTime;
+        let positionList = [];
+        let stepList = [];
+
+        while (time < this.maxTime){
+            positionList.push(Math.floor(this.getValueAtKeyframe(time)));
+            time += interval;
+        }
+
+        //  Calculate and store Difference between each list value
+        for (let i=0; i<positionList.length-1; i++){
+            stepList.push(positionList[i+1] - positionList[i]);
+        }
+
+        let faults = 0;
+        //  Check if values are either -1, 0 or 1 anything else is not allowed
+        for (let i=0; i<stepList.length; i++){
+            if (Math.abs(stepList[i]) > 1){
+                console.log('Value at index: ' + i + ' is ' + stepList[i]);
+                faults++;
+            }
+        }
+        console.log('Value overrun occured ' + faults + ' times.');
+        return stepList;
+    }
+
     getValueFast(time){  //  fastest
         time = this.clampTime(time);
         return this.#valueList[this.#getIndexBefore(time)];
     }
+
     getValueAt(time){   //  bit slower
         time = this.clampTime(time);
         let beforeIndex = this.#getIndexBefore(time);
@@ -299,10 +335,12 @@ export class LookupAtTime extends ValueAtTime{
         if (beforeIndex === afterIndex) return this.#valueList[afterIndex];
         return this.lerp(this.#valueList[beforeIndex], this.#valueList[afterIndex], t/(afterIndex - beforeIndex));
     }
+
     getValueAtKeyframe(time){  //  slowest but accurate
         time = this.clampTime(time);
         return this.getSourceValueAt(time);
     }
+
     getValueRange(interval, startTime=null, endTime=null, className=null){
         if( interval == 0 ){  throw new Error('Interval can not be zero.')  }
         startTime = startTime!=null? startTime : this.minTime;
@@ -314,15 +352,19 @@ export class LookupAtTime extends ValueAtTime{
         }
         return values;
     }
+
     get interval(){
         return this.#interval;
     }
+
     get minValue(){
         return this.#minValue;
     }
+
     get maxValue(){
         return this.#maxValue;
     }
+
     get valueList(){
         return this.#valueList;
     }
