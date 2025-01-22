@@ -34,7 +34,7 @@
             var valueAt_step = new ValueAt.LookupAtTime('stepper');
             valueAt_step.addValueKey(0,0);
             valueAt_step.addValueKey(0.5,100, Easings.easeOutBounce, 0.5);
-            valueAt_step.addValueKey(1, 0, Easings.easeInOutQuad);
+            valueAt_step.addValueKey(100, 0, Easings.easeInOutQuad);
             valueAt_step.init(0.01);
 
             window.valueAt_step = valueAt_step;

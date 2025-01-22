@@ -259,14 +259,12 @@ export class LookupAtTime extends ValueAtTime{
     #minValue;
     #maxValue;    
 
-
     constructor(name, className=null){
         super(name);
         this.#className = className;
     }
 
-
-    #populateValueList(interval, asInteger=false, asInteger=false){
+    #populateValueList(interval){
         for(let i=0; i<this.#valueList.length; i++){
             let value = this.getSourceValueAt((i * interval) + this.minTime);
             if (i==0){
@@ -280,18 +278,15 @@ export class LookupAtTime extends ValueAtTime{
         }
     }
 
-
     #getIndexBefore(time){
         return Math.floor((time - this.minTime) / this.#interval);
     }
-
 
     #getIndexAfter(time){
         let afterIndex = Math.floor((time - this.minTime) / this.#interval);
         afterIndex = afterIndex < this.#valueList.length - 1? afterIndex + 1 : afterIndex;
         return afterIndex;
     }
-
 
     #createValueObject(className, length){
         switch(className){
@@ -311,14 +306,12 @@ export class LookupAtTime extends ValueAtTime{
         }
     }
 
-
     update(valueKey){
         super.update();
         let length = Math.floor((this.maxTime - this.minTime)/this.#interval)+1;
         this.#valueList = this.#createValueObject(this.#className, length);
         this.#populateValueList(this.#interval);
     }
-
 
     init(interval){
         if (!interval) {
