@@ -15,14 +15,31 @@
                 </div>
             </div>
         </div>
+        <br></bnr><button id="exportStepListBtn">Save stepper curve to steplist.bin file.</button>
 
         <script type="module">
             import * as ValueAt from "./valueat.js"
+            import * as lookupAtExport from "./lookupAtToStepList.js";
             import * as Easings from "./easings.js";
             import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
 
+            document.querySelector('#exportStepListBtn').addEventListener('click', (e)=>{
+                console.log(lookupAtExport.computeStepList(valueAt_step, 20000, 'steplist.bin').toString());
+            })
+
             var grid = document.querySelector('.value-container .value-lines');
             var valueAt_x = new ValueAt.LookupAtTime('X pos');
+
+            
+            var valueAt_step = new ValueAt.LookupAtTime('stepper');
+            valueAt_step.addValueKey(0,0);
+            valueAt_step.addValueKey(0.5,100, Easings.easeOutBounce, 0.5);
+            valueAt_step.addValueKey(1, 0, Easings.easeInOutQuad);
+            valueAt_step.init(0.01);
+
+            window.valueAt_step = valueAt_step;
+            window.computeStepList = lookupAtExport.computeStepList;
+
 
             window.valueAt_x = valueAt_x;  //  So you can play with it in the console
 
@@ -203,6 +220,7 @@
             //drawValueAtOnCanvas(valueAt, canvas);
             createValueAtUILine(valueAt_x, grid);
             createValueAtUILine(valueAt_y, grid);
+            createValueAtUILine(valueAt_step, grid);
             //drawValueAtOnSVG(valueAt, document.querySelector('#svg0'));
             //performanceDrawTest(1000000);
             //performanceSVGReadTest(1000000);
