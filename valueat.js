@@ -293,33 +293,120 @@ export class LookupAtTime extends ValueAtTime{
         super.init();
     }
 
-    computeStepList(pulseRatePerSec){
-        let interval = 1 / pulseRatePerSec;
+    //  Experimental function to pre-compute a STEP / DIR instruction list that closely follow the 
+    //  curve represented by this class. The produced data can be loaded onto a Micro controller.
+    //  In a timed loop it can simply work it's way through the bimary data and toggle
+    //  the STEP and DIR pins accordingly.
+    //  This allows highly complex precise motion without the need for powerful hardware.
+    //
+    //  The runction returns an array with integers.
+    //    1 = step backward
+    //    0 = no step
+    //    3 = step forward
+    //    2 = End of Data
+    //
+    //  The numbers are choosen so they all fit in 2 bits. Bit 1 is the Step and bit 2 is a Direction
+    //  The function will also compress this data into a binary file using only two bits per Step/Dir 
+    //  Instruction and save it to your harddrive.
+
+    computeStepList(pulseCount){
+        let downloadBlob = function(data, fileName, mimeType) {
+            var blob, url;
+            blob = new Blob([data], {
+              type: mimeType
+            });
+            url = window.URL.createObjectURL(blob);
+            downloadURL(url, fileName);
+            setTimeout(function() {
+              return window.URL.revokeObjectURL(url);
+            }, 1000);
+        };
+          
+        let downloadURL = function(data, fileName) {
+            var a;
+            a = document.createElement('a');
+            a.href = data;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.style = 'display: none';
+            a.click();
+            a.remove();
+        };
+        let timeRange = this.maxTime - this.minTime;
+        let interval = timeRange / pulseCount;
         let time = this.minTime;
         let positionList = [];
         let stepList = [];
 
         while (time < this.maxTime){
-            positionList.push(Math.floor(this.getValueAtKeyframe(time)));
+            positionList.push(Math.round(this.getValueAtKeyframe(time)));
             time += interval;
         }
 
         //  Calculate and store Difference between each list value
         for (let i=0; i<positionList.length-1; i++){
-            stepList.push(positionList[i+1] - positionList[i]);
+            let step = positionList[i+1] - positionList[i];
+            stepList.push(step);
         }
 
         let faults = 0;
         //  Check if values are either -1, 0 or 1 anything else is not allowed
         for (let i=0; i<stepList.length; i++){
-            if (Math.abs(stepList[i]) > 1){
-                console.log('Value at index: ' + i + ' is ' + stepList[i]);
+            if (Math.abs(stepList[i]) > 1){               
                 faults++;
             }
         }
-        console.log('Value overrun occured ' + faults + ' times.');
+
+        if (faults > 0){
+            throw new Error('Steps greater than one are not allowed in the stepList. Reduce the value range or increase the sample resolution by increasing pulseCount.');
+        }
+
+        //  count forward steps
+        let forwardCount = 0;
+        stepList.forEach((value)=>{if (value==1) forwardCount++;});
+        //  count backward steps
+        let backwardCount = 0;
+        stepList.forEach((value)=>{if (value==-1) backwardCount++;});
+
+        if (forwardCount != backwardCount){
+            alert('Total forward ('+forwardCount+') and backward ('+backwardCount+') steps must be equal if you use the stepper in a linear system.');
+        }
+
+        //Map values to 2 bits
+        for (let i=0; i<stepList.length; i++){
+            switch (stepList[i]){
+                case -1: stepList[i] = 0b01; break;   //  one step dir back     0b01 (1)
+                case 0:  stepList[i] = 0b00; break;   //  no step dir NA        0b00 (0)
+                case 1:  stepList[i] = 0b11; break;   //  one step dir forward  0b11 (3)
+            }
+        }
+
+        //  Compress data each command is 2 bits rather than 8 bits takes less space on micro controller
+        let dataIndex = 0;
+        let itemCount = 6;
+        let totalBits = (stepList.length * 2) + 2;  //  Calculate total bits storage required, add 2 for EOF marker
+        let totalBytes = Math.ceil(totalBits / 8);  //  Calculate total bytes storage required
+        let data = new Uint8Array(totalBytes);
+
+        for (let i = 0; i < stepList.length; i ++) {
+            data[dataIndex] = data[dataIndex] | (stepList[i] & 0x03) << itemCount;
+            itemCount-=2;
+            if (itemCount<0){
+                dataIndex++;
+                itemCount = 6;
+            }
+        }
+        
+        for (let i=(3 - stepList.length%4); i>=0; i--){  //  Fill the remaining space with EOF markers
+            data[dataIndex] = data[dataIndex] | 0x02 << (i * 2);
+        }
+
+        downloadBlob(data, 'motion_profile_' + pulseCount + '.bin', 'application/octet-stream');
+
         return stepList;
     }
+
+
 
     getValueFast(time){  //  fastest
         time = this.clampTime(time);
