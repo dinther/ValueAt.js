@@ -20,6 +20,7 @@ export class ValueKey{
     #magnitude = 1;
     #onChange=null;
 
+
     constructor(time, value, easing=null, magnitude=null){
         this.#time = time;
         this.#value = value;
@@ -27,51 +28,62 @@ export class ValueKey{
         this.#magnitude = magnitude;
     }
 
+
     #handleChange(prop){
         if (typeof value !== 'function'){
             this.#onChange(this, prop);
         }
     }
 
+
     get time(){
         return this.#time;
     }
+
 
     set time(value){
         this.#time = value;
         this.#handleChange(this['time']);
     }
 
+
     get value(){
         return this.#value;
     }
+
 
     set value(value){
         this.#value = value;
         this.#handleChange(this['value']);
     }
 
+
     get easing(){
         return this.#easing;
     }
+
 
     set easing(value){
         this.#easing = value;
         this.#handleChange(this['easing']);
     }
 
+
     get magnitude(){
         return this.#magnitude;
     }
+
 
     set magnitude(value){
         this.#magnitude = value;
         this.#handleChange(this['easing']);
     }
 
+
     get onChange(){
         return this.#onChange;
     }
+
 
     set onChange(value){
         if (typeof value !== 'function'){  throw new Error('onChange expects a function'); }
@@ -88,6 +100,7 @@ export class ValueAtTime{
     #maxValueKey;
     #onValueKeyChange;
     #onChange;
+
 
     constructor(name=''){
         this.#name = name;
@@ -246,12 +259,14 @@ export class LookupAtTime extends ValueAtTime{
     #minValue;
     #maxValue;    
 
+
     constructor(name, className=null){
         super(name);
         this.#className = className;
     }
 
-    #populateValueList(interval, asInteger=false){
+
+    #populateValueList(interval, asInteger=false, asInteger=false){
         for(let i=0; i<this.#valueList.length; i++){
             let value = this.getSourceValueAt((i * interval) + this.minTime);
             if (i==0){
@@ -265,15 +280,18 @@ export class LookupAtTime extends ValueAtTime{
         }
     }
 
+
     #getIndexBefore(time){
         return Math.floor((time - this.minTime) / this.#interval);
     }
+
 
     #getIndexAfter(time){
         let afterIndex = Math.floor((time - this.minTime) / this.#interval);
         afterIndex = afterIndex < this.#valueList.length - 1? afterIndex + 1 : afterIndex;
         return afterIndex;
     }
+
 
     #createValueObject(className, length){
         switch(className){
@@ -284,6 +302,7 @@ export class LookupAtTime extends ValueAtTime{
             case 'UInt32Array': return new UInt32Array(length);
             case 'UInt16Array': return new UInt16Array(length);
             case 'UInt8Array': return new UInt8Array(length);
+            case 'UInt8Array': return new UInt8Array(length);
             case 'BigInt64Array': return new BigInt64Array(length);
             case 'Int32Array': return new Int32Array(length);
             case 'Int16Array': return new Int16Array(length);
@@ -292,12 +311,14 @@ export class LookupAtTime extends ValueAtTime{
         }
     }
 
+
     update(valueKey){
         super.update();
         let length = Math.floor((this.maxTime - this.minTime)/this.#interval)+1;
         this.#valueList = this.#createValueObject(this.#className, length);
         this.#populateValueList(this.#interval);
     }
+
 
     init(interval){
         if (!interval) {
@@ -311,6 +332,7 @@ export class LookupAtTime extends ValueAtTime{
         time = this.clampTime(time);
         return this.#valueList[this.#getIndexBefore(time)];
     }
+
 
     getValueAt(time){   //  bit slower
         time = this.clampTime(time);
