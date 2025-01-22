@@ -19,48 +19,60 @@ export class ValueKey{
     #easing;
     #magnitude = 1;
     #onChange=null;
+
     constructor(time, value, easing=null, magnitude=null){
         this.#time = time;
         this.#value = value;
         this.#easing = easing;
         this.#magnitude = magnitude;
     }
+
     #handleChange(prop){
         if (typeof value !== 'function'){
             this.#onChange(this, prop);
         }
     }
+
     get time(){
         return this.#time;
     }
+
     set time(value){
         this.#time = value;
         this.#handleChange(this['time']);
     }
+
     get value(){
         return this.#value;
     }
+
     set value(value){
         this.#value = value;
         this.#handleChange(this['value']);
     }
+
     get easing(){
         return this.#easing;
     }
+
     set easing(value){
         this.#easing = value;
         this.#handleChange(this['easing']);
     }
+
     get magnitude(){
         return this.#magnitude;
     }
+
     set magnitude(value){
         this.#magnitude = value;
         this.#handleChange(this['easing']);
     }
+
     get onChange(){
         return this.#onChange;
     }
+
     set onChange(value){
         if (typeof value !== 'function'){  throw new Error('onChange expects a function'); }
         this.#onChange = value;
@@ -76,6 +88,7 @@ export class ValueAtTime{
     #maxValueKey;
     #onValueKeyChange;
     #onChange;
+
     constructor(name=''){
         this.#name = name;
     }
@@ -232,6 +245,7 @@ export class LookupAtTime extends ValueAtTime{
     #className;
     #minValue;
     #maxValue;    
+
     constructor(name, className=null){
         super(name);
         this.#className = className;
@@ -269,7 +283,7 @@ export class LookupAtTime extends ValueAtTime{
             case 'BigUint64Array': return new BigUint64Array(length);     
             case 'UInt32Array': return new UInt32Array(length);
             case 'UInt16Array': return new UInt16Array(length);
-            case 'UInt8Array': return new UInt8Array(length);;
+            case 'UInt8Array': return new UInt8Array(length);
             case 'BigInt64Array': return new BigInt64Array(length);
             case 'Int32Array': return new Int32Array(length);
             case 'Int16Array': return new Int16Array(length);
@@ -332,6 +346,7 @@ export class LookupAtTime extends ValueAtTime{
             a.click();
             a.remove();
         };
+
         let timeRange = this.maxTime - this.minTime;
         let interval = timeRange / pulseCount;
         let time = this.minTime;
@@ -358,7 +373,7 @@ export class LookupAtTime extends ValueAtTime{
         }
 
         if (faults > 0){
-            throw new Error('Steps greater than one are not allowed in the stepList. Reduce the value range or increase the sample resolution by increasing pulseCount.');
+            throw new Error(faults+' value overruns. Steps greater than one are not allowed in the stepList. Reduce the value range or increase the sample resolution by increasing pulseCount.');
         }
 
         //  count forward steps
@@ -401,7 +416,9 @@ export class LookupAtTime extends ValueAtTime{
             data[dataIndex] = data[dataIndex] | 0x02 << (i * 2);
         }
 
-        downloadBlob(data, 'motion_profile_' + pulseCount + '.bin', 'application/octet-stream');
+        let fileName = 'motion_profile_' + pulseCount + '.bin';
+        downloadBlob(data, fileName, 'application/octet-stream');
+        console.log('Binary steplist is saved to your harddrive as \"' + fileName + '\"');
 
         return stepList;
     }
