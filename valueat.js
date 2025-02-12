@@ -119,7 +119,7 @@ export class ValueAtTime{
         this.#handleChange(valueKey);
     }
     #handleChange(prop){
-        if (typeof value !== 'function'){
+        if (typeof  this.#onChange === 'function'){
             this.#onChange(this, prop);
         }
     }
@@ -135,7 +135,7 @@ export class ValueAtTime{
         return valueKey;
     }
 
-    update(valueKey){
+    update(){
         for(let i=0; i<this.#valueKeys.length; i++){
             let value = this.#valueKeys[i].value;
             if (i==0){
@@ -209,7 +209,7 @@ export class ValueAtTime{
     }
 
     getValueAt(time){
-        this.getSourceValueAt(time);  //  We ignore mode as Original is the only option
+        this.getSourceValueAt(time);
     }
 
     getSourceValueAt(time){
@@ -258,7 +258,7 @@ export class LookupAtTime extends ValueAtTime{
     #className;
     #minValue;
     #maxValue;    
-
+    #valueRange;
     constructor(name, className=null){
         super(name);
         this.#className = className;
@@ -276,6 +276,7 @@ export class LookupAtTime extends ValueAtTime{
             }
             this.#valueList[i] = value;
         }
+        this.#valueRange = this.#maxValue - this.#minValue;
     }
 
     #getIndexBefore(time){
@@ -292,12 +293,10 @@ export class LookupAtTime extends ValueAtTime{
         switch(className){
             case 'Float64Array': return new Float64Array(length);
             case 'Float32Array': return new Float32Array(length);
-            case 'Float16Array': return new Float16Array(length);
             case 'BigUint64Array': return new BigUint64Array(length);     
-            case 'UInt32Array': return new UInt32Array(length);
-            case 'UInt16Array': return new UInt16Array(length);
-            case 'UInt8Array': return new UInt8Array(length);
-            case 'UInt8Array': return new UInt8Array(length);
+            case 'Uint32Array': return new Uint32Array(length);
+            case 'Uint16Array': return new Uint16Array(length);
+            case 'Uint8Array': return new Uint8Array(length);
             case 'BigInt64Array': return new BigInt64Array(length);
             case 'Int32Array': return new Int32Array(length);
             case 'Int16Array': return new Int16Array(length);
@@ -306,7 +305,24 @@ export class LookupAtTime extends ValueAtTime{
         }
     }
 
-    update(valueKey){
+    #clampValue(value, className){
+        value = (value - this.minValue) / this.#valueRange;
+        switch(className){
+            case 'Float64Array': return Math.max(-9223372036854775808, Math.min(9223372036854775807, 9223372036854775807 * ((value * 2) -1)));
+            case 'Float32Array': return Math.max(-2147483648, Math.min(2147483647, 2147483647 * ((value * 2) - 1)));
+            case 'BigUint64Array': return Math.max(0, Math.min(18446744073709551615, Math.round(18446744073709551615 * value)));
+            case 'Uint32Array': return Math.max(0, Math.min(4294967295, Math.round(4294967295 * value)));
+            case 'Uint16Array': return Math.max(0, Math.min(65535, Math.round(65535 * value)));
+            case 'Uint8Array': return Math.max(0, Math.min(255, Math.round(255 * value)));
+            case 'BigInt64Array': return Math.max(-9223372036854775808, Math.min(9223372036854775807, 9223372036854775807 * ((value * 2) - 1)));
+            case 'Int32Array': return Math.max(-2147483648, Math.min(2147483647, 2147483647 * ((value * 2) - 1)));
+            case 'Int16Array': return Math.max(-32768 , Math.min(32767, 32767 * ((value * 2) - 1)));
+            case 'Int8Array': return Math.max(-128 , Math.min(127, 127 * ((value * 2) - 1)));
+            default : return value;
+        }        
+    }
+
+    update(){
         super.update();
         let length = Math.floor((this.maxTime - this.minTime)/this.#interval)+1;
         this.#valueList = this.#createValueObject(this.#className, length);
@@ -349,7 +365,7 @@ export class LookupAtTime extends ValueAtTime{
         let length = Math.floor((endTime - startTime) /  interval) + 1;
         let values = this.#createValueObject(className || this.#className, length);
         for (let i = 0; i < length; i++){
-            values[i] = this.getValueAt(startTime + i * interval);
+            values[i] = this.#clampValue(this.getValueAt(startTime + i * interval), className);
         }
         return values;
     }
@@ -370,3 +386,4 @@ export class LookupAtTime extends ValueAtTime{
         return this.#valueList;
     }
 }
+

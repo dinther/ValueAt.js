@@ -280,7 +280,6 @@ export function easeOutBounce( t ) {
         return ( 7.5625 * scaledTime2 * scaledTime2 ) + 0.9375;
 
     } else {
-
         const scaledTime2 = scaledTime - ( 2.625 / 2.75 );
         return ( 7.5625 * scaledTime2 * scaledTime2 ) + 0.984375;
 

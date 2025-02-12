@@ -62,29 +62,6 @@
     //  The function will also compress this data into a binary file using only two bits
     //  per Step/Dir instruction and save it to your harddrive if you pass a fileName
     export function compressStepList(stepList, fileName){
-        let downloadBlob = function(data, fileName, mimeType) {
-            var blob, url;
-            blob = new Blob([data], {
-              type: mimeType
-            });
-            url = window.URL.createObjectURL(blob);
-            downloadURL(url, fileName);
-            setTimeout(function() {
-              return window.URL.revokeObjectURL(url);
-            }, 1000);
-        };
-          
-        let downloadURL = function(data, fileName=null) {
-            var a;
-            a = document.createElement('a');
-            a.href = data;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.style = 'display: none';
-            a.click();
-            a.remove();
-        };
-
         const STEP_BACK    = 0b01;  // (1)
         const STEL_IDLE    = 0b00;  // (0)
         const STEP_FORWARD = 0b11;  // (3)
@@ -119,10 +96,42 @@
             data[dataIndex] = data[dataIndex] | STEP_EOF << (i * 2);
         }
 
+        typedArrayToFile(data, fileName);
+
+        return data;
+    }
+
+    //  Function takes a typed array and saves it to your harddrive if you pass a fileName
+    export function typedArrayToFile(data, fileName=null){
+        let downloadBlob = function(data, fileName, mimeType) {
+            let blob, url;
+            blob = new Blob([data], {
+              type: mimeType
+            });
+            url = window.URL.createObjectURL(blob);
+            downloadURL(url, fileName);
+            setTimeout(function() {
+              return window.URL.revokeObjectURL(url);
+            }, 1000);
+        };
+          
+        let downloadURL = function(data, fileName=null) {
+            let a = document.createElement('a');
+            a.href = data;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.style = 'display: none';
+            a.click();
+            a.remove();
+        };
+
         if (typeof(fileName) == 'string'){
             downloadBlob(data, fileName, 'application/octet-stream');
         }
         return data;
     }
+
+
+
 
 

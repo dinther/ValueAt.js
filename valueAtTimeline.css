@@ -1,0 +1,110 @@
+* {
+    box-sizing: border-box;
+    
+}
+
+.valueAt-container {
+    width: 100%;
+    hheight: 160px;
+    overflow-y: hidden;
+    background-color: #28292e;
+    display: grid;
+    grid-template-rows: 32px 1fr;
+    grid-template-columns: 1fr;
+}
+
+.valueAt-header {
+    display: flex;
+}
+
+.valueAt-scroll-values {       
+    overflow-y: auto;
+    background-color: #28292e;
+    --sb-track-color: #28292e;
+    --sb-thumb-color: #616470;
+    --sb-size: 14px;
+}
+
+
+
+.valueAt-scroll-values::-webkit-scrollbar {
+    width: var(--sb-size)
+}
+
+.valueAt-scroll-values::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 7px;
+}
+
+.valueAt-scroll-values::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 7px;
+    border: 2px solid #1a1a1a;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+    .valueAt-scroll-values {
+    scrollbar-color: var(--sb-thumb-color)
+                    var(--sb-track-color);
+    }
+}
+
+.valueAt-lines{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: grid;
+    row-gap: 3px;
+    column-gap: 2px;
+    grid-template-columns: 100px 5px 1fr;
+    align-items: center;
+    /* width: 100%; */
+    padding: 5px;
+}
+
+.valueAt-v-size {
+    background-color: #b0b0b0;
+    height: 100%;
+    grid-area: 1 / 4 / 10 / 4;
+    background: linear-gradient(90deg, rgba(176,176,176,1) 0%, rgba(130,130,130,1) 21%, rgba(122,122,122,1) 84%, rgba(59,58,58,1) 100%);
+}
+
+.valueAt-label{
+    color: white;
+    font-size: 0.8em;
+    margin: 2px 0 3px 0;
+    grid-column: 1;
+}
+
+.valueAt-line{
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin: 2px 0 3px 0;
+    background-color: #4f5059;
+    height: 48px;
+    grid-column: 3;
+    overflow: hidden;
+    box-shadow: inset 1px 1px 5px 0px hsl(233 7% 15% / 1);
+}
+
+.valuesAt-svg {
+    height: 100%;
+    width: 100%;
+    stroke: white;
+    stroke-width: 1px;
+}
+
+.valueAt-node {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid #000000;
+    background-color: #ffff83ad;
+    aspect-ratio: 1 / 1;
+    height: 14px;
+    cursor:ew-resize;
+    transform: translate(-50%,50%);
+    box-shadow: 1px 1px 5px 0px hsl(233 7% 15% / 1);
+}
+
+.valueAt-h-scroll{
+    height: 12px;
+}
