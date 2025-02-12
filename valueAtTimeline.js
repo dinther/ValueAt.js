@@ -1,20 +1,28 @@
 
 export class ValueAtTimeLine{
     #parent;
+    #container;
     #valueAtUILines = [];
     #grid;
     #startTime;
     #endTime;
     #root;
+    #selectBox;
+    #selectPointDown = null;
     constructor(parent, startTime, endTime){
         this.#parent = parent;
-        this.#parent.innerHTML = '<div class="valueAt-container"><div class="valueAt-header"></div><div class="valueAt-scroll-values"><div class="valueAt-lines"><div class="valueAt-v-size"></div></div></div><div class="valueAt-h-scroll"></div></div>';
-        this.#grid = this.#parent.querySelector('.valueAt-container .valueAt-lines');
-        this.#grid.addEventListener('pointerdown', (e)=>{
+        this.#parent.innerHTML = '<div class="valueAt-container"><div class="valueAt-header"></div><div class="valueAt-scroll-values"><div class="valueAt-lines"><div class="valueAt-v-size"></div></div></div><div class="valueAt-h-scroll"><div id="fake"></div></div>';
+        this.#container = this.#parent.querySelector('.valueAt-container');
+        this.#container.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
                 this.deselectAllValueNodes();
             }
         });
+        this.#grid = this.#container.querySelector('.valueAt-lines');
+        this.#selectBox = document.createElement('div');
+        this.#selectBox.style.display = 'none';
+        this.#selectBox.className = 'valueAt-select-box';
+        document.body.appendChild(this.#selectBox);
         this.#root = document.querySelector(':root');
         this.#startTime = startTime;
         this.#endTime = endTime;
@@ -34,7 +42,33 @@ export class ValueAtTimeLine{
                 //e.target.style.cursor = 'move';
                 this.#root.style.setProperty('--nodecursor', 'move');
 
-        });        
+        });
+        document.addEventListener('pointerdown', (e)=>{
+            if ( e.button == 0 ){
+                this.#selectPointDown = {x: e.pageX, y: e.pageY};
+            }
+        });
+        document.addEventListener('pointermove', (e)=>{
+            if ( this.#selectPointDown != null){
+                this.#selectBox.style.display = '';
+                this.#selectBox.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
+                this.#selectBox.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
+                this.#selectBox.style.width = Math.abs(e.pageX - this.#selectPointDown.x) + 'px';
+                this.#selectBox.style.height = Math.abs(e.pageY -this.#selectPointDown.y) + 'px';
+            }
+        });
+        document.addEventListener('pointerup', (e)=>{
+            let selectRect = this.#selectBox.getBoundingClientRect();
+            this.#selectBox.style.display = 'none';
+            this.#selectPointDown = null;
+            
+            this.valueNodes.forEach((valueNode)=>{
+                let rect = valueNode.div.getBoundingClientRect();
+                if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
+                    valueNode.selected = true;
+                }
+            });
+        });                
     }
     #getCSSVariable(name){
         let rs = getComputedStyle(this.#root);
@@ -89,6 +123,15 @@ export class ValueAtTimeLine{
                 if (valueNode.selected){
                     selectedNodeList.push(valueNode);
                 }
+            });
+        });
+        return selectedNodeList;
+    }
+    get valueNodes(){
+        let selectedNodeList = [];
+        this.#valueAtUILines.forEach((valueAtUI)=>{
+            valueAtUI.valueNodes.forEach((valueNode)=>{
+                selectedNodeList.push(valueNode);
             });
         });
         return selectedNodeList;
