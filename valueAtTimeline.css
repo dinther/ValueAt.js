@@ -3,6 +3,10 @@
     
 }
 
+:root {
+    --nodecursor: 'move';
+}
+
 .valueAt-container {
     width: 100%;
     overflow-y: hidden;
@@ -98,6 +102,7 @@
     background-color: #ffff83ad;
     aspect-ratio: 1 / 1;
     height: 14px;
+    cursor: var(--nodecursor);
     transform: translate(-50%,50%);
 }
 

@@ -5,6 +5,7 @@ export class ValueAtTimeLine{
     #grid;
     #startTime;
     #endTime;
+    #root;
     constructor(parent, startTime, endTime){
         this.#parent = parent;
         this.#parent.innerHTML = '<div class="valueAt-container"><div class="valueAt-header"></div><div class="valueAt-scroll-values"><div class="valueAt-lines"><div class="valueAt-v-size"></div></div></div><div class="valueAt-h-scroll"></div></div>';
@@ -14,23 +15,33 @@ export class ValueAtTimeLine{
                 this.deselectAllValueNodes();
             }
         });
+        this.#root = document.querySelector(':root');
         this.#startTime = startTime;
         this.#endTime = endTime;
         document.addEventListener('keydown', (e)=>{
-            if (e.target.classList.contains('valueAt-node')){
-                if (e.shiftKey){
-                    e.target.style.cursor = 'ew-resize';
-                } else if (e.ctrlKey){
-                    e.target.style.cursor = 'ns-resize';
-                } else {
-                    e.target.style.cursor = 'move';
-                }
+            if (e.shiftKey){
+                this.#root.style.setProperty('--nodecursor', 'ew-resize');
+                //e.target.style.cursor = 'ew-resize';
+            } else if (e.ctrlKey){
+                //e.target.style.cursor = 'ns-resize';
+                this.#root.style.setProperty('--nodecursor', 'ns-resize');
+            } else {
+                //e.target.style.cursor = 'move';
+                this.#root.style.setProperty('--nodecursor', 'move');
             }
         });
         document.addEventListener('keyup', (e)=>{
-                e.target.style.cursor = 'move';
+                //e.target.style.cursor = 'move';
+                this.#root.style.setProperty('--nodecursor', 'move');
 
         });        
+    }
+    #getCSSVariable(name){
+        let rs = getComputedStyle(this.#root);
+        return rs.getPropertyValue(name);
+    }
+    #setCSSVariable(name, value){
+        this.#root.style.setProperty(name, value);
     }
     update(){
         this.#valueAtUILines.forEach((valueAtUI)=> {
@@ -265,26 +276,12 @@ class ValueNode{
         this.#div.addEventListener('pointerenter', (e)=>{
             this.#active = true;
             this.#div.classList.add('valueAt-node-active');
-            if (e.shiftKey){
-                e.target.style.cursor = 'ew-resize';
-            } else if (e.ctrlKey){
-                e.target.style.cursor = 'ns-resize';
-            } else {
-                e.target.style.cursor = 'move';
-            }
             this.#handleActiveChanged(e);
             e.stopPropagation();
         });
         this.#div.addEventListener('pointerleave', (e)=>{
             this.#active = false;
             this.#div.classList.remove('valueAt-node-active');
-            if (e.shiftKey){
-                e.target.style.cursor = 'ew-resize';
-            } else if (e.ctrlKey){
-                e.target.style.cursor = 'ns-resize';
-            } else {
-                e.target.style.cursor = 'move';
-            }
             this.#handleActiveChanged(e);
             e.stopPropagation();
         });       
