@@ -98,8 +98,17 @@
     background-color: #ffff83ad;
     aspect-ratio: 1 / 1;
     height: 14px;
-    cursor:move;
     transform: translate(-50%,50%);
+}
+
+.valueAt-node-active {
+    border: 1px solid #f00;
+    background-color: #ffff00;
+}
+
+.valueAt-node-selected {
+    border: 1px solid #ffff00;
+    background-color: #f00;
 }
 
 .valueAt-h-scroll{

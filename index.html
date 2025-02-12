@@ -28,19 +28,20 @@
             valueAt_x.addValueKey(30,100, Easings.easeOutBounce, 0.5);
             valueAt_x.addValueKey(75,60, Easings.easeInOutQuad);
             valueAt_x.addValueKey(100,0,Easings.easeOutCirc);
-            valueAt_x.init(0.01);
+            valueAt_x.init(1);
              
             var valueAt_y = new ValueAt.LookupAtTime('ypos');
             valueAt_y.addValueKey(20,-50);
             valueAt_y.addValueKey(30,100, Easings.easeOutCirc, 0.5);
             valueAt_y.addValueKey(70,100);
             valueAt_y.addValueKey(90,0,Easings.easeInCirc);
-            valueAt_y.init(0.01);
+            valueAt_y.init(1);
 
             var stepper = new ValueAt.LookupAtTime('stepper');
             stepper.addValueKey(8,500);
             stepper.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
             stepper.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
+            stepper.addValueKey(70, 600, Easings.easeInOut);
             stepper.init(0.01);
 
             var timeline = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)

@@ -1,23 +1,47 @@
 
 export class ValueAtTimeLine{
     #parent;
-    #valueAtUILines =[];
+    #valueAtUILines = [];
     #grid;
     #startTime;
     #endTime;
     constructor(parent, startTime, endTime){
         this.#parent = parent;
         this.#parent.innerHTML = '<div class="valueAt-container"><div class="valueAt-header"></div><div class="valueAt-scroll-values"><div class="valueAt-lines"><div class="valueAt-v-size"></div></div></div><div class="valueAt-h-scroll"></div></div>';
-        this.#grid = this.#parent.querySelector('.valueAt-container .valueAt-lines')
+        this.#grid = this.#parent.querySelector('.valueAt-container .valueAt-lines');
+        this.#grid.addEventListener('pointerdown', (e)=>{
+            if (!e.ctrlKey && !e.shiftKey){
+                this.deselectAllValueNodes();
+            }
+        });
         this.#startTime = startTime;
         this.#endTime = endTime;
+        document.addEventListener('keydown', (e)=>{
+            if (e.target.classList.contains('valueAt-node')){
+                if (e.shiftKey){
+                    e.target.style.cursor = 'ew-resize';
+                } else if (e.ctrlKey){
+                    e.target.style.cursor = 'ns-resize';
+                } else {
+                    e.target.style.cursor = 'move';
+                }
+            }
+        });
+        document.addEventListener('keyup', (e)=>{
+                e.target.style.cursor = 'move';
+
+        });        
     }
     update(){
         this.#valueAtUILines.forEach((valueAtUI)=> {
             valueAtUI.update();
         });
     }
-
+    deselectAllValueNodes(){
+        this.selectedNodes.forEach((valueNode)=>{
+            valueNode.selected = false;
+        });
+    }
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
         this.#valueAtUILines.push(new ValueAtUI(valueAt, this, labelName, strokeWidth, strokeColor));
     }
@@ -47,6 +71,17 @@ export class ValueAtTimeLine{
     get timeRange(){
         return this.#endTime - this.#startTime;
     }
+    get selectedNodes(){
+        let selectedNodeList = [];
+        this.#valueAtUILines.forEach((valueAtUI)=>{
+            valueAtUI.valueNodes.forEach((valueNode)=>{
+                if (valueNode.selected){
+                    selectedNodeList.push(valueNode);
+                }
+            });
+        });
+        return selectedNodeList;
+    }
 }
 
 export class ValueAtUI{
@@ -61,6 +96,7 @@ export class ValueAtUI{
     #strokeColor;
     #strokeWidth;
     #valueNodes = [];
+    #firstValueNodeSelected= null;
     constructor(valueAt, timeLine, labelName, strokeWidth=1, strokeColor='#fff'){
         this.#valueAt = valueAt;
         this.#timeLine = timeLine;
@@ -68,6 +104,11 @@ export class ValueAtUI{
         this.#strokeWidth = strokeWidth;
         this.#strokeColor = strokeColor;
         this.#createValueAtUILine();
+        this.#valueAt.onChange = ()=>{this.#handleOnChange()};
+    }
+
+    #handleOnChange(){
+        this.update();
     }
 
     #createValueAtUILine(){
@@ -82,6 +123,15 @@ export class ValueAtUI{
         this.#lineDiv = document.createElement('div');
         this.#lineDiv.id = this.#valueAt.name + '_graph'; 
         this.#lineDiv.className = 'valueAt-line';
+        this.#lineDiv.addEventListener('pointerdown', (e)=>{
+            if (!e.ctrlKey && !e.shiftKey){
+                this.#valueNodes.forEach((valueNode)=>{
+                    valueNode.selected = false;
+                });
+            }
+        });
+
+
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
         this.#svg.classList.add('valuesAt-svg');
@@ -102,6 +152,29 @@ export class ValueAtUI{
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
             let valueNode = new ValueNode(this.#lineDiv, valueKey);
+            valueNode.onSelectedChanged = (valueNode, event)=>{
+                let selected = valueNode.selected;
+                if (event){
+                    if (!event.ctrlKey && !event.shiftKey){
+                        this.#timeLine.deselectAllValueNodes();
+                    }
+                    valueNode.selected = selected;
+                    if(valueNode.selected){
+                        if (this.#firstValueNodeSelected == null){
+                            this.#firstValueNodeSelected = valueNode
+                        } else {
+                            if (event.shiftKey){
+                                //  select value nodes from firstValueNodeSelected up to valueNode
+                                let startIndex = Math.min(this.#valueNodes.indexOf(this.#firstValueNodeSelected), this.#valueNodes.indexOf(valueNode));
+                                let endIndex = Math.max(this.#valueNodes.indexOf(this.#firstValueNodeSelected), this.#valueNodes.indexOf(valueNode));
+                                for (let i = startIndex; i <= endIndex; i++){
+                                    this.#valueNodes[i].selected = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             this.#valueNodes.push(valueNode);
         }
         this.#render();
@@ -115,12 +188,12 @@ export class ValueAtUI{
         let h = this.#svg.parentElement.offsetHeight;
         let w = this.#svg.parentElement.offsetWidth;
         let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
-        let path = 'M' + this.#timeLine.startTime + ' ' + this.#valueAt.getValueAt(this.#timeLine.startTime);
+        let path = 'M' + this.#timeLine.startTime + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.startTime);
         path += 'L';
-        for (let i=1; i<=steps; i++){
-            let f = i/steps;
+        for (let i = 1; i <= steps; i++){
+            let f = i / steps;
             let x =  this.#timeLine.startTime + this.#timeLine.timeRange * f;
-            let y = this.#valueAt.getValueAt(x);
+            let y = this.#valueAt.getValueAtKeyframe(x);
             path += x + ' ' + y + ' ';
         }
 
@@ -171,18 +244,71 @@ export class ValueAtUI{
         this.#strokeColor = value;
         this.#render();
     }
+    get valueNodes(){
+        return this.#valueNodes;
+    }
 }
 
 class ValueNode{
     #parent;
     #div;
     #valueKey;
+    #selected = false;
+    #active = false;
+    onSelectedChanged;
+    onActiveChanged;
     constructor(parent, valueKey){
         this.#parent = parent;
         this.#valueKey = valueKey;
         this.#div = document.createElement('div');
         this.#div.className = 'valueAt-node';
+        this.#div.addEventListener('pointerenter', (e)=>{
+            this.#active = true;
+            this.#div.classList.add('valueAt-node-active');
+            if (e.shiftKey){
+                e.target.style.cursor = 'ew-resize';
+            } else if (e.ctrlKey){
+                e.target.style.cursor = 'ns-resize';
+            } else {
+                e.target.style.cursor = 'move';
+            }
+            this.#handleActiveChanged(e);
+            e.stopPropagation();
+        });
+        this.#div.addEventListener('pointerleave', (e)=>{
+            this.#active = false;
+            this.#div.classList.remove('valueAt-node-active');
+            if (e.shiftKey){
+                e.target.style.cursor = 'ew-resize';
+            } else if (e.ctrlKey){
+                e.target.style.cursor = 'ns-resize';
+            } else {
+                e.target.style.cursor = 'move';
+            }
+            this.#handleActiveChanged(e);
+            e.stopPropagation();
+        });       
+        this.#div.addEventListener('pointerdown', (e)=>{
+            this.#selected = !this.#selected;
+            this.#handleSelectedChanged(e);
+            e.stopPropagation();
+        });   
         this.#parent.appendChild(this.#div);
+    }
+    #handleSelectedChanged(e=null){
+        if (this.#selected){
+            this.#div.classList.add('valueAt-node-selected');
+        } else {
+            this.#div.classList.remove('valueAt-node-selected');
+        }
+        if (typeof this.onSelectedChanged === 'function'){
+            this.onSelectedChanged(this, e);
+        }
+    }
+    #handleActiveChanged(e){
+        if (typeof this.onActiveChanged === 'function'){
+            this.onActiveChanged(this, e);
+        }
     }
     get div(){
         return this.#div;
@@ -190,4 +316,17 @@ class ValueNode{
     get valueKey(){
         return this.#valueKey;
     }
+    get active(){
+        return this.#active;
+    }
+    get selected(){
+        return this.#selected;
+    }
+    set selected(value){
+        if (value != this.#selected){
+            this.#selected = value;
+            this.#handleSelectedChanged();
+        }
+    }
+
 }
