@@ -29,19 +29,14 @@ export class ValueAtTimeLine{
         document.addEventListener('keydown', (e)=>{
             if (e.shiftKey){
                 this.#root.style.setProperty('--nodecursor', 'ew-resize');
-                //e.target.style.cursor = 'ew-resize';
-            } else if (e.ctrlKey){
-                //e.target.style.cursor = 'ns-resize';
+            } else if (e.altKey){
                 this.#root.style.setProperty('--nodecursor', 'ns-resize');
             } else {
-                //e.target.style.cursor = 'move';
                 this.#root.style.setProperty('--nodecursor', 'move');
             }
         });
         document.addEventListener('keyup', (e)=>{
-                //e.target.style.cursor = 'move';
                 this.#root.style.setProperty('--nodecursor', 'move');
-
         });
         document.addEventListener('pointerdown', (e)=>{
             if ( e.button == 0 ){
@@ -60,13 +55,14 @@ export class ValueAtTimeLine{
         document.addEventListener('pointerup', (e)=>{
             let selectRect = this.#selectBox.getBoundingClientRect();
             this.#selectBox.style.display = 'none';
-            this.#selectPointDown = null;
-            
-            this.valueNodes.forEach((valueNode)=>{
-                let rect = valueNode.div.getBoundingClientRect();
-                if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
-                    valueNode.selected = true;
-                }
+            this.#selectPointDown = null;    
+            this.#valueAtUILines.forEach((valueAtUI)=>{
+                valueAtUI.valueNodes.forEach((valueNode)=>{
+                    let rect = valueNode.div.getBoundingClientRect();
+                    if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
+                        valueNode.selected = true;
+                    }
+                });
             });
         });                
     }
@@ -123,15 +119,6 @@ export class ValueAtTimeLine{
                 if (valueNode.selected){
                     selectedNodeList.push(valueNode);
                 }
-            });
-        });
-        return selectedNodeList;
-    }
-    get valueNodes(){
-        let selectedNodeList = [];
-        this.#valueAtUILines.forEach((valueAtUI)=>{
-            valueAtUI.valueNodes.forEach((valueNode)=>{
-                selectedNodeList.push(valueNode);
             });
         });
         return selectedNodeList;
