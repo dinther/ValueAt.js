@@ -18,7 +18,7 @@ export class ValueAtTimeLine{
     #scrollSlider;
     #durationInput;
     #duration = 1;
-    #secondsPerPixel=0;
+    #timePerPixel=0;
     constructor(parent, startTime, timeRange){
         this.#parentDiv = parent;
         this.#parentDiv.innerHTML = 
@@ -72,7 +72,8 @@ export class ValueAtTimeLine{
         this.#updateSecondsPerPixel();
         this.#zoomslider = this.#containerDiv.querySelector('#zoomslider');
         this.#zoomslider.addEventListener('input', (e)=>{
-            this.setView(this.#scrollSlider.value * this.#duration, this.#duration * this.#zoomslider.value);
+            let timeRange = this.#duration * this.#zoomslider.value;
+            this.setView(this.#scrollSlider.value * (this.#duration - timeRange), timeRange);
         });
         this.#zoomslider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
@@ -82,7 +83,8 @@ export class ValueAtTimeLine{
         });
         this.#scrollSlider = this.#containerDiv.querySelector('#scrollslider');
         this.#scrollSlider.addEventListener('input', (e)=>{
-            this.setView(this.#scrollSlider.value * this.#duration, this.#duration * this.#zoomslider.value);
+            let timeRange = this.#duration * this.#zoomslider.value;
+            this.setView(this.#scrollSlider.value * (this.#duration - timeRange), timeRange);
         });
         this.#scrollSlider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
@@ -144,10 +146,10 @@ export class ValueAtTimeLine{
         this.#root.style.setProperty(name, value);
     }
     #updateSecondsPerPixel(){
-        this.#secondsPerPixel = this.#timeRange / this.#cursorDiv.parentElement.offsetWidth;
+        this.#timePerPixel = this.#timeRange / this.#cursorDiv.parentElement.offsetWidth;
     }
     #updateCursor(){
-        let x = (this.#cursorTime - this.#startTime) / this.#secondsPerPixel;
+        let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
         this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
         if (this.#cursorTime < this.#startTime || this.#cursorTime > this.#endTime){
             this.#cursorDiv.style.display = 'none';
