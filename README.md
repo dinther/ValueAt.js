@@ -84,7 +84,8 @@ valueat.html:59 getValueAtKeyframe 3591.399999856949
 
 ## UI (In progress)
 
-ValueAt.js comes with a UI value key editor. 
+ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline control should be usable for any application where node based animation is a thing.
 
-![{450BB189-3720-428F-B8B6-2FA1A3229F5B}](https://github.com/user-attachments/assets/723226ce-b6f2-42e6-b30a-9b88c81eb702)
+![{63A9337D-B0A0-4264-8587-B790BF9E2386}](https://github.com/user-attachments/assets/d62cd648-5625-4b98-af44-2ff979655844)
+
  
