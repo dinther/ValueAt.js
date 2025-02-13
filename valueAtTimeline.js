@@ -89,10 +89,12 @@ export class ValueAtTimeLine{
         document.addEventListener('pointerdown', (e)=>{
             if ( e.button == 0 ){
                 this.#selectPointDown = {x: e.pageX, y: e.pageY};
+                console.log('down');
             }
         });
         document.addEventListener('pointermove', (e)=>{
             if ( this.#selectPointDown != null){
+                console.log(e.pageX, e.pageY);
                 this.#selectBoxElm.style.display = '';
                 this.#selectBoxElm.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
                 this.#selectBoxElm.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      

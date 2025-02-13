@@ -1,6 +1,6 @@
 * {
     box-sizing: border-box;
-    
+    touch-action: none;
 }
 
 :root {
@@ -12,6 +12,15 @@
     --sb-track-color: #28292e;
     --sb-thumb-color: #616470;
     --sb-size: 14px;
+    touch-action: none;
+}
+
+body {
+    touch-action: none;
+}
+
+div {
+    touch-action: none;
 }
 
 /* Firefox (uncomment to work in Firefox, although other properties will not work!)  */
@@ -64,7 +73,6 @@
     display: flex;
     flex-direction: column;
     user-select: none;
-    touch-action: none;
 }
 
 .valueAt-header {
