@@ -71,6 +71,7 @@ div {
     color: white;
     background-color: #28292e;
     display: flex;
+    gap: 5px;
     flex-direction: column;
     user-select: none;
 }
@@ -78,6 +79,7 @@ div {
 .valueAt-header {
     display: flex;
     margin: 5px;
+    gap: 5px;
 }
 
 .valueAt-scroll-bar {       
@@ -85,16 +87,12 @@ div {
     background-color: #28292e;
 }
 
-
-
-
 .valueAt-lines{
     display: grid;
-    row-gap: 3px;
+    row-gap: 5px;
     column-gap: 2px;
     grid-template-columns: var(--labelWidth) 5px 1fr;
     align-items: center;
-    padding: 5px;
 }
 
 .valueAt-cursor-area {
@@ -141,7 +139,6 @@ div {
     display: flex;
     align-items: center;
     position: relative;
-    margin: 2px 0 3px 0;
     background-color: #4f5059;
     height: 32px;
     grid-column: 3;
@@ -199,6 +196,11 @@ div {
     justify-content: center;
     cursor: ew-resize;
     transform: translate(0px, 4px);
+}
+
+#scrollslider {
+    width: 300px;
+    flex: 2;
 }
 
 

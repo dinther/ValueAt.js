@@ -15,6 +15,7 @@ export class ValueAtTimeLine{
     #selectPointDown = null;
     #selectedNodeList = [];
     #zoomslider;
+    #scrollSlider;
     #durationInput;
     #duration = 1;
     #secondsPerPixel=0;
@@ -22,10 +23,15 @@ export class ValueAtTimeLine{
         this.#parentDiv = parent;
         this.#parentDiv.innerHTML = 
         '<div class="valueAt-container">'+
-            '<div class="valueAt-header"><label for="durationinput">Duration&nbsp</label><input id="durationinput" type="number" min="1" step="1" value="100"></input></div>'+
+            '<div class="valueAt-header">'+
+                '<label for="durationinput">Duration&nbsp</label>'+
+                '<input id="durationinput" type="number" min="1" step="1" value="100"></input>'+
+                '<label for="scrollslider">Scroll test&nbsp</label>'+
+                '<input id="scrollslider" type="range" min="0.0001" max="1" step="0.0001" value="0"></input>'+
+                '</div>'+
             '<div class="valueAt-lines valueAt-cursor-area">'+
                 '<div class="valueAt-label">'+
-                    '<input id="zoomslider" type="range" min="0.0001" max="1" step="0.0001"></input>'+
+                    '<input id="zoomslider" type="range" min="0.0001" max="1" step="0.0001" value="0"></input>'+
                 '</div>'+
                 '<div></div>'+
                 '<div style="height: 100%;"><div id="scale"></div><div id="cursor"><div id="cursorlabel">5.23</div></div></div>'+
@@ -53,6 +59,7 @@ export class ValueAtTimeLine{
         this.#durationInput.addEventListener('input', (e)=>{
             this.#duration = parseFloat(this.#durationInput.value);
         });
+        this.#duration = this.#durationInput.value;
         this.#headerDiv = this.#containerDiv.querySelector('.valueAt-header');
         this.#selectBoxElm = document.createElement('div');
         this.#selectBoxElm.style.display = 'none';
@@ -65,7 +72,7 @@ export class ValueAtTimeLine{
         this.#updateSecondsPerPixel();
         this.#zoomslider = this.#containerDiv.querySelector('#zoomslider');
         this.#zoomslider.addEventListener('input', (e)=>{
-            this.setView(this.#startTime, 200 * this.#zoomslider.value);
+            this.setView(this.#scrollSlider.value * this.#duration, this.#duration * this.#zoomslider.value);
         });
         this.#zoomslider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
@@ -73,7 +80,16 @@ export class ValueAtTimeLine{
         this.#zoomslider.addEventListener('pointermove', (e)=>{ 
             e.stopPropagation();
         });
-        
+        this.#scrollSlider = this.#containerDiv.querySelector('#scrollslider');
+        this.#scrollSlider.addEventListener('input', (e)=>{
+            this.setView(this.#scrollSlider.value * this.#duration, this.#duration * this.#zoomslider.value);
+        });
+        this.#scrollSlider.addEventListener('pointerdown', (e)=>{
+            e.stopPropagation();
+        });
+        this.#scrollSlider.addEventListener('pointermove', (e)=>{ 
+            e.stopPropagation();
+        });
         document.addEventListener('keydown', (e)=>{
             if (e.shiftKey){
                 this.#root.style.setProperty('--nodecursor', 'ew-resize');
@@ -94,7 +110,6 @@ export class ValueAtTimeLine{
         });
         document.addEventListener('pointermove', (e)=>{
             if ( this.#selectPointDown != null){
-                console.log(e.pageX, e.pageY);
                 this.#selectBoxElm.style.display = '';
                 this.#selectBoxElm.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
                 this.#selectBoxElm.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
