@@ -93,6 +93,7 @@ div {
     column-gap: 2px;
     grid-template-columns: var(--labelWidth) 5px 1fr;
     align-items: center;
+    padding-left: 5px;
 }
 
 .valueAt-cursor-area {
