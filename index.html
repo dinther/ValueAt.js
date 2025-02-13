@@ -9,8 +9,6 @@
 	</head>
 	<body>
         <div id="timeline"></div>
-        <br></bnr><button id="exportStepListBtn">Save stepper curve to steplist.bin file.</button>
-
 
         <script type="module">
             import * as ValueAt from "./valueat.js"
@@ -18,10 +16,6 @@
             import * as Easings from "./easings.js";
             import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
             import {ValueAtTimeLine} from "./valueAtTimeline.js";
-
-            document.querySelector('#exportStepListBtn').addEventListener('click', (e)=>{
-                console.log(lookupAtExport.computeStepList(stepper, 20000, 'steplist.bin').toString());
-            })
 
             var valueAt_x = new ValueAt.LookupAtTime('xpos');
             valueAt_x.addValueKey(10,-50);
@@ -47,7 +41,20 @@
             var timeline = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
             timeline.addValueAt(valueAt_x, 'Pos x',1);
             timeline.addValueAt(valueAt_y, 'Pos y', 1, 'yellow');
-            timeline.addValueAt(stepper, 'Stepper', 1);
+            timeline.addValueAt(stepper, 'Scale Y', 1);
+            timeline.addValueAt(valueAt_x, 'Red',1, 'red');
+            timeline.addValueAt(valueAt_y, 'Green', 1, 'green');
+            timeline.addValueAt(stepper, 'Scale X', 1, '#5197ff');            
+
+            /*
+            let button = document.createElement('div');
+            button.id = 'exportStepListBtn';
+            button.innerText = 'Save stepper curve to steplist.bin file.';
+            button.addEventListener('click', (e)=>{
+                console.log(lookupAtExport.computeStepList(stepper, 20000, 'steplist.bin').toString());
+            });
+            timeline.headerDiv.appendChild(button);
+            */
 
             window.stepper = stepper;
             window.computeStepList = lookupAtExport.computeStepList;

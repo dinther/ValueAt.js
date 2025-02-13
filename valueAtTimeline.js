@@ -1,31 +1,79 @@
 
 export class ValueAtTimeLine{
-    #parent;
-    #container;
+    #parentDiv;
+    #headerDiv;
+    #containerDiv;
     #valueAtUILines = [];
-    #grid;
+    #gridDiv;
+    #cursorDiv;
     #startTime;
+    #timeRange;
     #endTime;
+    #cursorTime = 50;
     #root;
-    #selectBox;
+    #selectBoxElm;
     #selectPointDown = null;
-    constructor(parent, startTime, endTime){
-        this.#parent = parent;
-        this.#parent.innerHTML = '<div class="valueAt-container"><div class="valueAt-header"></div><div class="valueAt-scroll-values"><div class="valueAt-lines"><div class="valueAt-v-size"></div></div></div><div class="valueAt-h-scroll"><div id="fake"></div></div>';
-        this.#container = this.#parent.querySelector('.valueAt-container');
-        this.#container.addEventListener('pointerdown', (e)=>{
+    #selectedNodeList = [];
+    #zoomslider;
+    #durationInput;
+    #duration = 1;
+    #secondsPerPixel=0;
+    constructor(parent, startTime, timeRange){
+        this.#parentDiv = parent;
+        this.#parentDiv.innerHTML = 
+        '<div class="valueAt-container">'+
+            '<div class="valueAt-header"><label for="durationinput">Duration&nbsp</label><input id="durationinput" type="number" min="1" step="1" value="100"></input></div>'+
+            '<div class="valueAt-lines valueAt-cursor-area">'+
+                '<div class="valueAt-label">'+
+                    '<input id="zoomslider" type="range" min="0.0001" max="1" step="0.0001"></input>'+
+                '</div>'+
+                '<div></div>'+
+                '<div style="height: 100%;"><div id="scale"></div><div id="cursor"><div id="cursorlabel">5.23</div></div></div>'+
+            '</div>'+
+            '<div class="valueAt-graph-area valueAt-scroll-bar">'+
+                '<div id="lineitems" class="valueAt-lines">'+
+                    '<div class="valueAt-v-size"></div>'+
+                '</div>'+
+            '</div>'+
+            '<div class="valueAt-lines valueAt-scrollbar-area">'+                
+                '<div>beatline</div>'+
+                '<div></div>'+
+                '<div id="scrollbar"><div id="scrollcontent"></div></div>'+
+            '</div>'+
+        '</div>';
+        this.#containerDiv = this.#parentDiv.querySelector('.valueAt-container');
+        this.#containerDiv.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
                 this.deselectAllValueNodes();
             }
         });
-        this.#grid = this.#container.querySelector('.valueAt-lines');
-        this.#selectBox = document.createElement('div');
-        this.#selectBox.style.display = 'none';
-        this.#selectBox.className = 'valueAt-select-box';
-        document.body.appendChild(this.#selectBox);
+        this.#cursorDiv = this.#containerDiv.querySelector('#cursor');
+        this.#gridDiv = this.#containerDiv.querySelector('#lineitems');
+        this.#durationInput = this.#containerDiv.querySelector('#durationinput');
+        this.#durationInput.addEventListener('input', (e)=>{
+            this.#duration = parseFloat(this.#durationInput.value);
+        });
+        this.#headerDiv = this.#containerDiv.querySelector('.valueAt-header');
+        this.#selectBoxElm = document.createElement('div');
+        this.#selectBoxElm.style.display = 'none';
+        this.#selectBoxElm.className = 'valueAt-select-box';
+        document.body.appendChild(this.#selectBoxElm);
         this.#root = document.querySelector(':root');
         this.#startTime = startTime;
-        this.#endTime = endTime;
+        this.#timeRange = timeRange;
+        this.#endTime = this.#startTime + this.#timeRange;
+        this.#updateSecondsPerPixel();
+        this.#zoomslider = this.#containerDiv.querySelector('#zoomslider');
+        this.#zoomslider.addEventListener('input', (e)=>{
+            this.setView(this.#startTime, 200 * this.#zoomslider.value);
+        });
+        this.#zoomslider.addEventListener('pointerdown', (e)=>{
+            e.stopPropagation();
+        });
+        this.#zoomslider.addEventListener('pointermove', (e)=>{ 
+            e.stopPropagation();
+        });
+        
         document.addEventListener('keydown', (e)=>{
             if (e.shiftKey){
                 this.#root.style.setProperty('--nodecursor', 'ew-resize');
@@ -45,26 +93,31 @@ export class ValueAtTimeLine{
         });
         document.addEventListener('pointermove', (e)=>{
             if ( this.#selectPointDown != null){
-                this.#selectBox.style.display = '';
-                this.#selectBox.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
-                this.#selectBox.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
-                this.#selectBox.style.width = Math.abs(e.pageX - this.#selectPointDown.x) + 'px';
-                this.#selectBox.style.height = Math.abs(e.pageY -this.#selectPointDown.y) + 'px';
+                this.#selectBoxElm.style.display = '';
+                this.#selectBoxElm.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
+                this.#selectBoxElm.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
+                this.#selectBoxElm.style.width = Math.abs(e.pageX - this.#selectPointDown.x) + 'px';
+                this.#selectBoxElm.style.height = Math.abs(e.pageY -this.#selectPointDown.y) + 'px';
             }
         });
         document.addEventListener('pointerup', (e)=>{
-            let selectRect = this.#selectBox.getBoundingClientRect();
-            this.#selectBox.style.display = 'none';
+            let selectRect = this.#selectBoxElm.getBoundingClientRect();
+            this.#selectBoxElm.style.display = 'none';
             this.#selectPointDown = null;    
             this.#valueAtUILines.forEach((valueAtUI)=>{
                 valueAtUI.valueNodes.forEach((valueNode)=>{
                     let rect = valueNode.div.getBoundingClientRect();
                     if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
                         valueNode.selected = true;
+                        this.addValueNodeToSelectedList(valueNode);
                     }
                 });
             });
-        });                
+        });   
+        window.addEventListener('resize', (e)=>{
+            this.#updateSecondsPerPixel();
+            this.#updateCursor();
+        });           
     }
     #getCSSVariable(name){
         let rs = getComputedStyle(this.#root);
@@ -73,25 +126,66 @@ export class ValueAtTimeLine{
     #setCSSVariable(name, value){
         this.#root.style.setProperty(name, value);
     }
+    #updateSecondsPerPixel(){
+        this.#secondsPerPixel = this.#timeRange / this.#cursorDiv.parentElement.offsetWidth;
+    }
+    #updateCursor(){
+        let x = (this.#cursorTime - this.#startTime) / this.#secondsPerPixel;
+        this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
+        if (this.#cursorTime < this.#startTime || this.#cursorTime > this.#endTime){
+            this.#cursorDiv.style.display = 'none';
+        } else {
+            this.#cursorDiv.style.display = '';
+        }
+    }
     update(){
+        this.#updateCursor();
         this.#valueAtUILines.forEach((valueAtUI)=> {
             valueAtUI.update();
         });
     }
+    addValueNodeToSelectedList(valueNode){
+        if (valueNode.selected){
+            if (this.#selectedNodeList.indexOf(valueNode) == -1){
+                this.#selectedNodeList.push(valueNode);
+            }
+        }
+    }
+    setCursor(time){
+        this.#cursorTime = time;
+        this.#updateCursor();
+    }
+    setView(startTime, timeRange ){
+        timeRange = Math.abs(timeRange);
+        if (startTime != this.#startTime || timeRange != this.#timeRange){
+            this.#startTime = startTime;
+            this.#timeRange = timeRange;
+            this.#endTime = this.#startTime + this.#timeRange;
+            this.#updateSecondsPerPixel();
+            this.update();
+        }
+    }
     deselectAllValueNodes(){
-        this.selectedNodes.forEach((valueNode)=>{
+        let selectedChanged = false;
+        this.#selectedNodeList.forEach((valueNode)=>{
+            if (valueNode.selected){selectedChanged = true}
             valueNode.selected = false;
         });
+        this.#selectedNodeList = [];
+        selectedChanged
     }
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
         this.#valueAtUILines.push(new ValueAtUI(valueAt, this, labelName, strokeWidth, strokeColor));
     }
-    get parent(){
-        return this.#parent;
+    get parentDiv(){
+        return this.#parentDiv;
     }
-    get grid(){
-        return this.#grid;
+    get gridDiv(){
+        return this.#gridDiv;
     }
+    get headerDiv(){
+        return this.#headerDiv;
+    }    
     get valueAtLines(){
         return this.#valueAtUILines;
     }
@@ -112,7 +206,7 @@ export class ValueAtTimeLine{
     get timeRange(){
         return this.#endTime - this.#startTime;
     }
-    get selectedNodes(){
+    get selectedNodes1(){
         let selectedNodeList = [];
         this.#valueAtUILines.forEach((valueAtUI)=>{
             valueAtUI.valueNodes.forEach((valueNode)=>{
@@ -122,6 +216,19 @@ export class ValueAtTimeLine{
             });
         });
         return selectedNodeList;
+    }
+    getSelectedNodes(forceRefresh = false){
+        if (forceRefresh){
+            this.#selectedNodeList = [];
+            this.#valueAtUILines.forEach((valueAtUI)=>{
+                valueAtUI.valueNodes.forEach((valueNode)=>{
+                    if (valueNode.selected){
+                        this.#selectedNodeList.push(valueNode);
+                    }
+                });
+            });
+        }
+        return this.#selectedNodeList;
     }
 }
 
@@ -137,7 +244,9 @@ export class ValueAtUI{
     #strokeColor;
     #strokeWidth;
     #valueNodes = [];
+    #pointerTime = 0;
     #firstValueNodeSelected= null;
+    onSelectedChanged;
     constructor(valueAt, timeLine, labelName, strokeWidth=1, strokeColor='#fff'){
         this.#valueAt = valueAt;
         this.#timeLine = timeLine;
@@ -159,19 +268,23 @@ export class ValueAtUI{
         this.#labelSpan = document.createElement('span');
         this.#labelSpan.innerText = this.#labelName;
         this.#labelDiv.appendChild(this.#labelSpan);
-        this.#timeLine.grid.appendChild(this.#labelDiv);
+        this.#timeLine.gridDiv.appendChild(this.#labelDiv);
     
         this.#lineDiv = document.createElement('div');
         this.#lineDiv.id = this.#valueAt.name + '_graph'; 
         this.#lineDiv.className = 'valueAt-line';
         this.#lineDiv.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
-                this.#valueNodes.forEach((valueNode)=>{
-                    valueNode.selected = false;
-                });
+                this.deselectAllValueNodes();
             }
         });
 
+        this.#lineDiv.addEventListener('pointermove', (e)=>{
+            if (e.buttons==1){
+                let f = e.offsetX/this.#lineDiv.offsetWidth;
+                this.#pointerTime = this.#timeLine.startTime + (this.#timeLine.timeRange * f);
+            }
+        });
 
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
@@ -187,7 +300,7 @@ export class ValueAtUI{
         this.#svg.appendChild(this.#path);
         this.#lineDiv.appendChild(this.#svg);
        
-        this.#timeLine.grid.appendChild(this.#lineDiv);
+        this.#timeLine.gridDiv.appendChild(this.#lineDiv);
        
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
@@ -200,6 +313,7 @@ export class ValueAtUI{
                         this.#timeLine.deselectAllValueNodes();
                     }
                     valueNode.selected = selected;
+                    this.#timeLine.addValueNodeToSelectedList(valueNode);
                     if(valueNode.selected){
                         if (this.#firstValueNodeSelected == null){
                             this.#firstValueNodeSelected = valueNode
@@ -210,6 +324,7 @@ export class ValueAtUI{
                                 let endIndex = Math.max(this.#valueNodes.indexOf(this.#firstValueNodeSelected), this.#valueNodes.indexOf(valueNode));
                                 for (let i = startIndex; i <= endIndex; i++){
                                     this.#valueNodes[i].selected = true;
+                                    this.#timeLine.addValueNodeToSelectedList(this.#valueNodes[i]);
                                 }
                             }
                         }
@@ -225,7 +340,7 @@ export class ValueAtUI{
     #render(){
         this.#path.setAttribute('stroke-width', this.#strokeWidth);
         this.#path.setAttribute('stroke', this.#strokeColor);
-        let steps = Math.floor(this.#timeLine.parent.offsetWidth * 0.5);
+        let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
         let h = this.#svg.parentElement.offsetHeight;
         let w = this.#svg.parentElement.offsetWidth;
         let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
@@ -255,7 +370,21 @@ export class ValueAtUI{
             valueNode.div.style.bottom = ((v_offset*0.5) + (valueNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';            
         });
     }
-
+    #handleSelectedChanged(){
+        if (typeof onSelectedChanged === 'function'){
+            this.onSelectedChanged(this);
+        }
+    }
+    deselectAllValueNodes(){
+        let selectedChanged = [];
+        this.#valueNodes.forEach((valueNode)=>{
+            if (valueNode.selected){selectedChanged.push(valueNode)}
+            valueNode.selected = false;
+        });
+        if (selectedChanged.length > 0){
+            this.#handleSelectedChanged(selectedChanged);
+        }
+    }
     update(){
         this.#render();
     }
@@ -316,8 +445,10 @@ class ValueNode{
             e.stopPropagation();
         });       
         this.#div.addEventListener('pointerdown', (e)=>{
-            this.#selected = !this.#selected;
-            this.#handleSelectedChanged(e);
+            if (!this.#selected){
+                this.#selected = true;
+                this.#handleSelectedChanged(e);
+            }
             e.stopPropagation();
         });   
         this.#parent.appendChild(this.#div);
