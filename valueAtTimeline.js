@@ -172,19 +172,21 @@ export class ValueAtTimeLine{
         });    
    
     }
-
-    #getCSSVariable(name){
+    init(){
+        this.update();
+    }
+    getCSSVariable(name){
         let rs = getComputedStyle(this.#root);
         return rs.getPropertyValue(name);
     }
-    #setCSSVariable(name, value){
+    setCSSVariable(name, value){
         this.#root.style.setProperty(name, value);
     }
     #updateTimePerPixel(){
         this.#timePerPixel = this.#timeRange / this.#cursorDiv.parentElement.parentElement.offsetWidth;
-        console.log('this.#timePerPixel',this.#timePerPixel);
     }
     #updateCursor(){
+        this.#cursorDiv.style.height = parseFloat(this.getCSSVariable('--line-row-height').replace('px','')) * this.valueAtLines.length + 'px';
         if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
         let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
         this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';

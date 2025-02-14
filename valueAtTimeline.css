@@ -10,6 +10,10 @@
     --labelWidth: 100px;
     --row-height: 32px;
     --line-row-height: 32px;
+    --main-text-color: #ffffff;
+    --header-back-color: #292a2e;
+    --main-back-color: #2f3137;
+    --graph-back-color: #4f5059;
     --cursor-color: #ff980099;
     --sb-track-color: #28292e;
     --sb-thumb-color: #616470;
@@ -66,8 +70,8 @@ div {
 .valueAt-container {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 0.8em;
-    background-color: #28292e;
-    color: white;
+    background-color: var(--main-back-color);
+    color: var(--main-text-color);
     overflow: hidden;
     user-select: none;
     padding: 5px 5px 0px 5px;
@@ -90,8 +94,8 @@ div {
     display: flex;
     align-items: center;
     position: relative;
-    background-color: #4f5059;
-    border-bottom: 4px solid #28292e;
+    background-color: var(--graph-back-color);
+    border-bottom: 4px solid var(--main-back-color);
     height: var(--line-row-height);
     width: 100%;
     z-index: 0;
@@ -104,7 +108,7 @@ div {
     top: 0px;
     height: var(--row-height);
     gap: 5px;
-    background-color: #28292e;
+    background-color: var(--header-back-color);
     z-index: 10;
 }
 
@@ -113,11 +117,11 @@ div {
     align-items: center;
     gap: 5px;
     position: sticky;
-    top: 32px;
+    top: var(--row-height);
     height: var(--row-height);
     overflow: unset;
     z-index: 100;
-    background-color: #28292e;
+    background-color: var(--header-back-color);
     z-index: 10;
 }
 
@@ -137,10 +141,6 @@ div {
 
 .valueAt-cursor-area {
     z-index: 10;
-}
-
-.valueAt-graph-area {
-    flex: 3;
 }
 
 .valueAt-scrollbar-area {
@@ -253,7 +253,6 @@ div {
 
 #scrollslider {
     width: 300px;
-    flex: 2;
 }
 
 
