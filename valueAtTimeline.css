@@ -91,7 +91,6 @@ div {
     align-items: center;
     position: relative;
     background-color: #4f5059;
-    mmargin-bottom: 4px;
     border-bottom: 4px solid #28292e;
     height: var(--line-row-height);
     width: 100%;
