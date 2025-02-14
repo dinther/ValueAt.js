@@ -1,11 +1,42 @@
 
+
+function createEl(name, options, parent=null){
+    let elm = document.createElement(name);
+    for (const [key, value] of Object.entries(options)) {
+        if (['for'].indexOf(key) != -1){ //  items in this list should be treated as attributes
+            elm.setAttribute(key, value);
+        } else {
+            elm[key] = value;
+        }
+    }
+    if (parent != null){
+        parent.appendChild(elm);
+    }
+    return elm;
+}
+
 export class ValueAtTimeLine{
     #parentDiv;
-    #headerDiv;
     #containerDiv;
-    #valueAtUILines = [];
-    #gridDiv;
+    #scrollContainerDiv;
+
+    #headerDiv;
+    #durationGroupDiv;
+    #durationLabel;
+    #durationInput;
+    #scrollGroupDiv;
+    #scrollLabel;
+    #scrollSlider;    
+
+    #scaleDiv;
+    #zoomGroupDiv;
+    #zoomLabel;
+    #zoomSlider;
     #cursorDiv;
+    #cursorLabel;
+
+    #valueAtDiv;
+
     #startTime;
     #timeRange;
     #endTime;
@@ -13,77 +44,76 @@ export class ValueAtTimeLine{
     #root;
     #selectBoxElm;
     #selectPointDown = null;
+    #valueAtUILines = [];
     #selectedNodeList = [];
-    #zoomslider;
-    #scrollSlider;
-    #durationInput;
+    
+    
     #duration = 1;
-    #timePerPixel=0;
+    #timePerPixel;
     constructor(parent, startTime, timeRange){
         this.#parentDiv = parent;
-        this.#parentDiv.innerHTML = 
-        '<div class="valueAt-container">'+
-            '<div class="valueAt-header">'+
-                '<label for="durationinput">Duration&nbsp</label>'+
-                '<input id="durationinput" type="number" min="1" step="1" value="100"></input>'+
-                '<label for="scrollslider">Scroll test&nbsp</label>'+
-                '<input id="scrollslider" type="range" min="0.0001" max="1" step="0.0001" value="0"></input>'+
-                '</div>'+
-            '<div class="valueAt-lines valueAt-cursor-area">'+
-                '<div class="valueAt-label">'+
-                    '<input id="zoomslider" type="range" min="0.0001" max="1" step="0.0001" value="0"></input>'+
-                '</div>'+
-                '<div></div>'+
-                '<div style="height: 100%;"><div id="scale"></div><div id="cursor"><div id="cursorlabel">5.23</div></div></div>'+
-            '</div>'+
-            '<div class="valueAt-graph-area valueAt-scroll-bar">'+
-                '<div id="lineitems" class="valueAt-lines">'+
-                    '<div class="valueAt-v-size"></div>'+
-                '</div>'+
-            '</div>'+
-            '<div class="valueAt-lines valueAt-scrollbar-area">'+                
-                '<div>beatline</div>'+
-                '<div></div>'+
-                '<div id="scrollbar"><div id="scrollcontent"></div></div>'+
-            '</div>'+
-        '</div>';
-        this.#containerDiv = this.#parentDiv.querySelector('.valueAt-container');
+
+        //  build scrolling UI container
+        this.#containerDiv = createEl('div', {className: 'valueAt-container'});
+        this.#scrollContainerDiv = createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
+        //  build stickyheader
+        this.#headerDiv = createEl('div', {className: 'valueAt-header'}, this.#scrollContainerDiv);
+        this.#durationGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        this.#durationLabel = createEl('label', {className: 'valueAt-drop-blurb', for: 'durationinput', innerText: 'Duration'}, this.#durationGroupDiv);
+        this.#durationInput = createEl('input', {id: 'durationinput', type: 'number', min: '0.001', max:'1', step: '0.001', value: '100'}, this.#durationGroupDiv);
+        this.#scrollGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);  
+        this.#scrollLabel = createEl('label', {for: 'scrollslider', innerText: 'Scroll'}, this.#scrollGroupDiv);
+        this.#scrollSlider = createEl('input', {id: 'scrollinput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#scrollGroupDiv);
+        this.#zoomGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        this.#zoomLabel = createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
+        this.#zoomSlider = createEl('input', {id: 'zoominput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#zoomGroupDiv);
+
+        //  build sticky zoom and time scale
+        this.#scaleDiv = createEl('div', {className: 'valueAt-scale'}, this.#scrollContainerDiv);
+        let absoluteDiv = createEl('div', {style: 'position: absolute'}, this.#scaleDiv);
+        this.#cursorDiv = createEl('div', {id: 'cursor'}, absoluteDiv);
+        this.#cursorLabel = createEl('div', {id: 'cursorlabel', innerText: '5.34'}, this.#cursorDiv);
+
+
+
+        //  build container for valueAt lines
+        //this.#valueAtDiv = createEl('div',{className:'valueAt-list'}, this.#containerDiv);
+
+        //  build select box
+        this.#selectBoxElm = createEl('div', {className: 'valueAt-select-box', style: 'display: none'}, document.body);
+
+        this.#parentDiv.appendChild(this.#containerDiv);
+
+        //  event handlers
         this.#containerDiv.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
                 this.deselectAllValueNodes();
             }
         });
-        this.#cursorDiv = this.#containerDiv.querySelector('#cursor');
-        this.#gridDiv = this.#containerDiv.querySelector('#lineitems');
-        this.#durationInput = this.#containerDiv.querySelector('#durationinput');
+
         this.#durationInput.addEventListener('input', (e)=>{
             this.#duration = parseFloat(this.#durationInput.value);
         });
         this.#duration = this.#durationInput.value;
-        this.#headerDiv = this.#containerDiv.querySelector('.valueAt-header');
-        this.#selectBoxElm = document.createElement('div');
-        this.#selectBoxElm.style.display = 'none';
-        this.#selectBoxElm.className = 'valueAt-select-box';
-        document.body.appendChild(this.#selectBoxElm);
+
         this.#root = document.querySelector(':root');
         this.#startTime = startTime;
         this.#timeRange = timeRange;
         this.#endTime = this.#startTime + this.#timeRange;
-        this.#updateSecondsPerPixel();
-        this.#zoomslider = this.#containerDiv.querySelector('#zoomslider');
-        this.#zoomslider.addEventListener('input', (e)=>{
-            let timeRange = this.#duration * this.#zoomslider.value;
-            this.setView(this.#scrollSlider.value * (this.#duration - timeRange), timeRange);
+
+        this.#zoomSlider.addEventListener('input', (e)=>{
+            let timeRange = this.#duration * this.#zoomSlider.value;
+            this.setView(this.#startTime, timeRange);
         });
-        this.#zoomslider.addEventListener('pointerdown', (e)=>{
+        this.#zoomSlider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
         });
-        this.#zoomslider.addEventListener('pointermove', (e)=>{ 
+        this.#zoomSlider.addEventListener('pointermove', (e)=>{ 
             e.stopPropagation();
         });
-        this.#scrollSlider = this.#containerDiv.querySelector('#scrollslider');
+
         this.#scrollSlider.addEventListener('input', (e)=>{
-            let timeRange = this.#duration * this.#zoomslider.value;
+            let timeRange = this.#duration * this.#zoomSlider.value;
             this.setView(this.#scrollSlider.value * (this.#duration - timeRange), timeRange);
         });
         this.#scrollSlider.addEventListener('pointerdown', (e)=>{
@@ -92,6 +122,7 @@ export class ValueAtTimeLine{
         this.#scrollSlider.addEventListener('pointermove', (e)=>{ 
             e.stopPropagation();
         });
+
         document.addEventListener('keydown', (e)=>{
             if (e.shiftKey){
                 this.#root.style.setProperty('--nodecursor', 'ew-resize');
@@ -105,13 +136,13 @@ export class ValueAtTimeLine{
                 this.#root.style.setProperty('--nodecursor', 'move');
         });
         document.addEventListener('pointerdown', (e)=>{
-            if ( e.button == 0 ){
+            if ( e.button == 0 && e.ctrlKey){
                 this.#selectPointDown = {x: e.pageX, y: e.pageY};
                 console.log('down');
             }
         });
         document.addEventListener('pointermove', (e)=>{
-            if ( this.#selectPointDown != null){
+            if ( this.#selectPointDown != null &&  e.ctrlKey){
                 this.#selectBoxElm.style.display = '';
                 this.#selectBoxElm.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
                 this.#selectBoxElm.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
@@ -120,24 +151,28 @@ export class ValueAtTimeLine{
             }
         });
         document.addEventListener('pointerup', (e)=>{
-            let selectRect = this.#selectBoxElm.getBoundingClientRect();
-            this.#selectBoxElm.style.display = 'none';
-            this.#selectPointDown = null;    
-            this.#valueAtUILines.forEach((valueAtUI)=>{
-                valueAtUI.valueNodes.forEach((valueNode)=>{
-                    let rect = valueNode.div.getBoundingClientRect();
-                    if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
-                        valueNode.selected = true;
-                        this.addValueNodeToSelectedList(valueNode);
-                    }
+            if ( this.#selectPointDown != null &&  e.ctrlKey){
+                let selectRect = this.#selectBoxElm.getBoundingClientRect();
+                this.#selectBoxElm.style.display = 'none';
+                this.#selectPointDown = null;    
+                this.#valueAtUILines.forEach((valueAtUI)=>{
+                    valueAtUI.valueNodes.forEach((valueNode)=>{
+                        let rect = valueNode.div.getBoundingClientRect();
+                        if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
+                            valueNode.selected = true;
+                            this.addValueNodeToSelectedList(valueNode);
+                        }
+                    });
                 });
-            });
+            }
         });   
         window.addEventListener('resize', (e)=>{
-            this.#updateSecondsPerPixel();
+            this.#updateTimePerPixel();
             this.#updateCursor();
-        });           
+        });    
+   
     }
+
     #getCSSVariable(name){
         let rs = getComputedStyle(this.#root);
         return rs.getPropertyValue(name);
@@ -145,17 +180,15 @@ export class ValueAtTimeLine{
     #setCSSVariable(name, value){
         this.#root.style.setProperty(name, value);
     }
-    #updateSecondsPerPixel(){
-        this.#timePerPixel = this.#timeRange / this.#cursorDiv.parentElement.offsetWidth;
+    #updateTimePerPixel(){
+        this.#timePerPixel = this.#timeRange / this.#cursorDiv.parentElement.parentElement.offsetWidth;
+        console.log('this.#timePerPixel',this.#timePerPixel);
     }
     #updateCursor(){
+        if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
         let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
         this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
-        if (this.#cursorTime < this.#startTime || this.#cursorTime > this.#endTime){
-            this.#cursorDiv.style.display = 'none';
-        } else {
-            this.#cursorDiv.style.display = '';
-        }
+        this.#cursorLabel.innerText = this.#cursorTime.toFixed(0);
     }
     update(){
         this.#updateCursor();
@@ -174,13 +207,13 @@ export class ValueAtTimeLine{
         this.#cursorTime = time;
         this.#updateCursor();
     }
-    setView(startTime, timeRange ){
-        timeRange = Math.abs(timeRange);
+    setView(startTime, timeRange=null ){
+        timeRange = timeRange==null? this.#timeRange : Math.abs(timeRange);
         if (startTime != this.#startTime || timeRange != this.#timeRange){
             this.#startTime = startTime;
             this.#timeRange = timeRange;
             this.#endTime = this.#startTime + this.#timeRange;
-            this.#updateSecondsPerPixel();
+            this.#updateTimePerPixel();
             this.update();
         }
     }
@@ -199,12 +232,18 @@ export class ValueAtTimeLine{
     get parentDiv(){
         return this.#parentDiv;
     }
-    get gridDiv(){
-        return this.#gridDiv;
+    get containerDiv(){
+        return this.#containerDiv;
+    }
+    get scrollContainerDiv(){
+        return this.#scrollContainerDiv;
     }
     get headerDiv(){
         return this.#headerDiv;
     }    
+    get valueAtDiv(){
+        return this.#valueAtDiv;
+    }
     get valueAtLines(){
         return this.#valueAtUILines;
     }
@@ -258,6 +297,7 @@ export class ValueAtUI{
     #labelDiv;
     #labelSpan;
     #lineDiv;
+    #backdropDiv;
     #svg;
     #path;
     #strokeColor;
@@ -281,17 +321,7 @@ export class ValueAtUI{
     }
 
     #createValueAtUILine(){
-        this.#labelDiv = document.createElement('div');
-        this.#labelDiv.id = this.#valueAt.name + '_lbl'; 
-        this.#labelDiv.className = 'valueAt-label';
-        this.#labelSpan = document.createElement('span');
-        this.#labelSpan.innerText = this.#labelName;
-        this.#labelDiv.appendChild(this.#labelSpan);
-        this.#timeLine.gridDiv.appendChild(this.#labelDiv);
-    
-        this.#lineDiv = document.createElement('div');
-        this.#lineDiv.id = this.#valueAt.name + '_graph'; 
-        this.#lineDiv.className = 'valueAt-line';
+        this.#lineDiv = createEl('div', {id: this.#valueAt.name + '_graph', className: 'valueAt-line'});
         this.#lineDiv.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
                 this.deselectAllValueNodes();
@@ -304,6 +334,8 @@ export class ValueAtUI{
                 this.#pointerTime = this.#timeLine.startTime + (this.#timeLine.timeRange * f);
             }
         });
+        this.#backdropDiv = createEl('div', {className: 'valueAt-line-back'}, this.#lineDiv);
+        this.#labelDiv = createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label', innerText: this.#labelName}, this.#lineDiv);
 
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
@@ -319,7 +351,7 @@ export class ValueAtUI{
         this.#svg.appendChild(this.#path);
         this.#lineDiv.appendChild(this.#svg);
        
-        this.#timeLine.gridDiv.appendChild(this.#lineDiv);
+        this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
        
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
