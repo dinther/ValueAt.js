@@ -19,7 +19,7 @@
 
             var va_red = new ValueAt.LookupAtTime('red');
             va_red.addValueKey(10,-50);
-            va_red.addValueKey(30,100, Easings.easeOutBounce, 0.5);
+            va_red.addValueKey(30,100, Easings.linear, 0.5);
             va_red.addValueKey(75,60, Easings.easeInOutQuad);
             va_red.addValueKey(100,0,Easings.easeOutCirc);
             va_red.init(1);
@@ -82,6 +82,7 @@
 
             var va_rotate_z = new ValueAt.LookupAtTime('zrot');
             va_rotate_z.addValueKey(0,0);
+            va_rotate_z.addValueKey(50,0);
             va_rotate_z.addValueKey(100,360, Easings.linear);
             va_rotate_z.init(0.1);
 
@@ -96,7 +97,6 @@
             timeline.addValueAt(va_rotate_x, 'Rotate X axis', 1, '#D0FF72');
             timeline.addValueAt(va_rotate_y, 'Rotate Y axis', 1, '#D0FF72');
             timeline.addValueAt(va_rotate_z, 'Rotate Z axis', 1, '#D0FF72');
-            timeline.init();
   
             /*
             let button = document.createElement('div');

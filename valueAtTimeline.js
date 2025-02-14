@@ -46,7 +46,7 @@ export class ValueAtTimeLine{
     #selectPointDown = null;
     #valueAtUILines = [];
     #selectedNodeList = [];
-    
+    #lineWrapDiv;
     
     #duration = 1;
     #timePerPixel;
@@ -58,23 +58,25 @@ export class ValueAtTimeLine{
         this.#scrollContainerDiv = createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
         //  build stickyheader
         this.#headerDiv = createEl('div', {className: 'valueAt-header'}, this.#scrollContainerDiv);
-        this.#durationGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        let line1Div = createEl('div', {className: 'valueAt-flex-hor'}, this.#headerDiv);
+        this.#durationGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);
         this.#durationLabel = createEl('label', {className: 'valueAt-drop-blurb', for: 'durationinput', innerText: 'Duration'}, this.#durationGroupDiv);
         this.#durationInput = createEl('input', {id: 'durationinput', type: 'number', min: '0.001', max:'1', step: '0.001', value: '100'}, this.#durationGroupDiv);
-        this.#scrollGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);  
+        this.#scrollGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);  
         this.#scrollLabel = createEl('label', {for: 'scrollslider', innerText: 'Scroll'}, this.#scrollGroupDiv);
         this.#scrollSlider = createEl('input', {id: 'scrollinput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#scrollGroupDiv);
-        this.#zoomGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        this.#zoomGroupDiv = createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);
         this.#zoomLabel = createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
         this.#zoomSlider = createEl('input', {id: 'zoominput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#zoomGroupDiv);
 
         //  build sticky zoom and time scale
-        this.#scaleDiv = createEl('div', {className: 'valueAt-scale'}, this.#scrollContainerDiv);
-        let absoluteDiv = createEl('div', {style: 'position: absolute'}, this.#scaleDiv);
-        this.#cursorDiv = createEl('div', {id: 'cursor'}, absoluteDiv);
+        let line2Div = createEl('div', {className: 'valueAt-flex-hor'}, this.#headerDiv);
+        this.#scaleDiv = createEl('div', {className: 'valueAt-scale'}, line2Div);
+        //let absoluteDiv = createEl('div', {style: 'position: absolute'}, this.#scaleDiv);
+        this.#cursorDiv = createEl('div', {id: 'cursor'}, this.#scaleDiv);
         this.#cursorLabel = createEl('div', {id: 'cursorlabel', innerText: '5.34'}, this.#cursorDiv);
 
-
+        this.#lineWrapDiv = createEl('div', {className: 'valueAt-linewrap'}, this.#scrollContainerDiv);
 
         //  build container for valueAt lines
         //this.#valueAtDiv = createEl('div',{className:'valueAt-list'}, this.#containerDiv);
@@ -136,13 +138,13 @@ export class ValueAtTimeLine{
                 this.#root.style.setProperty('--nodecursor', 'move');
         });
         document.addEventListener('pointerdown', (e)=>{
-            if ( e.button == 0 && e.ctrlKey){
+            if ( e.button == 0 && (e.ctrlKey || e.shiftKey)){
                 this.#selectPointDown = {x: e.pageX, y: e.pageY};
                 console.log('down');
             }
         });
         document.addEventListener('pointermove', (e)=>{
-            if ( this.#selectPointDown != null &&  e.ctrlKey){
+            if ( this.#selectPointDown != null && (e.ctrlKey || e.shiftKey)){
                 this.#selectBoxElm.style.display = '';
                 this.#selectBoxElm.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
                 this.#selectBoxElm.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
@@ -151,7 +153,7 @@ export class ValueAtTimeLine{
             }
         });
         document.addEventListener('pointerup', (e)=>{
-            if ( this.#selectPointDown != null &&  e.ctrlKey){
+            if ( this.#selectPointDown != null &&  (e.ctrlKey || e.shiftKey)){
                 let selectRect = this.#selectBoxElm.getBoundingClientRect();
                 this.#selectBoxElm.style.display = 'none';
                 this.#selectPointDown = null;    
@@ -169,12 +171,9 @@ export class ValueAtTimeLine{
         window.addEventListener('resize', (e)=>{
             this.#updateTimePerPixel();
             this.#updateCursor();
-        });    
-   
+        });     
     }
-    init(){
-        this.update();
-    }
+
     getCSSVariable(name){
         let rs = getComputedStyle(this.#root);
         return rs.getPropertyValue(name);
@@ -183,13 +182,19 @@ export class ValueAtTimeLine{
         this.#root.style.setProperty(name, value);
     }
     #updateTimePerPixel(){
-        this.#timePerPixel = this.#timeRange / this.#cursorDiv.parentElement.parentElement.offsetWidth;
+        if (this.#scrollContainerDiv.offsetWidth > 0){
+            this.#timePerPixel = this.#timeRange / this.#scrollContainerDiv.offsetWidth;//this.#cursorDiv.parentElement.parentElement.offsetWidth;
+        }
     }
     #updateCursor(){
         this.#cursorDiv.style.height = parseFloat(this.getCSSVariable('--line-row-height').replace('px','')) * this.valueAtLines.length + 'px';
         if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
         let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
-        this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
+        //this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
+        //this.#cursorDiv.style.left = this.#scrollContainerDiv.offsetLeft + x + 'px';
+
+        this.#cursorDiv.style.left = (this.#cursorTime - this.#startTime) / (this.#timeRange) * 100 + '%';
+        
         this.#cursorLabel.innerText = this.#cursorTime.toFixed(0);
     }
     update(){
@@ -230,6 +235,7 @@ export class ValueAtTimeLine{
     }
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
         this.#valueAtUILines.push(new ValueAtUI(valueAt, this, labelName, strokeWidth, strokeColor));
+        this.#updateCursor();
     }
     get parentDiv(){
         return this.#parentDiv;
@@ -239,6 +245,9 @@ export class ValueAtTimeLine{
     }
     get scrollContainerDiv(){
         return this.#scrollContainerDiv;
+    }
+    get lineWrapDiv(){
+        return this.#lineWrapDiv;
     }
     get headerDiv(){
         return this.#headerDiv;
@@ -353,8 +362,9 @@ export class ValueAtUI{
         this.#svg.appendChild(this.#path);
         this.#lineDiv.appendChild(this.#svg);
        
-        this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
-       
+        //this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
+        this.#timeLine.lineWrapDiv.appendChild(this.#lineDiv);
+        
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];

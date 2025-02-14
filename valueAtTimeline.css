@@ -8,13 +8,15 @@
     --nodesize: 12px;
     --nodeselectedsize: 16px;
     --labelWidth: 100px;
-    --row-height: 32px;
+    --row-height: 64px;
     --line-row-height: 32px;
     --main-text-color: #ffffff;
     --header-back-color: #292a2e;
     --main-back-color: #2f3137;
     --graph-back-color: #4f5059;
+    --scale-back-color: #b7b7b7;
     --cursor-color: #ff980099;
+    --cursor-text-color: #292a2e;
     --sb-track-color: #28292e;
     --sb-thumb-color: #616470;
     --sb-size: 14px;
@@ -84,17 +86,28 @@ div {
     position: relative;
     width: 100%;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.valueAt-linewrap {
+    background-color: var(--graph-back-color);
+    border-top: 4px solid var(--main-back-color);
+}
+
+.valueAt-flex-hor{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
 }
 
 .valueAt-line{
     display: flex;
     align-items: center;
     position: relative;
-    background-color: var(--graph-back-color);
     border-bottom: 4px solid var(--main-back-color);
     height: var(--line-row-height);
     width: 100%;
@@ -104,10 +117,9 @@ div {
 .valueAt-header {
     position: sticky;
     display: flex;
+    flex-direction: column;
     align-items: center;
     top: 0px;
-    height: var(--row-height);
-    gap: 5px;
     background-color: var(--header-back-color);
     z-index: 10;
 }
@@ -115,14 +127,11 @@ div {
 .valueAt-scale {
     display: flex;
     align-items: center;
-    gap: 5px;
-    position: sticky;
-    top: var(--row-height);
-    height: var(--row-height);
+    height: 24px;
     overflow: unset;
-    z-index: 100;
-    background-color: var(--header-back-color);
+    background-color: var(--scale-back-color);
     z-index: 10;
+    width: 100%;
 }
 
 .valueAt-scroll-bar {       
@@ -240,7 +249,7 @@ div {
 
 #cursor {
     display: flex;
-    left: 250px;
+    left: 0px;
     position: absolute;
     width: 1px;
     height: 100vh;
@@ -248,7 +257,7 @@ div {
     z-index: 100;
     justify-content: center;
     cursor: ew-resize;
-    transform: translate(0px, 16px);
+    transform: translate(-50%, calc(50% + 10px));
 }
 
 #scrollslider {
@@ -258,6 +267,7 @@ div {
 
 #cursorlabel {
     border: 2px solid var( --cursor-color );
+    color: var(--cursor-text-color);
     height: fit-content;
     padding: 0px 9px;
     border-radius: 8px;
