@@ -88,7 +88,7 @@
 
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
             let circle1 = timeLine.addNewValueAtGroup('circle 1', true);
-            let colorGroup1 = circle1.addNewValueAtGroup('Color', false);
+            let colorGroup1 = circle1.addNewValueAtGroup('Color', true);
             colorGroup1.addValueAt(va_red, 'Red',1, 'red');
             colorGroup1.addValueAt(va_green, 'Green', 1, 'green');
             colorGroup1.addValueAt(va_blue, 'Blue', 1, 'blue');
@@ -125,6 +125,7 @@
             rotateGroup2.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
             rotateGroup2.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
             rotateGroup2.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
+  
 /*
             timeLine.lineWrapDiv.innerHTML +=
             '<ul id="myUL">'+

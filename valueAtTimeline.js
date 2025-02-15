@@ -233,8 +233,7 @@ export class ValueAtTimeLine{
     }
     addNewValueAtGroup(name, expanded=true, parentGroup=null){
         if (parentGroup==null){
-            let valueAtGroup = new ValueAtGroup(this, name, this.#rootValueAtGroup, expanded);
-            return valueAtGroup;
+            return this.#rootValueAtGroup.addNewValueAtGroup(name, expanded);
         } else {
             return parentGroup.addNewValueAtGroup(name, expanded);
         }

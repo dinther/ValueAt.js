@@ -158,6 +158,12 @@ export class ValueAtLine{
     get valueAt(){
         return this.#valueAt;
     }
+    get lineDiv(){
+        return this.#lineDiv;
+    }
+    get labelDiv(){
+        return this.#labelDiv;
+    }
 
     get labelDivName(){
         return this.#labelName;

@@ -14,7 +14,7 @@
     --main-text-color: #ffffff;
     --header-back-color: #292a2e;
     --main-back-color: #2f3137;
-    --graph-back-color: #4f5059;
+    --graph-back-color: #50515a;
     --scale-height: 32px;
     --scale-back-color: #b7b7b7;
     --cursor-color: #ff980099;
@@ -112,16 +112,21 @@ div {
     z-index: 10;
 }
 
+.valueAt-group-label-span {
+
+}
+
 .valueAt-expand {
     position: relative;
     width: 100%;
-    z-index: 30;
+    z-index: 9;
 }
 
 .valueAt-expand-collapse {
     position: absolute;
     top: 0px;
     height: var(--line-row-collapse-height);
+    opacity: 0.3;
 }
 
 .valueAt-flex-hor{
@@ -266,6 +271,7 @@ div {
     height: var(--nodesize);
     cursor: var(--nodecursor);
     transform: translate(-50%,50%);
+    z-index: 24;
 }
 
 .valueAt-node-active {
