@@ -10,10 +10,12 @@
     --labelWidth: 100px;
     --row-height: 64px;
     --line-row-height: 32px;
+    --line-row-collapse-height: 20px;
     --main-text-color: #ffffff;
     --header-back-color: #292a2e;
     --main-back-color: #2f3137;
     --graph-back-color: #4f5059;
+    --scale-height: 32px;
     --scale-back-color: #b7b7b7;
     --cursor-color: #ff980099;
     --cursor-text-color: #292a2e;
@@ -95,6 +97,31 @@ div {
 .valueAt-linewrap {
     background-color: var(--graph-back-color);
     border-top: 4px solid var(--main-back-color);
+    z-index: 5;
+}
+
+.valueAt-group{
+    color: white;
+    position: relative;
+}
+
+.valueAt-group-label {
+    color: white;
+    border-bottom: 4px solid var(--main-back-color);
+    position: relative;
+    z-index: 10;
+}
+
+.valueAt-expand {
+    position: relative;
+    width: 100%;
+    z-index: 30;
+}
+
+.valueAt-expand-collapse {
+    position: absolute;
+    top: 0px;
+    height: var(--line-row-collapse-height);
 }
 
 .valueAt-flex-hor{
@@ -114,6 +141,12 @@ div {
     z-index: 0;
 }
 
+.valueAt-line-collapse {
+    position: absolute;
+    height: var(--line-row-collapse-height);
+    overflow: hidden;
+}
+
 .valueAt-header {
     position: sticky;
     display: flex;
@@ -124,10 +157,24 @@ div {
     z-index: 10;
 }
 
+.valueAt-remaining {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: sticky;
+    flex:5;
+    bottom: 0px;
+}
+
+.valueAt-footer {
+    height: 24px;
+    background-color: var(--header-back-color);
+}
+
 .valueAt-scale {
     display: flex;
     align-items: center;
-    height: 24px;
+    height: var(--scale-height);
     overflow: unset;
     background-color: var(--scale-back-color);
     z-index: 10;
@@ -152,22 +199,18 @@ div {
     z-index: 10;
 }
 
-.valueAt-scrollbar-area {
+.valueAt-scrollbar {
+    overflow-x: scroll;
     background-color: #28292e;
+    height: 24px;
     padding-bottom: 0;
     z-index: 15;
-    margin-right: var(--sb-size);
     font-size: 0.7em;
     color:#6d6e6f;
 }
 
-#scrollbar {
-    overflow-x: scroll;
-    height: var(--sb-size);
-}
-
-#scrollcontent {
-    width: 500px;
+.valueAt-scroll-content {
+    width: 120%;
     height: 1px;
 }
 
@@ -184,34 +227,34 @@ div {
     text-wrap-mode: nowrap;
 }
 
+.valueAt-background {
+    background: linear-gradient(90deg, #28292ecc 0px, #28292ecc 110px, #28292e00 130px, #28292e00 100%);
+}
+
 .valueAt-line-label{
     position: absolute;
     color: white;
-    margin: 2px 0 3px 0;
+    left: 0px;
+    top: -2px;
+    right: 0px;
+    bottom: -2px;
     text-wrap-mode: nowrap;
     z-index: 25;
+    pointer-events: none;
 }
 
-.valueAt-line-back{
-    top: -5px;
-    left: -5px;
-    bottom: -4px;
-    width: 100px;
-    background: rgba(40,41,46,0.8);
-
-    position: absolute;
-    z-index: 20;
+.valueAt-line-label span {
+    position: relative;
+    vertical-align: -webkit-baseline-middle;
 }
 
-.valueAt-drop-blurb {
-    text-shadow: #000 1px 0 10px, #000 1px 0 10px ;
-}
 
 .valuesAt-svg {
     height: 100%;
     width: 100%;
     stroke: white;
     stroke-width: 1px;
+    z-index: 20;
 }
 
 .valueAt-node {
@@ -284,3 +327,25 @@ div {
     background-color: #4f5059;
     margin-right: var(--sb-size);
 }
+
+.caret {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    padding-left: 5px;
+    user-select: none;
+  }
+  
+  .caret::before {
+    content: "\25B6";
+    color: white;
+    display: inline-block;
+    margin-right: 4px;
+  }
+  
+  .caret-down::before {
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari */'
+    transform: rotate(90deg);  
+  }

@@ -86,18 +86,80 @@
             va_rotate_z.addValueKey(100,360, Easings.linear);
             va_rotate_z.init(0.1);
 
-            var timeline = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
-            timeline.addValueAt(va_red, 'Red',1, 'red');
-            timeline.addValueAt(va_green, 'Green', 1, 'green');
-            timeline.addValueAt(va_blue, 'Blue', 1, 'blue');
-            timeline.addValueAt(va_pos_x, 'Pos X',1);
-            timeline.addValueAt(va_pos_y, 'Pos y', 1);
-            timeline.addValueAt(va_scale_x, 'Scale X', 1, '#5197ff'); 
-            timeline.addValueAt(va_scale_y, 'Scale Y', 1, '#5197ff');            
-            timeline.addValueAt(va_rotate_x, 'Rotate X axis', 1, '#D0FF72');
-            timeline.addValueAt(va_rotate_y, 'Rotate Y axis', 1, '#D0FF72');
-            timeline.addValueAt(va_rotate_z, 'Rotate Z axis', 1, '#D0FF72');
-  
+            var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
+            let circle1 = timeLine.addNewValueAtGroup('circle 1', true);
+            let colorGroup1 = circle1.addNewValueAtGroup('Color', false);
+            colorGroup1.addValueAt(va_red, 'Red',1, 'red');
+            colorGroup1.addValueAt(va_green, 'Green', 1, 'green');
+            colorGroup1.addValueAt(va_blue, 'Blue', 1, 'blue');
+
+            let positionGroup1 = circle1.addNewValueAtGroup('Position', true);
+            positionGroup1.addValueAt(va_pos_x, 'Pos X',1);
+            positionGroup1.addValueAt(va_pos_y, 'Pos y', 1);
+
+            let scaleGroup1 = circle1.addNewValueAtGroup('Scale', true);
+            scaleGroup1.addValueAt(va_scale_x, 'Scale X', 1, '#5197ff'); 
+            scaleGroup1.addValueAt(va_scale_y, 'Scale Y', 1, '#5197ff');            
+
+            let rotateGroup1 = circle1.addNewValueAtGroup('Rotate', true);
+            rotateGroup1.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
+            rotateGroup1.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
+            rotateGroup1.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
+
+
+            let circle2 = timeLine.addNewValueAtGroup('circle 2', true);
+            let colorGroup2 = circle2.addNewValueAtGroup('Color', true);
+            colorGroup2.addValueAt(va_red, 'Red',1, 'red');
+            colorGroup2.addValueAt(va_green, 'Green', 1, 'green');
+            colorGroup2.addValueAt(va_blue, 'Blue', 1, 'blue');
+
+            let positionGroup2 = circle2.addNewValueAtGroup('Position', true);
+            positionGroup2.addValueAt(va_pos_x, 'Pos X',1);
+            positionGroup2.addValueAt(va_pos_y, 'Pos y', 1);
+
+            let scaleGroup2 = circle2.addNewValueAtGroup('Scale', true);
+            scaleGroup2.addValueAt(va_scale_x, 'Scale X', 1, '#5197ff'); 
+            scaleGroup2.addValueAt(va_scale_y, 'Scale Y', 1, '#5197ff');            
+
+            let rotateGroup2 = circle2.addNewValueAtGroup('Rotate', true);
+            rotateGroup2.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
+            rotateGroup2.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
+            rotateGroup2.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
+/*
+            timeLine.lineWrapDiv.innerHTML +=
+            '<ul id="myUL">'+
+                '<li><span class="caret">Circle</span>'+
+                    '<ul class="nested">'+
+                        '<div>Radius</div>'+
+                        '<div>Segments</div>'+
+                        '<li><span class="caret">Color</span>'+
+                            '<ul class="nested">'+
+                                '<div>Red</div>'+
+                                '<div>Green</div>'+
+                                '<div>Blue</div>'+
+                            '</ul>'+
+                        '</li>'+
+                        '<li><span class="caret">Position</span>'+
+                            '<ul class="nested">'+
+                                '<div>X</div>'+
+                                '<div>Y</div>'+
+                            '</ul>'+
+                        '</li>'
+                    '</ul>'+
+                '</li>'+
+            '</ul>';
+            
+            var toggler = document.getElementsByClassName("caret");
+            var i;
+
+            for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function() {
+                this.parentElement.querySelector(".nested").classList.toggle("active");
+                this.classList.toggle("caret-down");
+            });
+            }
+
+*/
             /*
             let button = document.createElement('div');
             button.id = 'exportStepListBtn';
@@ -111,7 +173,7 @@
             window.computeStepList = lookupAtExport.computeStepList;
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
             window.va_red = va_red; 
-            window.valueAtTimeline = timeline;
+            window.valueAtTimeline = timeLine;
             
         </script>
     </body>
