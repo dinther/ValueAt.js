@@ -72,7 +72,7 @@ export class ValueAtGroup{
         this.#expandDiv.classList.add('valueAt-expand-collapse');
     }
     expand(){
-        this.#labelSpanDiv.style.display = '';
+        this.#labelDiv.style.display = '';
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             if (this.#expanded) valueAtGroup.expand();
         });
