@@ -183,7 +183,7 @@ export class ValueAtTimeLine{
         }
     }
     #updateCursor(){
-        this.#cursorDiv.style.height = parseFloat(this.getCSSVariable('--line-row-height').replace('px','')) * this.valueAtLines.length + 'px';
+        this.#cursorDiv.style.height = this.lineWrapDiv.offsetHeight;//parseFloat(this.getCSSVariable('--line-row-height').replace('px','')) * this.valueAtLines.length + 'px';
         if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
         let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
         //this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
