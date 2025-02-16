@@ -21,7 +21,7 @@ export class ValueAtGroup{
         this.#parentValueAtGroup = parentValueGroup;
         let parentDiv = this.#timeLine.lineWrapDiv;
         if (this.#parentValueAtGroup != null){
-            this.#indent = this.#parentValueAtGroup.indent + 25;
+            this.#indent = this.#parentValueAtGroup.indent + 20;
             parentDiv = this.#parentValueAtGroup.expandDiv;
         }
         this.#expanded = expanded;
