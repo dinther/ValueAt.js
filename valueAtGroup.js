@@ -31,7 +31,7 @@ export class ValueAtGroup{
         if (this.#parentValueAtGroup != null){
             this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupDiv);
             this.#labelContent = VA_Utils.createEl('div', {className: 'valueAt-group-label-span'}, this.#labelDiv);
-            this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret valueAt-background', innerText:'▶'}, this.#labelContent);
+            this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret', innerText:'▶'}, this.#labelContent);
             this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
             this.#labelSpanDiv = VA_Utils.createEl('span', {innerText: this.#name}, this.#labelContent);
           
