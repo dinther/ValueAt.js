@@ -106,9 +106,11 @@ div {
 }
 
 .valueAt-group-label {
+    position: relative;
     color: white;
     padding: 2px 0px;
     width: 115px;
+    z-index: 10;
 }
 .valueAt-group-caret {
     display: inline-block;
