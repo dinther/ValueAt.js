@@ -340,5 +340,8 @@ div {
 .caret-down {
     -ms-transform: rotate(90deg); /* IE 9 */
     -webkit-transform: rotate(90deg); /* Safari */'
-    transform: rotate(90deg);  
+    transform: rotate(90deg);
+    -webkit-transform-origin: 40% 40%;
+    transform-origin: 40% 40%;
+    vertical-align: -webkit-baseline-middle;
   }
