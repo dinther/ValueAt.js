@@ -116,7 +116,7 @@ div {
     width: 20px;
 }
 .valueAt-group-label-span {
-
+    cursor: pointer;
 }
 
 .valueAt-expand {
