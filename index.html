@@ -87,27 +87,27 @@
             va_rotate_z.init(0.1);
 
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
-            let circle1 = timeLine.addNewValueAtGroup('circle 1', true);
-            let colorGroup1 = circle1.addNewValueAtGroup('Color', true);
+            let circle1 = timeLine.addNewValueAtGroup('Circle 1', true);
+            let colorGroup1 = circle1.addNewValueAtGroup('Color', false);
             colorGroup1.addValueAt(va_red, 'Red',1, 'red');
             colorGroup1.addValueAt(va_green, 'Green', 1, 'green');
             colorGroup1.addValueAt(va_blue, 'Blue', 1, 'blue');
 
-            let positionGroup1 = circle1.addNewValueAtGroup('Position', true);
+            let positionGroup1 = circle1.addNewValueAtGroup('Position', false);
             positionGroup1.addValueAt(va_pos_x, 'Pos X',1);
             positionGroup1.addValueAt(va_pos_y, 'Pos y', 1);
 
-            let scaleGroup1 = circle1.addNewValueAtGroup('Scale', true);
+            let scaleGroup1 = circle1.addNewValueAtGroup('Scale', false);
             scaleGroup1.addValueAt(va_scale_x, 'Scale X', 1, '#5197ff'); 
             scaleGroup1.addValueAt(va_scale_y, 'Scale Y', 1, '#5197ff');            
 
-            let rotateGroup1 = circle1.addNewValueAtGroup('Rotate', true);
+            let rotateGroup1 = circle1.addNewValueAtGroup('Rotate', false);
             rotateGroup1.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
             rotateGroup1.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
             rotateGroup1.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
 
 
-            let circle2 = timeLine.addNewValueAtGroup('circle 2', true);
+            let circle2 = timeLine.addNewValueAtGroup('Circle 2', true);
             let colorGroup2 = circle2.addNewValueAtGroup('Color', true);
             colorGroup2.addValueAt(va_red, 'Red',1, 'red');
             colorGroup2.addValueAt(va_green, 'Green', 1, 'green');
@@ -125,6 +125,8 @@
             rotateGroup2.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
             rotateGroup2.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
             rotateGroup2.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
+
+            timeLine.setCursor(30);
   
 /*
             timeLine.lineWrapDiv.innerHTML +=

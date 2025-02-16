@@ -53,7 +53,7 @@ export class ValueAtTimeLine{
         let line1Div = VA_Utils.createEl('div', {className: 'valueAt-flex-hor'}, this.#headerDiv);
         this.#durationGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);
         this.#durationLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'durationinput', innerText: 'Duration'}, this.#durationGroupDiv);
-        this.#durationInput = VA_Utils.createEl('input', {id: 'durationinput', type: 'number', min: '0.001', max:'1', step: '0.001', value: '100'}, this.#durationGroupDiv);
+        this.#durationInput = VA_Utils.createEl('input', {id: 'durationinput', type: 'number', min: '1', max: '10000000', step: '1', value: '100'}, this.#durationGroupDiv);
         this.#scrollGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);  
         this.#scrollLabel = VA_Utils.createEl('label', {for: 'scrollslider', innerText: 'Scroll'}, this.#scrollGroupDiv);
         this.#scrollSlider = VA_Utils.createEl('input', {id: 'scrollinput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#scrollGroupDiv);
@@ -89,6 +89,8 @@ export class ValueAtTimeLine{
 
         this.#durationInput.addEventListener('input', (e)=>{
             this.#duration = parseFloat(this.#durationInput.value);
+            this.#endTime = this.#duration * this.#zoomSlider.value;
+            this.update();
         });
         this.#duration = this.#durationInput.value;
 

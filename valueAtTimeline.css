@@ -10,15 +10,17 @@
     --labelWidth: 100px;
     --row-height: 64px;
     --line-row-height: 32px;
+    --scale-row-height: 24px;
     --line-row-collapse-height: 20px;
     --main-text-color: #ffffff;
-    --header-back-color: #292a2e;
-    --main-back-color: #2f3137;
-    --graph-back-color: #50515a;
+    --line-color: #2b2b2b;
+    --header-back-color: #181818;
+    --main-back-color: #1f1f1f;
+    --graph-back-color: #313131
     --scale-height: 32px;
-    --scale-back-color: #b7b7b7;
+    --scale-back-color: #989898;
     --cursor-color: #ff980099;
-    --cursor-text-color: #292a2e;
+    --cursor-text-color: #000000;
     --sb-track-color: #28292e;
     --sb-thumb-color: #616470;
     --sb-size: 14px;
@@ -101,13 +103,16 @@ div {
 }
 
 .valueAt-group{
-    color: white;
     position: relative;
+}
+
+.valueAt-group-header{
+    background-color: var(--header-back-color);
+    border-top: 1px solid var(--line-color);
 }
 
 .valueAt-group-label {
     position: relative;
-    color: white;
     padding: 2px 0px;
     width: 115px;
     z-index: 10;
@@ -144,8 +149,8 @@ div {
     display: flex;
     align-items: center;
     position: relative;
-    border-top: 2px solid var(--main-back-color);
-    border-bottom: 2px solid var(--main-back-color);
+    border-top: 1px solid var(--line-color);
+    border-bottom: 1px solid var(--line-color);
     height: var(--line-row-height);
     width: 100%;
     z-index: 0;
@@ -189,6 +194,7 @@ div {
     background-color: var(--scale-back-color);
     z-index: 10;
     width: 100%;
+    height: var(--scale-row-height);
 }
 
 .valueAt-scroll-bar {       
@@ -238,12 +244,11 @@ div {
 }
 
 .valueAt-background {
-    background-color: #00000063;
+    background-color: #00000083;
 }
 
 .valueAt-line-label{
     position: absolute;
-    color: white;
     text-wrap-mode: nowrap;
     z-index: 25;
     width: 115px;
@@ -338,7 +343,7 @@ div {
 
 .caret-down {
     -ms-transform: rotate(90deg); /* IE 9 */
-    -webkit-transform: rotate(90deg); /* Safari */'
+    -webkit-transform: rotate(90deg); /* Safari */
     transform: rotate(90deg);
     -webkit-transform-origin: 40% 40%;
     transform-origin: 40% 40%;

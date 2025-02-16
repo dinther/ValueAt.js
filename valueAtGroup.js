@@ -5,6 +5,7 @@ export class ValueAtGroup{
     #timeLine;
     #name;
     #groupDiv;
+    #groupHeaderDiv;
     #labelDiv;
     #labelContent;
     #labelCaretDiv;
@@ -29,7 +30,8 @@ export class ValueAtGroup{
         this.#groupDiv = VA_Utils.createEl('div', {id: this.#name + '_group', className: 'valueAt-group'}, parentDiv);
         this.#labelDiv = null;
         if (this.#parentValueAtGroup != null){
-            this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupDiv);
+            this.#groupHeaderDiv = VA_Utils.createEl('div', {className: 'valueAt-group-header'}, this.#groupDiv);
+            this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupHeaderDiv);
             this.#labelContent = VA_Utils.createEl('div', {className: 'valueAt-group-label-span'}, this.#labelDiv);
             this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret', innerText:'▶'}, this.#labelContent);
             this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
