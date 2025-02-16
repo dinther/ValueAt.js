@@ -82,7 +82,7 @@ valueat.html:51 getValueAt 974.4000000953674
 valueat.html:59 getValueAtKeyframe 3591.399999856949
 ```
 
-## UI (In progress)
+## Timeline UI (In progress)
 
 ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline control should be usable for any application where node based animation is a thing.
 
@@ -90,7 +90,7 @@ ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline c
     //  We create a bunch of LookupAtTime value sequences like this
 
     var va_red = new LookupAtTime('red');
-    va_red.addValueKey(10,-50);
+    va_red.addValueKey(10,-50);  //  These are shown as interactive yellow circles in the timeline
     va_red.addValueKey(30,100, Easings.linear, 0.5);
     va_red.addValueKey(75,60, Easings.easeInOutQuad);
     va_red.addValueKey(100,0,Easings.easeOutCirc);
@@ -104,12 +104,12 @@ ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline c
     var timeLine = new ValueAtTimeLine(document.body, 0, 100)
     let circle = timeLine.addNewValueAtGroup('Circle', true);
     let colorGroup = circle.addNewValueAtGroup('Color', false);
-    colorGroup.addValueAt(va_red, 'Red',1, 'red');
+    colorGroup.addValueAt(va_red, 'Red', 1, 'red');
     colorGroup.addValueAt(va_green, 'Green', 1, 'green');
     colorGroup.addValueAt(va_blue, 'Blue', 1, 'blue');
 
     let positionGroup = circle.addNewValueAtGroup('Position', false);
-    positionGroup.addValueAt(va_pos_x, 'Pos X',1);
+    positionGroup.addValueAt(va_pos_x, 'Pos X', 1);
     positionGroup.addValueAt(va_pos_y, 'Pos y', 1);
     ...
 ```
@@ -117,4 +117,6 @@ ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline c
 ![{751A1670-80D6-47AF-93D3-6095FEF47055}](https://github.com/user-attachments/assets/719c8fef-5ec3-4f59-8a9a-0174fc50a320)
 
 The groups allow the user to collapse the many animation curves into a single line. Rather than hiding the collapsed data, we still show all the key value nodes so that you always have a high level overview and instantly you can see if and where nodes have been defined.
+
+The timeline control supports multi node selection and editing. The nodes can be selected across multiple value channels with box select or the usual CTRL and SHIFT logic.
  
