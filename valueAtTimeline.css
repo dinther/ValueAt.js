@@ -111,7 +111,10 @@ div {
     position: relative;
     z-index: 10;
 }
-
+.valueAt-group-caret {
+    display: inline-block;
+    width: 20px;
+}
 .valueAt-group-label-span {
 
 }
