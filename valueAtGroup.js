@@ -6,6 +6,7 @@ export class ValueAtGroup{
     #name;
     #groupDiv;
     #labelDiv;
+    #labelCaretDiv;
     #labelSpanDiv;
     #expandDiv;
     #indent = 0;
@@ -28,9 +29,10 @@ export class ValueAtGroup{
         this.#labelDiv = null;
         if (this.#parentValueAtGroup != null){
             this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupDiv);
+            this.#labelCaretDiv =  = VA_Utils.createEl('div', {className: 'valueAt-group-caret valueAt-background', innerText:'\25B6'}, this.#labelDiv);
             this.#labelSpanDiv = VA_Utils.createEl('span', {className: 'valueAt-group-label-span'}, this.#labelDiv);
             this.#labelSpanDiv.innerText = this.#name;
-            this.#labelSpanDiv.classList.add('caret');
+            //this.#labelSpanDiv.classList.add('caret');
             this.#labelSpanDiv.style.paddingLeft = this.#parentValueAtGroup.indent + 'px';
             this.#labelSpanDiv.addEventListener('pointerdown', (e)=>{
                 this.expanded = !this.expanded;
@@ -85,9 +87,9 @@ export class ValueAtGroup{
         });
     }
     #updateCaret(){
-        if (this.#labelSpanDiv != null){
-            if (this.#expanded) this.#labelSpanDiv.classList.add('caret-down');
-            else this.#labelSpanDiv.classList.remove('caret-down');
+        if (this.#labelCaretDiv != null){
+            if (this.#expanded) this.#labelCaretDiv.classList.add('caret-down');
+            else this.#labelCaretDiv.classList.remove('caret-down');
         }
     }
     update(){
