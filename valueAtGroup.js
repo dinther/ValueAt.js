@@ -29,7 +29,7 @@ export class ValueAtGroup{
         this.#labelDiv = null;
         if (this.#parentValueAtGroup != null){
             this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupDiv);
-            this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret valueAt-background', innerText:'&#x25B6;'}, this.#labelDiv);
+            this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret valueAt-background', innerText:'▶'}, this.#labelDiv);
             this.#labelSpanDiv = VA_Utils.createEl('span', {className: 'valueAt-group-label-span'}, this.#labelDiv);
             this.#labelSpanDiv.innerText = this.#name;
             //this.#labelSpanDiv.classList.add('caret');
