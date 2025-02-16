@@ -72,8 +72,8 @@ export class ValueAtTimeLine{
 
         //  build container for valueAt lines
         this.#remainingDiv = VA_Utils.createEl('div',{className:'valueAt-remaining'}, this.#scrollContainerDiv);
-        this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer'}, this.#remainingDiv);
-        this.#scrollbarDiv = VA_Utils.createEl('div',{className:'valueAt-scrollbar'}, this.#remainingDiv);
+        this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer', innerText: 'Footer'}, this.#containerDiv);
+        this.#scrollbarDiv = VA_Utils.createEl('div',{className:'valueAt-scrollbar'}, this.#containerDiv);
         this.#scrollbarContentDiv = VA_Utils.createEl('div',{className:'valueAt-scroll-content'}, this.#scrollbarDiv);
         //  build select box
         this.#selectBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-select-box', style: 'display: none'}, this.#containerDiv);
@@ -168,7 +168,7 @@ export class ValueAtTimeLine{
         });   
         window.addEventListener('resize', (e)=>{
             this.#updateTimePerPixel();
-            this.#updateCursor();
+            this.updateCursor();
         });     
     }
 
@@ -184,7 +184,7 @@ export class ValueAtTimeLine{
             this.#timePerPixel = this.#timeRange / this.#scrollContainerDiv.offsetWidth;//this.#cursorDiv.parentElement.parentElement.offsetWidth;
         }
     }
-    #updateCursor(){
+    updateCursor(){
         this.#cursorDiv.style.height = this.lineWrapDiv.offsetHeight;//parseFloat(this.getCSSVariable('--line-row-height').replace('px','')) * this.valueAtLines.length + 'px';
         if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
         let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
@@ -196,7 +196,7 @@ export class ValueAtTimeLine{
         this.#cursorLabel.innerText = this.#cursorTime.toFixed(0);
     }
     update(){
-        this.#updateCursor();
+        this.updateCursor();
         this.#rootValueAtGroup.update();
     }
     addValueAtNodeToSelectedList(valueAtNode){
@@ -208,7 +208,7 @@ export class ValueAtTimeLine{
     }
     setCursor(time){
         this.#cursorTime = time;
-        this.#updateCursor();
+        this.updateCursor();
     }
     setView(startTime, timeRange=null ){
         timeRange = timeRange==null? this.#timeRange : Math.abs(timeRange);
@@ -231,7 +231,7 @@ export class ValueAtTimeLine{
     }
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
         this.#valueAtLines.push(new ValueAtLine(valueAt, this, this.#rootValueAtGroup, labelName, strokeWidth, strokeColor));
-        this.#updateCursor();
+        this.updateCursor();
     }
     addNewValueAtGroup(name, expanded=true, parentGroup=null){
         if (parentGroup==null){

@@ -19,7 +19,7 @@
     --graph-back-color: #313131
     --scale-height: 32px;
     --scale-back-color: #989898;
-    --cursor-color: #ff980099;
+    --cursor-color: #ff9900;
     --cursor-text-color: #000000;
     --sb-track-color: #28292e;
     --sb-thumb-color: #616470;
@@ -84,12 +84,14 @@ div {
     position: relative;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .valueAt-scroll-container {
     position: relative;
     width: 100%;
-    height: 100%;
+    flex: 1;
     overflow-y: scroll;
     overflow-x: hidden;
     display: flex;
@@ -179,6 +181,8 @@ div {
     position: sticky;
     flex:5;
     bottom: 0px;
+    z-index: 10;
+    background-color: var(--main-back-color);
 }
 
 .valueAt-footer {
@@ -223,6 +227,8 @@ div {
     z-index: 15;
     font-size: 0.7em;
     color:#6d6e6f;
+    position: sticky;
+    bottom: 0px;
 }
 
 .valueAt-scroll-content {
@@ -324,6 +330,8 @@ div {
 #cursorlabel {
     border: 2px solid var( --cursor-color );
     color: var(--cursor-text-color);
+    font-weight: 500;
+    background-color: #ffffff;
     height: fit-content;
     padding: 0px 9px;
     border-radius: 8px;
