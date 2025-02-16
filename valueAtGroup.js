@@ -30,10 +30,11 @@ export class ValueAtGroup{
         if (this.#parentValueAtGroup != null){
             this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupDiv);
             this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret valueAt-background', innerText:'▶'}, this.#labelDiv);
+            this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
             this.#labelSpanDiv = VA_Utils.createEl('span', {className: 'valueAt-group-label-span'}, this.#labelDiv);
             this.#labelSpanDiv.innerText = this.#name;
             //this.#labelSpanDiv.classList.add('caret');
-            this.#labelSpanDiv.style.paddingLeft = this.#parentValueAtGroup.indent + 'px';
+            
             this.#labelSpanDiv.addEventListener('pointerdown', (e)=>{
                 this.expanded = !this.expanded;
                 if (this.#expanded) this.#expandDiv.classList.remove('valueAt-expand-collapse');
