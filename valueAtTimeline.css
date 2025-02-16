@@ -107,9 +107,8 @@ div {
 
 .valueAt-group-label {
     color: white;
-    border-bottom: 4px solid var(--main-back-color);
-    position: relative;
-    z-index: 10;
+    padding: 2px 0px;
+    width: 115px;
 }
 .valueAt-group-caret {
     display: inline-block;
@@ -236,19 +235,16 @@ div {
 }
 
 .valueAt-background {
-    background: linear-gradient(90deg, #28292ecc 0px, #28292ecc 110px, #28292e00 130px, #28292e00 100%);
+    background-color: #00000063;
 }
 
 .valueAt-line-label{
     position: absolute;
     color: white;
-    left: 0px;
-    top: -2px;
-    right: 0px;
-    bottom: -2px;
     text-wrap-mode: nowrap;
     z-index: 25;
-    pointer-events: none;
+    width: 115px;
+    height: 100%;
 }
 
 .valueAt-line-label span {
