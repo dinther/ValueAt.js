@@ -101,6 +101,7 @@ export class ValueAtTimeLine{
 
         this.#zoomSlider.addEventListener('input', (e)=>{
             let timeRange = this.#duration * this.#zoomSlider.value;
+            this.#scrollbarContentDiv.style.width = (100 /  this.#zoomSlider.value) + '%';
             this.setView(this.#startTime, timeRange);
         });
         this.#zoomSlider.addEventListener('pointerdown', (e)=>{

@@ -89,12 +89,12 @@
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
             let circle1 = timeLine.addNewValueAtGroup('Circle 1', true);
             let colorGroup1 = circle1.addNewValueAtGroup('Color', false);
-            colorGroup1.addValueAt(va_red, 'Red',1, 'red');
-            colorGroup1.addValueAt(va_green, 'Green', 1, 'green');
-            colorGroup1.addValueAt(va_blue, 'Blue', 1, 'blue');
+            colorGroup1.addValueAt(va_red, 'Red',1, '#f00');
+            colorGroup1.addValueAt(va_green, 'Green', 1, '#0f0');
+            colorGroup1.addValueAt(va_blue, 'Blue', 1, '#00f');
 
             let positionGroup1 = circle1.addNewValueAtGroup('Position', false);
-            positionGroup1.addValueAt(va_pos_x, 'Pos X',1);
+            positionGroup1.addValueAt(va_pos_x, 'Pos X', 1);
             positionGroup1.addValueAt(va_pos_y, 'Pos y', 1);
 
             let scaleGroup1 = circle1.addNewValueAtGroup('Scale', false);
@@ -109,12 +109,12 @@
 
             let circle2 = timeLine.addNewValueAtGroup('Circle 2', true);
             let colorGroup2 = circle2.addNewValueAtGroup('Color', true);
-            colorGroup2.addValueAt(va_red, 'Red',1, 'red');
-            colorGroup2.addValueAt(va_green, 'Green', 1, 'green');
-            colorGroup2.addValueAt(va_blue, 'Blue', 1, 'blue');
+            colorGroup2.addValueAt(va_red, 'Red', 1, '#f00');
+            colorGroup2.addValueAt(va_green, 'Green', 1, '#0f0');
+            colorGroup2.addValueAt(va_blue, 'Blue', 1, '#00f');
 
             let positionGroup2 = circle2.addNewValueAtGroup('Position', true);
-            positionGroup2.addValueAt(va_pos_x, 'Pos X',1);
+            positionGroup2.addValueAt(va_pos_x, 'Pos X', 1);
             positionGroup2.addValueAt(va_pos_y, 'Pos y', 1);
 
             let scaleGroup2 = circle2.addNewValueAtGroup('Scale', true);
