@@ -86,6 +86,35 @@ valueat.html:59 getValueAtKeyframe 3591.399999856949
 
 ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline control should be usable for any application where node based animation is a thing.
 
-![{63A9337D-B0A0-4264-8587-B790BF9E2386}](https://github.com/user-attachments/assets/d62cd648-5625-4b98-af44-2ff979655844)
+``` Javascript
+    //  We create a bunch of LookupAtTime value sequences like this
 
+    var va_red = new LookupAtTime('red');
+    va_red.addValueKey(10,-50);
+    va_red.addValueKey(30,100, Easings.linear, 0.5);
+    va_red.addValueKey(75,60, Easings.easeInOutQuad);
+    va_red.addValueKey(100,0,Easings.easeOutCirc);
+    va_red.init(1);
+
+    ...
+
+    //  Now we create the timeline control, add groups
+    //  and populate those groups with the value sequences created above.
+
+    var timeLine = new ValueAtTimeLine(document.body, 0, 100)
+    let circle = timeLine.addNewValueAtGroup('Circle', true);
+    let colorGroup = circle.addNewValueAtGroup('Color', false);
+    colorGroup.addValueAt(va_red, 'Red',1, 'red');
+    colorGroup.addValueAt(va_green, 'Green', 1, 'green');
+    colorGroup.addValueAt(va_blue, 'Blue', 1, 'blue');
+
+    let positionGroup = circle.addNewValueAtGroup('Position', false);
+    positionGroup.addValueAt(va_pos_x, 'Pos X',1);
+    positionGroup.addValueAt(va_pos_y, 'Pos y', 1);
+    ...
+```
+
+![{751A1670-80D6-47AF-93D3-6095FEF47055}](https://github.com/user-attachments/assets/719c8fef-5ec3-4f59-8a9a-0174fc50a320)
+
+The groups allow the user to collapse the many animation curves into a single line. Rather than hiding the collapsed data, we still show all the key value nodes so that you always have a high level overview and instantly you can see if and where nodes have been defined.
  
