@@ -11,76 +11,76 @@
         <div id="timeline"></div>
 
         <script type="module">
-            import * as ValueAt from "./valueat.js"
+            import {LookupAtTime} from "./valueat.js"
             import * as lookupAtExport from "./lookupAtToStepList.js";
             import * as Easings from "./easings.js";
             import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
             import {ValueAtTimeLine} from "./valueAtTimeline.js";
 
-            var va_red = new ValueAt.LookupAtTime('red');
+            var va_red = new LookupAtTime('red');
             va_red.addValueKey(10,-50);
             va_red.addValueKey(30,100, Easings.linear, 0.5);
             va_red.addValueKey(75,60, Easings.easeInOutQuad);
             va_red.addValueKey(100,0,Easings.easeOutCirc);
             va_red.init(1);
              
-            var va_green = new ValueAt.LookupAtTime('green');
+            var va_green = new LookupAtTime('green');
             va_green.addValueKey(10,-50);
             va_green.addValueKey(30,100, Easings.easeOut, 0.5);
             va_green.addValueKey(75,60, Easings.easeInOut);
             va_green.addValueKey(100,0,Easings.easeIn);
             va_green.init(1);
 
-            var va_blue = new ValueAt.LookupAtTime('blue');
+            var va_blue = new LookupAtTime('blue');
             va_blue.addValueKey(10,-50);
             va_blue.addValueKey(30,100, Easings.easeinBounce, 0.5);
             va_blue.addValueKey(75,60, Easings.easeInOutQuad);
             va_blue.addValueKey(100,0,Easings.easeOutCirc);
             va_blue.init(1);            
 
-            var va_pos_x = new ValueAt.LookupAtTime('xpos');
+            var va_pos_x = new LookupAtTime('xpos');
             va_pos_x.addValueKey(20,-50);
             va_pos_x.addValueKey(30,100, Easings.easeOutCirc, 0.5);
             va_pos_x.addValueKey(70,100);
             va_pos_x.addValueKey(90,0,Easings.easeInCirc);
             va_pos_x.init(1);
 
-            var va_pos_y = new ValueAt.LookupAtTime('ypos');
+            var va_pos_y = new LookupAtTime('ypos');
             va_pos_y.addValueKey(10,-50);
             va_pos_y.addValueKey(30,100, Easings.easeOut, 0.5);
             va_pos_y.addValueKey(75,60, Easings.easeInOut);
             va_pos_y.addValueKey(100,0,Easings.easeIn);
             va_pos_y.init(1);     
 
-            var va_scale_x = new ValueAt.LookupAtTime('xscale');
+            var va_scale_x = new LookupAtTime('xscale');
             va_scale_x.addValueKey(8,500);
             va_scale_x.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
             va_scale_x.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
             va_scale_x.addValueKey(70, 0, Easings.easeInOut);
             va_scale_x.init(0.01);
             
-            var va_scale_y = new ValueAt.LookupAtTime('yscale');
+            var va_scale_y = new LookupAtTime('yscale');
             va_scale_y.addValueKey(8,500);
             va_scale_y.addValueKey(13,0, Easings.easeInOutElastic, 0.9);
             va_scale_y.addValueKey(24, 1000, Easings.easeOutElastic, 0.9);
             va_scale_y.addValueKey(60, 0, Easings.easeInOut);
             va_scale_y.init(0.01); 
 
-            var va_rotate_x = new ValueAt.LookupAtTime('xrot');
+            var va_rotate_x = new LookupAtTime('xrot');
             va_rotate_x.addValueKey(10,-50);
             va_rotate_x.addValueKey(30,100, Easings.easeOut, 0.5);
             va_rotate_x.addValueKey(75,60, Easings.easeInOut);
             va_rotate_x.addValueKey(100,0,Easings.easeIn);
             va_rotate_x.init(1);
 
-            var va_rotate_y = new ValueAt.LookupAtTime('yrot');
+            var va_rotate_y = new LookupAtTime('yrot');
             va_rotate_y.addValueKey(8,500);
             va_rotate_y.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
             va_rotate_y.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
             va_rotate_y.addValueKey(70, 600, Easings.easeInOut);
             va_rotate_y.init(0.01);
 
-            var va_rotate_z = new ValueAt.LookupAtTime('zrot');
+            var va_rotate_z = new LookupAtTime('zrot');
             va_rotate_z.addValueKey(0,0);
             va_rotate_z.addValueKey(50,0);
             va_rotate_z.addValueKey(100,360, Easings.linear);
