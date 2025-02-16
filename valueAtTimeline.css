@@ -144,7 +144,8 @@ div {
     display: flex;
     align-items: center;
     position: relative;
-    border-bottom: 4px solid var(--main-back-color);
+    border-top: 2px solid var(--main-back-color);
+    border-bottom: 2px solid var(--main-back-color);
     height: var(--line-row-height);
     width: 100%;
     z-index: 0;
