@@ -40,7 +40,6 @@ export class ValueAtGroup{
             this.#labelContent.addEventListener('pointerdown', (e)=>{
                 this.expanded = !this.expanded;
                 if (this.#expanded) this.#expandDiv.classList.remove('valueAt-expand-collapse');
-                this.#timeLine.updateCursor();
             });
             this.#updateCaret();
         }

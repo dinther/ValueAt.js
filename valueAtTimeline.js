@@ -5,9 +5,19 @@ import {ValueAtLine} from "./valueAtLine.js";
 export class ValueAtTimeLine{
     #parentDiv;
     #containerDiv;
-    #scrollContainerDiv;
-
     #headerDiv;
+    #scrollContainerDiv;
+    #stickyWrapperDiv;
+    #scaleDiv;
+    #lineWrapDiv;
+    #scrollRemainderDiv;
+    #scrollbarDiv;
+    #remainingDiv;
+    #footerDiv;
+
+    #selectBoxDiv;
+
+    
     #durationGroupDiv;
     #durationLabel;
     #durationInput;
@@ -15,7 +25,7 @@ export class ValueAtTimeLine{
     #scrollLabel;
     #scrollSlider;    
 
-    #scaleDiv;
+
     #zoomGroupDiv;
     #zoomLabel;
     #zoomSlider;
@@ -29,15 +39,12 @@ export class ValueAtTimeLine{
     #endTime;
     #cursorTime = 50;
     #root;
-    #selectBoxDiv;
+    
     #selectPointDown = null;
     #rootValueAtGroup;
     #valueAtLines = [];
     #selectedNodeList = [];
-    #lineWrapDiv;
-    #remainingDiv;
-    #footerDiv;
-    #scrollbarDiv;
+    
     #scrollbarContentDiv;
     
     #duration = 1;
@@ -47,34 +54,51 @@ export class ValueAtTimeLine{
 
         //  build scrolling UI container
         this.#containerDiv = VA_Utils.createEl('div', {className: 'valueAt-container'});
-        this.#scrollContainerDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
+
         //  build stickyheader
-        this.#headerDiv = VA_Utils.createEl('div', {className: 'valueAt-header'}, this.#scrollContainerDiv);
-        let line1Div = VA_Utils.createEl('div', {className: 'valueAt-flex-hor'}, this.#headerDiv);
-        this.#durationGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);
+        this.#headerDiv = VA_Utils.createEl('div', {className: 'valueAt-header'}, this.#containerDiv);
+ 
+        //  build wave display and scale container
+        this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#containerDiv);
+ 
+        this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor', className: 'valueAt-cursor'}, this.#containerDiv);
+        this.#cursorLabel = VA_Utils.createEl('div', {id: 'cursorlabel', innerText: '5.34'}, this.#cursorDiv);
+
+        this.#scrollContainerDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
+        //this.#stickyWrapperDiv = VA_Utils.createEl('div', {id: 'stickyWrapper'}, this.#scrollContainerDiv);
+
+ 
+        //  build container to keep the data related objects together.
+        this.#lineWrapDiv = VA_Utils.createEl('div', {className: 'valueAt-linewrap'}, this.#scrollContainerDiv);
+
+        //  fills remainder of the scroll area
+        this.#scrollRemainderDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-remainder'}, this.#scrollContainerDiv);
+
+        //  build scroll bar
+        this.#scrollbarDiv = VA_Utils.createEl('div',{className:'valueAt-scrollbar'}, this.#containerDiv);
+        this.#scrollbarContentDiv = VA_Utils.createEl('div',{className:'valueAt-scroll-content'}, this.#scrollbarDiv);
+
+        //  build remainder and footer
+        this.#remainingDiv = VA_Utils.createEl('div',{className:'valueAt-remaining'}, this.#containerDiv);
+        this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer', innerText: 'Footer'}, this.#containerDiv);
+
+
+        
+        this.#durationGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
         this.#durationLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'durationinput', innerText: 'Duration'}, this.#durationGroupDiv);
         this.#durationInput = VA_Utils.createEl('input', {id: 'durationinput', type: 'number', min: '1', max: '10000000', step: '1', value: '100'}, this.#durationGroupDiv);
-        this.#scrollGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);  
+        
+        this.#scrollGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);  
         this.#scrollLabel = VA_Utils.createEl('label', {for: 'scrollslider', innerText: 'Scroll'}, this.#scrollGroupDiv);
         this.#scrollSlider = VA_Utils.createEl('input', {id: 'scrollinput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#scrollGroupDiv);
-        this.#zoomGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, line1Div);
+        
+        this.#zoomGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
         this.#zoomLabel = VA_Utils.createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
         this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0.001', max:'1', step: '0.001', value: '1'}, this.#zoomGroupDiv);
 
-        //  build sticky zoom and time scale
-        let line2Div = VA_Utils.createEl('div', {className: 'valueAt-flex-hor'}, this.#headerDiv);
-        this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, line2Div);
-        //let absoluteDiv = VA_Utils.createEl('div', {style: 'position: absolute'}, this.#scaleDiv);
-        this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor'}, this.#scaleDiv);
-        this.#cursorLabel = VA_Utils.createEl('div', {id: 'cursorlabel', innerText: '5.34'}, this.#cursorDiv);
-
-        this.#lineWrapDiv = VA_Utils.createEl('div', {className: 'valueAt-linewrap'}, this.#scrollContainerDiv);
-
         //  build container for valueAt lines
-        this.#remainingDiv = VA_Utils.createEl('div',{className:'valueAt-remaining'}, this.#scrollContainerDiv);
-        this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer', innerText: 'Footer'}, this.#containerDiv);
-        this.#scrollbarDiv = VA_Utils.createEl('div',{className:'valueAt-scrollbar'}, this.#containerDiv);
-        this.#scrollbarContentDiv = VA_Utils.createEl('div',{className:'valueAt-scroll-content'}, this.#scrollbarDiv);
+
+
         //  build select box
         this.#selectBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-select-box', style: 'display: none'}, this.#containerDiv);
 
@@ -169,7 +193,7 @@ export class ValueAtTimeLine{
         });   
         window.addEventListener('resize', (e)=>{
             this.#updateTimePerPixel();
-            this.updateCursor();
+            this.#updateCursor();
         });     
     }
 
@@ -185,19 +209,17 @@ export class ValueAtTimeLine{
             this.#timePerPixel = this.#timeRange / this.#scrollContainerDiv.offsetWidth;//this.#cursorDiv.parentElement.parentElement.offsetWidth;
         }
     }
-    updateCursor(){
-        this.#cursorDiv.style.height = this.lineWrapDiv.offsetHeight;//parseFloat(this.getCSSVariable('--line-row-height').replace('px','')) * this.valueAtLines.length + 'px';
+
+    #updateCursor(){
+        this.#cursorDiv.style.height = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight + 'px';
         if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
         let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
-        //this.#cursorDiv.style.left = this.#cursorDiv.parentElement.offsetLeft + x + 'px';
-        //this.#cursorDiv.style.left = this.#scrollContainerDiv.offsetLeft + x + 'px';
-
-        this.#cursorDiv.style.left = (this.#cursorTime - this.#startTime) / (this.#timeRange) * 100 + '%';
-        
+        this.#cursorDiv.style.left = (this.#cursorTime - this.#startTime) / (this.#timeRange) * 100 + '%';       
         this.#cursorLabel.innerText = this.#cursorTime.toFixed(0);
     }
+
     update(){
-        this.updateCursor();
+        this.#updateCursor();
         this.#rootValueAtGroup.update();
     }
     addValueAtNodeToSelectedList(valueAtNode){
@@ -209,7 +231,7 @@ export class ValueAtTimeLine{
     }
     setCursor(time){
         this.#cursorTime = time;
-        this.updateCursor();
+        this.#updateCursor();
     }
     setView(startTime, timeRange=null ){
         timeRange = timeRange==null? this.#timeRange : Math.abs(timeRange);
@@ -232,7 +254,6 @@ export class ValueAtTimeLine{
     }
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
         this.#valueAtLines.push(new ValueAtLine(valueAt, this, this.#rootValueAtGroup, labelName, strokeWidth, strokeColor));
-        this.updateCursor();
     }
     addNewValueAtGroup(name, expanded=true, parentGroup=null){
         if (parentGroup==null){

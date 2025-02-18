@@ -104,7 +104,7 @@ export class ValueAtLine{
         this.#path.setAttribute('stroke', this.#strokeColor);
         let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
         //let h = this.#svg.parentElement.offsetHeight;
-        let h = parseFloat(this.#timeLine.getCSSVariable('--row-height').replace('px',''))
+        let h = parseFloat(this.#timeLine.getCSSVariable('--line-row-height').replace('px',''))
         let w = this.#timeLine.scrollContainerDiv.offsetWidth;
         //let w = this.#svg.parentElement.offsetWidth;
         let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;

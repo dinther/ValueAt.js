@@ -4,20 +4,19 @@
 }
 
 :root {
+    --header-height: 32px;
+    --scale-row-height: 64px;
+    --line-row-height: 32px;
+    --line-row-collapse-height: 20px;
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 16px;
     --labelWidth: 100px;
-    --row-height: 64px;
-    --line-row-height: 32px;
-    --scale-row-height: 24px;
-    --line-row-collapse-height: 20px;
     --main-text-color: #ffffff;
     --line-color: #2b2b2b;
     --header-back-color: #181818;
     --main-back-color: #1f1f1f;
-    --graph-back-color: #313131
-    --scale-height: 32px;
+    --graph-back-color: #313131;
     --scale-back-color: #989898;
     --cursor-color: #ff9900;
     --cursor-text-color: #000000;
@@ -47,7 +46,6 @@ div {
     width: var(--sb-size);
   }
   *::-webkit-scrollbar-track {
-    border-radius: var(--sb-size);
     background-color: #28292e
   }
   
@@ -80,12 +78,45 @@ div {
     color: var(--main-text-color);
     overflow: hidden;
     user-select: none;
-    padding: 5px 0px 0px 5px;
+    padding: 0px 0px 0px 5px;
     position: relative;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
+}
+
+.valueAt-header {
+    display: flex;
+    align-items: center;
+    min-height: var(--header-height);
+    height: var(--header-height);
+    background-color: var(--header-back-color);
+    z-index: 10;
+}
+.valueAt-scale {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    background-color: var(--scale-back-color);
+    z-index: 10;
+    width: 100%;
+    height: var(--scale-row-height);
+    overflow-y: scroll;
+}
+
+.valueAt-cursor{
+    display: flex;
+    position: absolute;
+    top: var(--header-height);
+    width: 1px;
+    height: 100%;
+    border: 1px solid var( --cursor-color );
+    z-index: 100;
+    justify-content: center;
+    cursor: ew-resize;
 }
 
 .valueAt-scroll-container {
@@ -102,6 +133,26 @@ div {
     background-color: var(--graph-back-color);
     border-top: 4px solid var(--main-back-color);
     z-index: 5;
+}
+
+.valueAt-scrollbar {
+    overflow-x: scroll;
+    background-color: #28292e;
+    z-index: 15;
+    font-size: 0.7em;
+    color:#6d6e6f;
+}
+
+.valueAt-remaining {
+    height: 100px;
+    z-index: 10;
+    background-color: var(--main-back-color);
+}
+
+.valueAt-footer {
+    height: 24px;
+    width: 100%;
+    background-color: var(--header-back-color);
 }
 
 .valueAt-group{
@@ -164,42 +215,11 @@ div {
     overflow: hidden;
 }
 
-.valueAt-header {
-    position: sticky;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    top: 0px;
-    background-color: var(--header-back-color);
-    z-index: 10;
-}
 
-.valueAt-remaining {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    position: sticky;
-    flex:5;
-    bottom: 0px;
-    z-index: 10;
-    background-color: var(--main-back-color);
-}
 
-.valueAt-footer {
-    height: 24px;
-    background-color: var(--header-back-color);
-}
 
-.valueAt-scale {
-    display: flex;
-    align-items: center;
-    height: var(--scale-height);
-    overflow: unset;
-    background-color: var(--scale-back-color);
-    z-index: 10;
-    width: 100%;
-    height: var(--scale-row-height);
-}
+
+
 
 .valueAt-scroll-bar {       
     overflow-y: scroll;
@@ -215,19 +235,12 @@ div {
     overflow: hidden;
 }
 
-.valueAt-cursor-area {
-    z-index: 10;
-}
-
 .valueAt-scrollbar {
     overflow-x: scroll;
     background-color: #28292e;
-    padding-bottom: 0;
     z-index: 15;
     font-size: 0.7em;
     color:#6d6e6f;
-    position: sticky;
-    bottom: 0px;
 }
 
 .valueAt-scroll-content {
@@ -308,25 +321,12 @@ div {
     z-index: 1000;
 }
 
-#cursor {
-    display: flex;
-    left: 0px;
-    position: absolute;
-    width: 1px;
-    height: 100vh;
-    border: 1px solid var( --cursor-color );
-    z-index: 100;
-    justify-content: center;
-    cursor: ew-resize;
-    transform: translate(-50%, calc(50% + 10px));
-}
-
 #scrollslider {
     width: 300px;
 }
 
 
-#cursorlabel {
+.valueAt-cursor div {
     border: 2px solid var( --cursor-color );
     color: var(--cursor-text-color);
     font-weight: 500;
@@ -335,7 +335,6 @@ div {
     padding: 0px 9px;
     border-radius: 8px;
     cursor: ew-resize;
-    transform: translate(0px, -21px);
 }
 
 .valueAt-cursor-area input {
