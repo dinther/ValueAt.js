@@ -125,14 +125,14 @@ export class ValueAtTimeLine{
 
         this.#timeRangeStartInput.addEventListener('change', (e)=>{
             this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
-            this.setView(this.#viewStart, this.#viewRange, true);
-            this.update();
+            this.setView(this.#viewStart, this.#viewRange, true, true);
+            //this.update();
         });
 
         this.#timeRangeEndInput.addEventListener('change', (e)=>{
             this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
-            this.setView(this.#viewStart, this.#viewRange, true);
-            this.update();
+            this.setView(this.#viewStart, this.#viewRange, true, true);
+            //this.update();
         });
    
         this.#root = document.querySelector(':root');
@@ -144,9 +144,9 @@ export class ValueAtTimeLine{
 
         this.#zoomSlider.addEventListener('input', (e)=>{
             let viewRange = this.#timeRange * (1 - this.#zoomSlider.value);
-            //this.#updateTimePerPixel(viewRange);
-            //this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
-            this.setView(this.#viewStart, viewRange);
+            this.#updateTimePerPixel(viewRange);
+            this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
+            this.setView(this.#viewStart, viewRange, true);
         });
         this.#zoomSlider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
@@ -156,7 +156,11 @@ export class ValueAtTimeLine{
         });
 
         this.#scrollbarDiv.addEventListener('scroll', (e)=>{
-            this.setView(this.#timeRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#timeRange), this.#viewRange);
+            this.setView(this.#timeRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#timeRange), this.#viewRange, false);
+        });
+
+        this.#scrollbarDiv.addEventListener('scrollend', (e)=>{
+            this.setView(this.#timeRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#timeRange), this.#viewRange, true);
         });
 
         //  create root valueAt group
@@ -267,9 +271,9 @@ export class ValueAtTimeLine{
         this.#updateCursor();
     }
 
-    setView(viewStart, viewRange=null, force = false ){
+    setView(viewStart, viewRange=null, redraw = false, force = false ){
         viewRange = viewRange==null? this.#viewRange : Math.abs(viewRange);
-        if (force || viewStart != this.#viewStart || viewRange != this.#viewRange){
+        if (redraw || force || viewStart != this.#viewStart || viewRange != this.#viewRange){
             this.#viewStart = viewStart;
             this.#viewRange = viewRange;
             this.#viewEnd = this.#viewStart + this.#viewRange;
@@ -287,7 +291,9 @@ export class ValueAtTimeLine{
             if (scrollLeft != this.#scrollbarDiv.scrollLeft){
                 this.#scrollbarDiv.scrollLeft = scrollLeft;
             }
-            this.update(start_time_offset, time_range_offset);
+            if (redraw){
+                this.update(start_time_offset, time_range_offset);
+            }
         }
     }
 

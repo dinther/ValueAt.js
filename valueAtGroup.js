@@ -17,7 +17,7 @@ export class ValueAtGroup{
     #valueAtGroups = [];
     #valueAtLines = [];
     #onChanged;
-    #hidden;
+
     constructor(timeLine, name, parentValueGroup, expanded=true){
         let labelCollapseClass = '';
         let expandedCollapseClass = '';
@@ -84,7 +84,8 @@ export class ValueAtGroup{
         this.#valueAtLines.forEach((valueAtLine)=>{
             valueAtLine.lineDiv.classList.add('valueAt-collapse');
         });
-            }
+    }
+
     expand(setState=false){
         if (setState) {
             this.#expanded = true;
@@ -96,7 +97,7 @@ export class ValueAtGroup{
         });
         if (this.#parentValueAtGroup.expanded){
             this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.labelDiv.classList.remove('valueAt-hide');
+                //valueAtLine.labelDiv.classList.remove('valueAt-hide');
                 valueAtLine.lineDiv.classList.remove('valueAt-hide');
             });
         }
@@ -115,14 +116,12 @@ export class ValueAtGroup{
         }
     }
     update(startTime_offset, timeRange_offset){
-        if (!this.#hidden){
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.update(startTime_offset, timeRange_offset);
-            });
-            this.#valueAtGroups.forEach((valueAtGroup)=>{
-                valueAtGroup.update(startTime_offset, timeRange_offset);
-            });
-        }
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            valueAtLine.update(startTime_offset, timeRange_offset);
+        });
+        this.#valueAtGroups.forEach((valueAtGroup)=>{
+            valueAtGroup.update(startTime_offset, timeRange_offset);
+        });
     }
     addNewValueAtGroup(name, expanded=true){
         let valueAtGroup = new ValueAtGroup(this.#timeLine, name, this, expanded);
@@ -168,9 +167,6 @@ export class ValueAtGroup{
     }
     set expanded(value){
         this.#setExpanded(value);
-    }
-    get hidden(){
-        return this.#hidden;
     }
     get indent(){
         return this.#indent;
