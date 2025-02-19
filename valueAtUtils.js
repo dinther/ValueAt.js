@@ -12,3 +12,9 @@ export function createEl(name, options, parent=null){
     }
     return elm;
 }
+
+export function clamp(minValue, value=0, maxValue){
+    let maxVal = Math.max(minValue, maxValue);
+    let minVal = Math.min(minValue, maxValue);
+    return Math.max(minVal, Math.min(value, maxVal));
+}

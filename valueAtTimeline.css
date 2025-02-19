@@ -11,10 +11,13 @@
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 16px;
-    --labelWidth: 100px;
+    --label-width: 115px;
     --main-text-color: #ffffff;
     --line-color: #2b2b2b;
+    --label-back-color: #212121;
     --header-back-color: #181818;
+    --group-header-back-color: #232323;
+    --group-label-back-color: #181818;
     --main-back-color: #1f1f1f;
     --graph-back-color: #313131;
     --scale-back-color: #989898;
@@ -46,7 +49,7 @@ div {
     width: var(--sb-size);
   }
   *::-webkit-scrollbar-track {
-    background-color: #28292e
+    background-color: #1f1f1f;
   }
   
   *::-webkit-scrollbar-track:hover {
@@ -59,8 +62,8 @@ div {
   
   *::-webkit-scrollbar-thumb {
     border-radius: calc(var(--sb-size) - 2px);
-    background-color: #616470;
-    border: 1px solid #28292e;
+    background-color: var(--sb-thumb-color);
+    bborder: 1px solid #28292e;
   }
   
   *::-webkit-scrollbar-thumb:hover {
@@ -78,7 +81,7 @@ div {
     color: var(--main-text-color);
     overflow: hidden;
     user-select: none;
-    padding: 0px 0px 0px 5px;
+    ppadding: 0px 0px 0px 5px;
     position: relative;
     width: 100%;
     height: 100%;
@@ -104,7 +107,6 @@ div {
     z-index: 10;
     width: 100%;
     height: var(--scale-row-height);
-    overflow-y: scroll;
 }
 
 .valueAt-cursor{
@@ -161,22 +163,29 @@ div {
 }
 
 .valueAt-group-header{
-    background-color: var(--header-back-color);
-    border-top: 1px solid var(--line-color);
+    background-color: var(--group-header-back-color);
+    border-bottom: 1px solid var(--line-color);
 }
 
 .valueAt-group-label {
+    background-color: var(--group-label-back-color);
     position: relative;
     padding: 2px 0px;
-    width: 115px;
+    width: var(--label-width);
     z-index: 10;
 }
+
+.valueAt-group-label.valueAt-collapse{
+    display: none;
+}
+
 .valueAt-group-caret {
     display: inline-block;
     width: 20px;
 }
 .valueAt-group-label-span {
     cursor: pointer;
+    margin-left: 5px;
 }
 
 .valueAt-expand {
@@ -185,7 +194,7 @@ div {
     z-index: 9;
 }
 
-.valueAt-expand-collapse {
+.valueAt-expand.valueAt-collapse {
     position: absolute;
     top: 0px;
     height: var(--line-row-collapse-height);
@@ -203,24 +212,18 @@ div {
     display: flex;
     align-items: center;
     position: relative;
-    border-top: 1px solid var(--line-color);
-    border-bottom: 1px solid var(--line-color);
+    bborder-top: 1px solid var(--line-color);
+    bborder-bottom: 1px solid var(--line-color);
     height: var(--line-row-height);
     width: 100%;
     z-index: 0;
 }
 
-.valueAt-line-collapse {
+.valueAt-line.valueAt-collapse {
     position: absolute;
     height: var(--line-row-collapse-height);
     overflow: hidden;
 }
-
-
-
-
-
-
 
 .valueAt-scroll-bar {       
     overflow-y: scroll;
@@ -244,9 +247,9 @@ div {
     color:#6d6e6f;
 }
 
-.valueAt-scroll-content {
-    width: 120%;
+.valueAt-scrollbar div {
     height: 1px;
+    background-color: var(--main-back-color);
 }
 
 .valueAt-v-size {
@@ -260,18 +263,25 @@ div {
     display: flex;
     gap: 5px;
     text-wrap-mode: nowrap;
+    margin-right: 10px;
 }
 
-.valueAt-background {
-    background-color: #00000083;
+.inlinelabelcontrolpair input{
+    width: 100px;
 }
 
 .valueAt-line-label{
-    position: absolute;
     text-wrap-mode: nowrap;
     z-index: 25;
-    width: 115px;
+    width: var(--label-width);
     height: 100%;
+    border-top: 1px solid var(--line-color);
+    border-bottom: 1px solid var(--line-color);
+    background-color: var(--label-back-color);
+}
+
+.valueAt-line-label.valueAt-collapse{
+    display: none;
 }
 
 .valueAt-line-label span {
@@ -279,8 +289,16 @@ div {
     vertical-align: -webkit-baseline-middle;
 }
 
+.valueAt-svg-wrapper{
+    position: relative;
+    height: 100%;
+    flex: 1;
+    border-top: 1px solid var(--line-color);
+    border-bottom: 1px solid var(--line-color);
+}
 
 .valuesAt-svg {
+    position: absolute;
     height: 100%;
     width: 100%;
     stroke: white;
@@ -321,11 +339,6 @@ div {
     border: 1px solid rgb(232, 232, 232);
     z-index: 1000;
 }
-
-#scrollslider {
-    width: 300px;
-}
-
 
 .valueAt-cursor div {
     border: 2px solid var( --cursor-color );

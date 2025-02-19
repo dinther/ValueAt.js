@@ -18,6 +18,19 @@ export class ValueAtGroup{
     #valueAtLines = [];
     #onChanged;
     constructor(timeLine, name, parentValueGroup, expanded=true){
+        let labelCollapseClass = '';
+        let expandedCollapseClass = '';
+        if (parentValueGroup){
+            if (!parentValueGroup.expanded){
+                labelCollapseClass = ' valueAt-collapse';
+                expandedCollapseClass = ' valueAt-collapse';
+            }
+            if (!expanded){
+                expandedCollapseClass = ' valueAt-collapse';
+            }
+        } else if (!expanded){
+            expandedCollapseClass = ' valueAt-collapse';
+        }
         this.#timeLine = timeLine;
         this.#name = name;
         this.#parentValueAtGroup = parentValueGroup;
@@ -31,7 +44,7 @@ export class ValueAtGroup{
         this.#labelDiv = null;
         if (this.#parentValueAtGroup != null){
             this.#groupHeaderDiv = VA_Utils.createEl('div', {className: 'valueAt-group-header'}, this.#groupDiv);
-            this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label valueAt-background'}, this.#groupHeaderDiv);
+            this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label' + labelCollapseClass}, this.#groupHeaderDiv);
             this.#labelContent = VA_Utils.createEl('div', {className: 'valueAt-group-label-span'}, this.#labelDiv);
             this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret', innerText:'▶'}, this.#labelContent);
             this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
@@ -39,21 +52,12 @@ export class ValueAtGroup{
           
             this.#labelContent.addEventListener('pointerdown', (e)=>{
                 this.expanded = !this.expanded;
-                if (this.#expanded) this.#expandDiv.classList.remove('valueAt-expand-collapse');
+                //if (this.#expanded) this.expand();//this.#expandDiv.classList.remove('valueAt-expand-collapse');
             });
             this.#updateCaret();
         }
-        this.expanded = expanded;
-        this.#expandDiv = VA_Utils.createEl('div', {className: 'valueAt-expand'}, this.#groupDiv);
-/*
-        if (this.#expanded == false){
-            this.collapseGroup();
-        } 
          
-        if (this.#parentValueAtGroup != null){
-            this.collapseGroup();
-        }
-  */      
+        this.#expandDiv = VA_Utils.createEl('div', {className: 'valueAt-expand' + expandedCollapseClass}, this.#groupDiv); 
     }
     #handleChanged(valueAtUI){
         if (typeof this.#onChanged === 'function'){
@@ -71,21 +75,21 @@ export class ValueAtGroup{
         });
         */
         //this.#labelDiv.style.display = 'none';
-        this.#expandDiv.querySelectorAll('.valueAt-line-label').forEach(node=>{ node.style.display = 'none'});
-        this.#expandDiv.querySelectorAll('.valueAt-group-label').forEach(node=>{ node.style.display = 'none'});
-        this.#expandDiv.querySelectorAll('.valueAt-line').forEach(node=>{ node.classList.add('valueAt-line-collapse')});
-        this.#expandDiv.classList.add('valueAt-expand-collapse');
+        this.#expandDiv.querySelectorAll('.valueAt-line-label').forEach(node=>{ node.classList.add('valueAt-collapse')});
+        this.#expandDiv.querySelectorAll('.valueAt-group-label').forEach(node=>{ node.classList.add('valueAt-collapse')});
+        this.#expandDiv.querySelectorAll('.valueAt-line').forEach(node=>{ node.classList.add('valueAt-collapse')});
+        this.#expandDiv.classList.add('valueAt-collapse');
     }
     expand(){
-        this.#labelDiv.style.display = '';
+        if (this.#labelDiv && this.#parentValueAtGroup.expanded) this.#labelDiv.classList.remove('valueAt-collapse');
+        if (this.#expandDiv && this.#parentValueAtGroup.expanded && this.#expanded) this.#expandDiv.classList.remove('valueAt-collapse');
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             if (this.#expanded) valueAtGroup.expand();
         });
         this.#valueAtLines.forEach((valueAtLine)=>{
             if (this.#expanded){
-                valueAtLine.labelDiv.style.display = '';
-                valueAtLine.lineDiv.classList.remove('valueAt-line-collapse');
-                this.#expandDiv.classList.remove('valueAt-expand-collapse');
+                valueAtLine.labelDiv.classList.remove('valueAt-collapse');
+                valueAtLine.lineDiv.classList.remove('valueAt-collapse');
             }
         });
     }
@@ -95,12 +99,12 @@ export class ValueAtGroup{
             else this.#labelCaretDiv.classList.remove('caret-down');
         }
     }
-    update(){
+    update(startTime_offset, timeRange_offset){
         this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.update();
+            valueAtLine.update(startTime_offset, timeRange_offset);
         });
         this.#valueAtGroups.forEach((valueAtGroup)=>{
-            valueAtGroup.update();
+            valueAtGroup.update(startTime_offset, timeRange_offset);
         });
     }
     addNewValueAtGroup(name, expanded=true){

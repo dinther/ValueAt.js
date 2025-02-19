@@ -17,116 +17,202 @@
             import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
             import {ValueAtTimeLine} from "./valueAtTimeline.js";
 
-            var va_red = new LookupAtTime('red');
-            va_red.addValueKey(10,-50);
-            va_red.addValueKey(30,100, Easings.linear, 0.5);
-            va_red.addValueKey(75,60, Easings.easeInOutQuad);
-            va_red.addValueKey(100,0,Easings.easeOutCirc);
-            va_red.init(1);
+            var va_red1 = new LookupAtTime('red');
+            va_red1.addValueKey(0,-50);
+            va_red1.addValueKey(30,100, Easings.linear, 0.5);
+            va_red1.addValueKey(85,60, Easings.easeInOutQuad);
+            va_red1.addValueKey(100,0,Easings.easeOutCirc);
+            va_red1.init(1);
              
-            var va_green = new LookupAtTime('green');
-            va_green.addValueKey(10,-50);
-            va_green.addValueKey(30,100, Easings.easeOut, 0.5);
-            va_green.addValueKey(75,60, Easings.easeInOut);
-            va_green.addValueKey(100,0,Easings.easeIn);
-            va_green.init(1);
+            var va_green1 = new LookupAtTime('green');
+            va_green1.addValueKey(0,-50);
+            va_green1.addValueKey(40,100, Easings.easeOut, 0.5);
+            va_green1.addValueKey(75,60, Easings.easeInOut);
+            va_green1.addValueKey(100,0,Easings.easeIn);
+            va_green1.init(1);
 
-            var va_blue = new LookupAtTime('blue');
-            va_blue.addValueKey(10,-50);
-            va_blue.addValueKey(30,100, Easings.easeinBounce, 0.5);
-            va_blue.addValueKey(75,60, Easings.easeInOutQuad);
-            va_blue.addValueKey(100,0,Easings.easeOutCirc);
-            va_blue.init(1);            
+            var va_blue1 = new LookupAtTime('blue');
+            va_blue1.addValueKey(0,-50);
+            va_blue1.addValueKey(50,100, Easings.easeinBounce, 0.5);
+            va_blue1.addValueKey(95,60, Easings.easeInOutQuad);
+            va_blue1.addValueKey(100,0,Easings.easeOutCirc);
+            va_blue1.init(1);            
 
-            var va_pos_x = new LookupAtTime('xpos');
-            va_pos_x.addValueKey(20,-50);
-            va_pos_x.addValueKey(30,100, Easings.easeOutCirc, 0.5);
-            va_pos_x.addValueKey(70,100);
-            va_pos_x.addValueKey(90,0,Easings.easeInCirc);
-            va_pos_x.init(1);
+            var va_pos_x1 = new LookupAtTime('xpos');
+            //  construct our own bounce animation
+            let step = 1;
+            let r = 0.6;
+            let x = 0;
+            let v = 100;
+            va_pos_x1.addValueKey(x,0); x += step;
+            for (let i=0; i< 7; i++){
+                va_pos_x1.addValueKey(x,v, Easings.easeOutSine); x += step; step *= r;
+                va_pos_x1.addValueKey(x,0, Easings.easeInSine); x += step; v *= r;   
+            }
+            va_pos_x1.addValueKey(36.5,0,Easings.easeInOutCirc); x += step;
+            va_pos_x1.addValueKey(40,100,Easings.easeInOutCirc); x += step;
+            va_pos_x1.addValueKey(86,100,Easings.easeInOutCirc); x += step;
+            va_pos_x1.addValueKey(90,0,Easings.easeInOutCirc); x += step;
+            va_pos_x1.init(0.1);
 
-            var va_pos_y = new LookupAtTime('ypos');
-            va_pos_y.addValueKey(10,-50);
-            va_pos_y.addValueKey(30,100, Easings.easeOut, 0.5);
-            va_pos_y.addValueKey(75,60, Easings.easeInOut);
-            va_pos_y.addValueKey(100,0,Easings.easeIn);
-            va_pos_y.init(1);     
+            var va_pos_y1 = new LookupAtTime('ypos');
+            va_pos_y1.addValueKey(10,-50);
+            va_pos_y1.addValueKey(30,100, Easings.easeOut, 0.5);
+            va_pos_y1.addValueKey(75,60, Easings.easeInOut);
+            va_pos_y1.addValueKey(100,0,Easings.easeIn);
+            va_pos_y1.init(1);     
 
-            var va_scale_x = new LookupAtTime('xscale');
-            va_scale_x.addValueKey(8,500);
-            va_scale_x.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
-            va_scale_x.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
-            va_scale_x.addValueKey(70, 0, Easings.easeInOut);
-            va_scale_x.init(0.01);
+            var va_scale_x1 = new LookupAtTime('xscale');
+            va_scale_x1.addValueKey(8,500);
+            va_scale_x1.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
+            va_scale_x1.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
+            va_scale_x1.addValueKey(70, 0, Easings.easeInOut);
+            va_scale_x1.init(0.01);
             
-            var va_scale_y = new LookupAtTime('yscale');
-            va_scale_y.addValueKey(8,500);
-            va_scale_y.addValueKey(13,0, Easings.easeInOutElastic, 0.9);
-            va_scale_y.addValueKey(24, 1000, Easings.easeOutElastic, 0.9);
-            va_scale_y.addValueKey(60, 0, Easings.easeInOut);
-            va_scale_y.init(0.01); 
+            var va_scale_y1 = new LookupAtTime('yscale');
+            va_scale_y1.addValueKey(8,500);
+            va_scale_y1.addValueKey(13,0, Easings.easeInOutElastic, 0.9);
+            va_scale_y1.addValueKey(24, 1000, Easings.easeOutElastic, 0.9);
+            va_scale_y1.addValueKey(60, 0, Easings.easeInOut);
+            va_scale_y1.init(0.01); 
 
-            var va_rotate_x = new LookupAtTime('xrot');
-            va_rotate_x.addValueKey(10,-50);
-            va_rotate_x.addValueKey(30,100, Easings.easeOut, 0.5);
-            va_rotate_x.addValueKey(75,60, Easings.easeInOut);
-            va_rotate_x.addValueKey(100,0,Easings.easeIn);
-            va_rotate_x.init(1);
+            var va_rotate_x1 = new LookupAtTime('xrot');
+            va_rotate_x1.addValueKey(10,-50);
+            va_rotate_x1.addValueKey(30,100, Easings.easeOut, 0.5);
+            va_rotate_x1.addValueKey(75,60, Easings.easeInOut);
+            va_rotate_x1.addValueKey(100,0,Easings.easeIn);
+            va_rotate_x1.init(1);
 
-            var va_rotate_y = new LookupAtTime('yrot');
-            va_rotate_y.addValueKey(8,500);
-            va_rotate_y.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
-            va_rotate_y.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
-            va_rotate_y.addValueKey(70, 600, Easings.easeInOut);
-            va_rotate_y.init(0.01);
+            var va_rotate_y1 = new LookupAtTime('yrot');
+            va_rotate_y1.addValueKey(8,500);
+            va_rotate_y1.addValueKey(13,1000, Easings.easeInOutElastic, 0.9);
+            va_rotate_y1.addValueKey(24, 0, Easings.easeOutElastic, 0.9);
+            va_rotate_y1.addValueKey(70, 600, Easings.easeInOut);
+            va_rotate_y1.init(0.01);
 
-            var va_rotate_z = new LookupAtTime('zrot');
-            va_rotate_z.addValueKey(0,0);
-            va_rotate_z.addValueKey(50,0);
-            va_rotate_z.addValueKey(100,360, Easings.linear);
-            va_rotate_z.init(0.1);
+            var va_rotate_z1 = new LookupAtTime('zrot');
+            va_rotate_z1.addValueKey(0,0);
+            va_rotate_z1.addValueKey(50,0);
+            va_rotate_z1.addValueKey(100,360, Easings.linear);
+            va_rotate_z1.init(0.1);
+
+
+
+            var va_red2 = new LookupAtTime('red');
+            va_red2.addValueKey(0,-50);
+            va_red2.addValueKey(20,100, Easings.linear, 0.5);
+            va_red2.addValueKey(65,60, Easings.easeInOutQuad);
+            va_red2.addValueKey(100,0,Easings.easeOutCirc);
+            va_red2.init(1);
+             
+            var va_green2 = new LookupAtTime('green');
+            va_green2.addValueKey(0,-50);
+            va_green2.addValueKey(40,100, Easings.easeOut, 0.5);
+            va_green2.addValueKey(52,0, Easings.easeOut, 0.5);
+            va_green2.addValueKey(65,100, Easings.easeOut, 0.5);
+            va_green2.addValueKey(75,60, Easings.easeInOut);
+            va_green2.addValueKey(100,0,Easings.easeIn);
+            va_green2.init(1);
+
+            var va_blue2 = new LookupAtTime('blue');
+            va_blue2.addValueKey(0,-50);
+            va_blue2.addValueKey(50,100, Easings.easeinBounce, 0.5);
+            va_blue2.addValueKey(95,60, Easings.easeInOutQuad);
+            va_blue2.addValueKey(100,0,Easings.easeOutBounce, 3.1);
+            va_blue2.init(1);            
+
+            var va_pos_x2 = new LookupAtTime('xpos');
+            va_pos_x2.addValueKey(0,-50);
+            va_pos_x2.addValueKey(30,100, Easings.easeOutCirc, 0.5);
+            va_pos_x2.addValueKey(70,100);
+            va_pos_x2.addValueKey(90,0,Easings.easeInCirc);
+            va_pos_x2.init(1);
+
+            var va_pos_y2 = new LookupAtTime('ypos');
+            //  Random generated value keys. They are automatically sorted by time on init.
+            for (let i=0; i< 17; i++){
+                va_pos_y2.addValueKey(Math.random()*100, Math.random()*100);
+            }
+            va_pos_y2.init(1);     
+
+            var va_scale_x2 = new LookupAtTime('xscale');
+            va_scale_x2.addValueKey(8,500);
+            va_scale_x2.addValueKey(23,1000, Easings.easeInOutElastic, 0.9);
+            va_scale_x2.addValueKey(44, 0, Easings.easeInOutElastic, 0.9);
+            va_scale_x2.addValueKey(70, 0, Easings.easeInOut);
+            va_scale_x2.init(0.01);
+            
+            var va_scale_y2 = new LookupAtTime('yscale');
+            va_scale_y2.addValueKey(8,500);
+            va_scale_y2.addValueKey(373,0, Easings.easeInOutElastic, 0.9);
+            va_scale_y2.addValueKey(84, 1000, Easings.easeOutElastic, 0.9);
+            va_scale_y2.addValueKey(90, 0, Easings.easeInCirc);
+            va_scale_y2.init(0.01); 
+
+            var va_rotate_x2 = new LookupAtTime('xrot');
+            va_rotate_x2.addValueKey(10,-50);
+            va_rotate_x2.addValueKey(30,100, Easings.easeOut, 0.5);
+            va_rotate_x2.addValueKey(75,60, Easings.easeInOut);
+            va_rotate_x2.addValueKey(100,0,Easings.easeIn);
+            va_rotate_x2.init(1);
+
+            var va_rotate_y2 = new LookupAtTime('yrot');
+            va_rotate_y2.addValueKey(8,500);
+            va_rotate_y2.addValueKey(63,1000, Easings.easeInOutElastic, 0.9);
+            va_rotate_y2.addValueKey(70, 0, Easings.easeOutElastic, 0.9);
+            va_rotate_y2.addValueKey(75, 600, Easings.easeInOut);
+            va_rotate_y2.init(0.01);
+
+            var va_rotate_z2 = new LookupAtTime('zrot');
+            va_rotate_z2.addValueKey(0,0);
+            va_rotate_z2.addValueKey(30,0);
+            va_rotate_z2.addValueKey(100,360, Easings.linear);
+            va_rotate_z2.init(0.1);
+
 
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100)
             let circle1 = timeLine.addNewValueAtGroup('Circle 1', true);
-            let colorGroup1 = circle1.addNewValueAtGroup('Color', false);
-            colorGroup1.addValueAt(va_red, 'Red',1, '#f00');
-            colorGroup1.addValueAt(va_green, 'Green', 1, '#0f0');
-            colorGroup1.addValueAt(va_blue, 'Blue', 1, '#00f');
+            let colorGroup1 = circle1.addNewValueAtGroup('Color', true);
+            colorGroup1.addValueAt(va_red1, 'Red',1, '#f00');
+            colorGroup1.addValueAt(va_green1, 'Green', 1, '#0f0');
+            colorGroup1.addValueAt(va_blue1, 'Blue', 1, '#00f');
 
-            let positionGroup1 = circle1.addNewValueAtGroup('Position', false);
-            positionGroup1.addValueAt(va_pos_x, 'Pos X', 1);
-            positionGroup1.addValueAt(va_pos_y, 'Pos y', 1);
+            let transformGroup1 = circle1.addNewValueAtGroup('Tranform', true);
 
-            let scaleGroup1 = circle1.addNewValueAtGroup('Scale', false);
-            scaleGroup1.addValueAt(va_scale_x, 'Scale X', 1, '#5197ff'); 
-            scaleGroup1.addValueAt(va_scale_y, 'Scale Y', 1, '#5197ff');            
+            let positionGroup1 = transformGroup1.addNewValueAtGroup('Position', true);
+            positionGroup1.addValueAt(va_pos_x1, 'Pos X', 1);
+            positionGroup1.addValueAt(va_pos_y1, 'Pos y', 1);
 
-            let rotateGroup1 = circle1.addNewValueAtGroup('Rotate', false);
-            rotateGroup1.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
-            rotateGroup1.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
-            rotateGroup1.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
+            let scaleGroup1 = transformGroup1.addNewValueAtGroup('Scale', true);
+            scaleGroup1.addValueAt(va_scale_x1, 'Scale X', 1, '#5197ff'); 
+            scaleGroup1.addValueAt(va_scale_y1, 'Scale Y', 1, '#5197ff');            
 
+            let rotateGroup1 = transformGroup1.addNewValueAtGroup('Rotate', true);
+            rotateGroup1.addValueAt(va_rotate_x1, 'Rotate X', 1, '#D0FF72');
+            rotateGroup1.addValueAt(va_rotate_y1, 'Rotate Y', 1, '#D0FF72');
+            rotateGroup1.addValueAt(va_rotate_z1, 'Rotate Z', 1, '#D0FF72');
 
             let circle2 = timeLine.addNewValueAtGroup('Circle 2', true);
+
             let colorGroup2 = circle2.addNewValueAtGroup('Color', true);
-            colorGroup2.addValueAt(va_red, 'Red', 1, '#f00');
-            colorGroup2.addValueAt(va_green, 'Green', 1, '#0f0');
-            colorGroup2.addValueAt(va_blue, 'Blue', 1, '#00f');
+            colorGroup2.addValueAt(va_red2, 'Red', 1, '#f00');
+            colorGroup2.addValueAt(va_green2, 'Green', 1, '#0f0');
+            colorGroup2.addValueAt(va_blue2, 'Blue', 1, '#00f');
 
-            let positionGroup2 = circle2.addNewValueAtGroup('Position', true);
-            positionGroup2.addValueAt(va_pos_x, 'Pos X', 1);
-            positionGroup2.addValueAt(va_pos_y, 'Pos y', 1);
+            let transformGroup2 = circle2.addNewValueAtGroup('Tranform', true);
 
-            let scaleGroup2 = circle2.addNewValueAtGroup('Scale', true);
-            scaleGroup2.addValueAt(va_scale_x, 'Scale X', 1, '#5197ff'); 
-            scaleGroup2.addValueAt(va_scale_y, 'Scale Y', 1, '#5197ff');            
+            let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', true);
+            positionGroup2.addValueAt(va_pos_x2, 'Pos X', 1);
+            positionGroup2.addValueAt(va_pos_y2, 'Pos y', 1);
 
-            let rotateGroup2 = circle2.addNewValueAtGroup('Rotate', true);
-            rotateGroup2.addValueAt(va_rotate_x, 'Rotate X', 1, '#D0FF72');
-            rotateGroup2.addValueAt(va_rotate_y, 'Rotate Y', 1, '#D0FF72');
-            rotateGroup2.addValueAt(va_rotate_z, 'Rotate Z', 1, '#D0FF72');
+            let scaleGroup2 = transformGroup2.addNewValueAtGroup('Scale', true);
+            scaleGroup2.addValueAt(va_scale_x2, 'Scale X', 1, '#5197ff'); 
+            scaleGroup2.addValueAt(va_scale_y2, 'Scale Y', 1, '#5197ff');            
 
-            timeLine.setCursor(30);
+            let rotateGroup2 = transformGroup2.addNewValueAtGroup('Rotate', true);
+            rotateGroup2.addValueAt(va_rotate_x2, 'Rotate X', 1, '#D0FF72');
+            rotateGroup2.addValueAt(va_rotate_y2, 'Rotate Y', 1, '#D0FF72');
+            rotateGroup2.addValueAt(va_rotate_z2, 'Rotate Z', 1, '#D0FF72');
   
 /*
             timeLine.lineWrapDiv.innerHTML +=
@@ -175,7 +261,7 @@
 
             window.computeStepList = lookupAtExport.computeStepList;
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
-            window.va_red = va_red; 
+            window.Easings = Easings;
             window.valueAtTimeline = timeLine;
             
         </script>

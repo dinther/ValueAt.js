@@ -1,16 +1,17 @@
+import * as VA_Utils from "./valueAtUtils.js";
+
 export class ValueAtNode{
-    #parent;
+    #parentDiv;
     #div;
     #valueKey;
     #selected = false;
     #active = false;
     onSelectedChanged;
     onActiveChanged;
-    constructor(parent, valueKey){
-        this.#parent = parent;
+    constructor(parentDiv, valueKey){
+        this.#parentDiv = parentDiv;
         this.#valueKey = valueKey;
-        this.#div = document.createElement('div');
-        this.#div.className = 'valueAt-node';
+        this.#div = VA_Utils.createEl('div',{className: 'valueAt-node'}, parentDiv);
         this.#div.addEventListener('pointerenter', (e)=>{
             this.#active = true;
             this.#div.classList.add('valueAt-node-active');
@@ -30,7 +31,6 @@ export class ValueAtNode{
             }
             e.stopPropagation();
         });   
-        this.#parent.appendChild(this.#div);
     }
     #handleSelectedChanged(e=null){
         if (this.#selected){
@@ -46,6 +46,9 @@ export class ValueAtNode{
         if (typeof this.onActiveChanged === 'function'){
             this.onActiveChanged(this, e);
         }
+    }
+    get parentDiv(){
+        return this.#parentDiv;
     }
     get div(){
         return this.#div;

@@ -9,6 +9,7 @@ export class ValueAtLine{
     #labelDiv;
     #labelSpan;
     #lineDiv;
+    #svgWrapperDiv;
     #svg;
     #path;
     #strokeColor;
@@ -24,7 +25,11 @@ export class ValueAtLine{
         this.#labelName = labelName;
         this.#strokeWidth = strokeWidth;
         this.#strokeColor = strokeColor;
-        this.#lineDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_graph', className: 'valueAt-line'});
+        let collapseClass = '';
+        if (valueAtGroup.expandDiv.classList.contains('valueAt-collapse')){
+            collapseClass = ' valueAt-collapse';
+        }
+        this.#lineDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_graph', className: 'valueAt-line' + collapseClass});
         this.#lineDiv.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
                 this.deselectAllValueAtNodes();
@@ -38,9 +43,10 @@ export class ValueAtLine{
             }
         });
 
-        this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label valueAt-background'}, this.#lineDiv);
+        this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
+        this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
         this.#svg.classList.add('valuesAt-svg');
@@ -53,7 +59,7 @@ export class ValueAtLine{
         this.#path.setAttribute('vector-effect', 'non-scaling-stroke');
         this.#path.setAttribute('stroke-linejoin', 'round');
         this.#svg.appendChild(this.#path);
-        this.#lineDiv.appendChild(this.#svg);
+        this.#svgWrapperDiv.appendChild(this.#svg);
        
         //this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
         valueAtGroup.expandDiv.appendChild(this.#lineDiv);
@@ -61,7 +67,7 @@ export class ValueAtLine{
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
-            let valueAtNode = new ValueAtNode(this.#lineDiv, valueKey);
+            let valueAtNode = new ValueAtNode(this.#svgWrapperDiv, valueKey);
             valueAtNode.onSelectedChanged = (valueAtNode, event)=>{
                 let selected = valueAtNode.selected;
                 if (event){
@@ -97,22 +103,20 @@ export class ValueAtLine{
         this.update();
     }
 
-
-
     #render(){
         this.#path.setAttribute('stroke-width', this.#strokeWidth);
         this.#path.setAttribute('stroke', this.#strokeColor);
         let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
         //let h = this.#svg.parentElement.offsetHeight;
         let h = parseFloat(this.#timeLine.getCSSVariable('--line-row-height').replace('px',''))
-        let w = this.#timeLine.scrollContainerDiv.offsetWidth;
+        let w = this.#timeLine.lineWrapDiv.offsetWidth;
         //let w = this.#svg.parentElement.offsetWidth;
         let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
-        let path = 'M' + this.#timeLine.startTime + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.startTime);
+        let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
         path += 'L';
         for (let i = 1; i <= steps; i++){
             let f = i / steps;
-            let x =  this.#timeLine.startTime + this.#timeLine.timeRange * f;
+            let x =  this.#timeLine.viewStart + this.#timeLine.viewRange * f;
             let y = this.#valueAt.getValueAtKeyframe(x);
             path += x + ' ' + y + ' ';
         }
@@ -123,14 +127,14 @@ export class ValueAtLine{
         let margin = valueRange / h * marginHeight * 2;
         let hm = margin * 0.5;
 
-        this.#svg.setAttribute('viewBox', this.#timeLine.startTime + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.timeRange + ' ' + (valueRange + margin));
+        this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
         this.#svg.querySelector('path').setAttribute('d', path);
         this.#svg.setAttribute('preserveAspectRatio', 'none');
 
         let v_offset = marginHeight / h * 100;
 
         this.#valueAtNodes.forEach((valueAtNode)=>{
-            valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.startTime) / (this.#timeLine.timeRange) * 100 + '%';
+            valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
             valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';            
         });
     }
@@ -149,9 +153,9 @@ export class ValueAtLine{
             this.#handleSelectedChanged(selectedChanged);
         }
     }
-    update(){
+    update(startTime_offset, timeRange_offset){
         //if (this.#valueAtGroup.expanded){
-            this.#render();
+            this.#render(startTime_offset, timeRange_offset);
         //}
     }
 
@@ -164,7 +168,9 @@ export class ValueAtLine{
     get labelDiv(){
         return this.#labelDiv;
     }
-
+    get svgWrapperDiv(){
+        return this.#svgWrapperDiv;
+    }
     get labelDivName(){
         return this.#labelName;
     }
