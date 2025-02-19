@@ -7,7 +7,6 @@
     --header-height: 32px;
     --scale-row-height: 64px;
     --line-row-height: 32px;
-    --line-row-collapse-height: 20px;
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 16px;
@@ -210,7 +209,6 @@ div {
 .valueAt-expand.valueAt-collapse {
     position: absolute;
     top: 0px;
-    hheight: var(--line-row-collapse-height);
     opacity: 0.3;
 }
 
@@ -225,8 +223,6 @@ div {
     display: flex;
     align-items: center;
     position: relative;
-    bborder-top: 1px solid var(--line-color);
-    bborder-bottom: 1px solid var(--line-color);
     height: var(--line-row-height);
     width: 100%;
     z-index: 0;
@@ -234,7 +230,6 @@ div {
 
 .valueAt-line.valueAt-collapse {
     position: absolute;
-    hheight: var(--line-row-collapse-height);
     overflow: hidden;
 }
 
@@ -242,8 +237,6 @@ div {
     overflow-y: scroll;
     background-color: #28292e;
 }
-
-
 
 .valueAt-list {
     display: flex;
@@ -294,7 +287,6 @@ div {
     display: flex;
     justify-content: space-between;
     align-items: center;
-;
     justify-content: space-between;
 }
 
@@ -312,7 +304,6 @@ div {
 
 .valueAt-line-label span {
     position: relative;
-    vertical-align: -webkit-baseline-middle;
 }
 
 .valueAt-svg-wrapper{
