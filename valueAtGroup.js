@@ -166,10 +166,12 @@ export class ValueAtGroup{
     #setExpanded(value, setState = false){
         if (value != this.#expanded || setState){
             if (value==true){
+                this.#expandDiv.style.opacity = 1.0;
                 this.#expanded = value;
                 //this.#expandDiv.style.display = '';
                 this.expand(setState);
             } else {
+                this.#expandDiv.style.opacity = 0.3;
                 this.#expanded = value;
                 //this.#expandDiv.style.display = 'none';
                 this.collapse(setState);
