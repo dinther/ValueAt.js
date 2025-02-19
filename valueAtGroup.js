@@ -67,7 +67,6 @@ export class ValueAtGroup{
         }
     }
     collapse(setState=false){
-        //this.#labelDiv.classList.add('valueAt-collapse');
         if (setState) {
             this.#expanded = false;
         }
@@ -77,26 +76,15 @@ export class ValueAtGroup{
             valueAtGroup.labelDiv.classList.add('valueAt-collapse');
         });
 
-        if (!this.#parentValueAtGroup.expanded){
+        if ((!this.#parentValueAtGroup.expandDiv.classList.contains('valueAt-collapse') || this.#parentValueAtGroup != this.#timeLine.rootValueAtGroup) && !this.#expanded){
             this.#valueAtLines.forEach((valueAtLine)=>{
-                if (!this.expanded){
-                    valueAtLine.labelDiv.classList.add('valueAt-hide');
-                    valueAtLine.lineDiv.classList.add('valueAt-hide');
-                }
+                valueAtLine.lineDiv.classList.add('valueAt-hide');
             });
         }
         this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.labelDiv.classList.add('valueAt-collapse');
             valueAtLine.lineDiv.classList.add('valueAt-collapse');
         });
-        
-        //this.#labelDiv.style.display = 'none';
-
-        //this.#expandDiv.querySelectorAll('.valueAt-group-label').forEach(node=>{ node.classList.add('valueAt-collapse')});
-        //this.#expandDiv.querySelectorAll('.valueAt-line-label').forEach(node=>{ node.classList.add('valueAt-collapse')});
-        //this.#expandDiv.querySelectorAll('.valueAt-line').forEach(node=>{ node.classList.add('valueAt-collapse')});
-        //this.#expandDiv.classList.add('valueAt-collapse');
-    }
+            }
     expand(setState=false){
         if (setState) {
             this.#expanded = true;
@@ -112,12 +100,12 @@ export class ValueAtGroup{
                 valueAtLine.lineDiv.classList.remove('valueAt-hide');
             });
         }
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                if (this.#expanded){
-                    valueAtLine.labelDiv.classList.remove('valueAt-collapse');
-                    valueAtLine.lineDiv.classList.remove('valueAt-collapse');
-                }
-            });
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            if (this.#expanded){
+                valueAtLine.labelDiv.classList.remove('valueAt-collapse');
+                valueAtLine.lineDiv.classList.remove('valueAt-collapse');
+            }
+        });
         
     }
     #updateCaret(){
@@ -139,9 +127,6 @@ export class ValueAtGroup{
     addNewValueAtGroup(name, expanded=true){
         let valueAtGroup = new ValueAtGroup(this.#timeLine, name, this, expanded);
         this.#valueAtGroups.push(valueAtGroup);
-        //if (this.#expanded == false){
-        //    this.#collapse();
-        //}
         return valueAtGroup;
     }    
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
@@ -151,7 +136,6 @@ export class ValueAtGroup{
         if (this.#expanded == false){
             this.collapse();
         }
-        //this.#updateCursor();
     }
     getValueAtNodes(){
         let valueAtNodes = [];
@@ -166,15 +150,13 @@ export class ValueAtGroup{
     #setExpanded(value, setState = false){
         if (value != this.#expanded || setState){
             if (value==true){
-                this.#expandDiv.style.opacity = 1.0;
                 this.#expanded = value;
-                //this.#expandDiv.style.display = '';
                 this.expand(setState);
+                this.#expandDiv.style.opacity = 1.0;
             } else {
-                this.#expandDiv.style.opacity = 0.3;
                 this.#expanded = value;
-                //this.#expandDiv.style.display = 'none';
                 this.collapse(setState);
+                this.#expandDiv.style.opacity = 0.3;
             }
             this.#expanded = value;
             this.#updateCaret();

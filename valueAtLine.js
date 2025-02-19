@@ -106,7 +106,7 @@ export class ValueAtLine{
     }
 
     #render(){
-        //if (!this.#lineDiv.classList.contains('valueAt-collapse')){
+        if (!this.#lineDiv.classList.contains('valueAt-hide')){
             this.#path.setAttribute('stroke-width', this.#strokeWidth);
             this.#path.setAttribute('stroke', this.#strokeColor);
             let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
@@ -127,7 +127,7 @@ export class ValueAtLine{
             this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
             this.#svg.querySelector('path').setAttribute('d', path);
             this.#svg.setAttribute('preserveAspectRatio', 'none');
-        //}
+        }
         let v_offset = this.#strokeWidth / this.#lineHeight * 100;
 
         this.#valueAtNodes.forEach((valueAtNode)=>{
