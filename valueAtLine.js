@@ -16,6 +16,7 @@ export class ValueAtLine{
     #strokeWidth;
     #valueAtNodes = [];
     #pointerTime = 0;
+    #lineHeight = 0;
     #firstValueAtNodeSelected= null;
     onSelectedChanged;
     constructor(valueAt, timeLine, valueAtGroup, labelName, strokeWidth=1, strokeColor='#fff'){
@@ -25,6 +26,7 @@ export class ValueAtLine{
         this.#labelName = labelName;
         this.#strokeWidth = strokeWidth;
         this.#strokeColor = strokeColor;
+        this.#lineHeight = parseFloat(this.#timeLine.getCSSVariable('--line-row-height').replace('px',''));
         let collapseClass = '';
         if (valueAtGroup.expandDiv.classList.contains('valueAt-collapse')){
             collapseClass = ' valueAt-collapse';
@@ -104,38 +106,39 @@ export class ValueAtLine{
     }
 
     #render(){
-        this.#path.setAttribute('stroke-width', this.#strokeWidth);
-        this.#path.setAttribute('stroke', this.#strokeColor);
-        let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
-        //let h = this.#svg.parentElement.offsetHeight;
-        let h = parseFloat(this.#timeLine.getCSSVariable('--line-row-height').replace('px',''))
-        let w = this.#timeLine.lineWrapDiv.offsetWidth;
-        //let w = this.#svg.parentElement.offsetWidth;
-        let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
-        let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
-        path += 'L';
-        for (let i = 1; i <= steps; i++){
-            let f = i / steps;
-            let x =  this.#timeLine.viewStart + this.#timeLine.viewRange * f;
-            let y = this.#valueAt.getValueAtKeyframe(x);
-            path += x + ' ' + y + ' ';
-        }
+        //if (!this.#lineDiv.classList.contains('valueAt-collapse')){
+            this.#path.setAttribute('stroke-width', this.#strokeWidth);
+            this.#path.setAttribute('stroke', this.#strokeColor);
+            let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
+            let w = this.#timeLine.lineWrapDiv.offsetWidth;
+            let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
+            let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
+            path += 'L';
+            for (let i = 1; i <= steps; i++){
+                let f = i / steps;
+                let x =  this.#timeLine.viewStart + this.#timeLine.viewRange * f;
+                let y = this.#valueAt.getValueAtKeyframe(x);
+                path += x + ' ' + y + ' ';
+            }
 
-        let marginHeight = this.#strokeWidth;
-        //let marginHeight = this.#valueAtNodes[0].div.offsetHeight;
+            let margin = valueRange / this.#lineHeight * this.#strokeWidth * 2;
+            let hm = margin * 0.5;
 
-        let margin = valueRange / h * marginHeight * 2;
-        let hm = margin * 0.5;
-
-        this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
-        this.#svg.querySelector('path').setAttribute('d', path);
-        this.#svg.setAttribute('preserveAspectRatio', 'none');
-
-        let v_offset = marginHeight / h * 100;
+            this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
+            this.#svg.querySelector('path').setAttribute('d', path);
+            this.#svg.setAttribute('preserveAspectRatio', 'none');
+        //}
+        let v_offset = this.#strokeWidth / this.#lineHeight * 100;
 
         this.#valueAtNodes.forEach((valueAtNode)=>{
-            valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
-            valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';            
+            let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
+            if (percent >= 0 && percent<= 100){
+                valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
+                valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';
+                valueAtNode.div.style.display = '';
+            } else {
+                valueAtNode.div.style.display = 'none';
+            }
         });
     }
     #handleSelectedChanged(){

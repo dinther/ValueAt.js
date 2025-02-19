@@ -11,7 +11,7 @@
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 16px;
-    --label-width: 115px;
+    --label-width: 140px;
     --main-text-color: #ffffff;
     --line-color: #2b2b2b;
     --label-back-color: #212121;
@@ -81,7 +81,6 @@ div {
     color: var(--main-text-color);
     overflow: hidden;
     user-select: none;
-    ppadding: 0px 0px 0px 5px;
     position: relative;
     width: 100%;
     height: 100%;
@@ -172,7 +171,11 @@ div {
     position: relative;
     padding: 2px 0px;
     width: var(--label-width);
+    height: var(--line-row-height);
     z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .valueAt-group-label.valueAt-collapse{
@@ -182,7 +185,17 @@ div {
 .valueAt-group-caret {
     display: inline-block;
     width: 20px;
+    height: 22px;
 }
+
+.caret-down {
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari */
+    transform: rotate(90deg);
+    -webkit-transform-origin: 27% 40%;
+    transform-origin: 27% 40%;
+}
+
 .valueAt-group-label-span {
     cursor: pointer;
     margin-left: 5px;
@@ -197,7 +210,7 @@ div {
 .valueAt-expand.valueAt-collapse {
     position: absolute;
     top: 0px;
-    height: var(--line-row-collapse-height);
+    hheight: var(--line-row-collapse-height);
     opacity: 0.3;
 }
 
@@ -221,7 +234,7 @@ div {
 
 .valueAt-line.valueAt-collapse {
     position: absolute;
-    height: var(--line-row-collapse-height);
+    hheight: var(--line-row-collapse-height);
     overflow: hidden;
 }
 
@@ -278,6 +291,19 @@ div {
     border-top: 1px solid var(--line-color);
     border-bottom: 1px solid var(--line-color);
     background-color: var(--label-back-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+;
+    justify-content: space-between;
+}
+
+.valueAt-hide {
+    display: none;
+}
+
+.valueAt-hide-label.valueAt-hidden{
+    color: red;
 }
 
 .valueAt-line-label.valueAt-collapse{
@@ -361,11 +387,4 @@ div {
     margin-right: var(--sb-size);
 }
 
-.caret-down {
-    -ms-transform: rotate(90deg); /* IE 9 */
-    -webkit-transform: rotate(90deg); /* Safari */
-    transform: rotate(90deg);
-    -webkit-transform-origin: 40% 40%;
-    transform-origin: 40% 40%;
-    vertical-align: -webkit-baseline-middle;
-  }
+
