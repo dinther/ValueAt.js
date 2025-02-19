@@ -191,7 +191,7 @@
             rotateGroup1.addValueAt(va_rotate_x1, 'Rotate X', 1, '#D0FF72');
             rotateGroup1.addValueAt(va_rotate_y1, 'Rotate Y', 1, '#D0FF72');
             rotateGroup1.addValueAt(va_rotate_z1, 'Rotate Z', 1, '#D0FF72');
-/*
+
             let circle2 = timeLine.addNewValueAtGroup('Circle 2', true);
 
             let colorGroup2 = circle2.addNewValueAtGroup('Color', true);
@@ -215,24 +215,24 @@
             rotateGroup2.addValueAt(va_rotate_z2, 'Rotate Z', 1, '#D0FF72');
   
             for (let i=3; i< 16; i++){
-                let circle2 = timeLine.addNewValueAtGroup('Circle ' + i, true);
+                let circle2 = timeLine.addNewValueAtGroup('Circle ' + i, false);
 
-                let colorGroup2 = circle2.addNewValueAtGroup('Color', true);
+                let colorGroup2 = circle2.addNewValueAtGroup('Color', false);
                 colorGroup2.addValueAt(va_red2, 'Red', 1, '#f00');
                 colorGroup2.addValueAt(va_green2, 'Green', 1, '#0f0');
                 colorGroup2.addValueAt(va_blue2, 'Blue', 1, '#00f');
 
-                let transformGroup2 = circle2.addNewValueAtGroup('Tranform', true);
+                let transformGroup2 = circle2.addNewValueAtGroup('Tranform', false);
 
-                let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', true);
+                let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', false);
                 positionGroup2.addValueAt(va_pos_x2, 'Pos X', 1);
                 positionGroup2.addValueAt(va_pos_y2, 'Pos y', 1);
 
-                let scaleGroup2 = transformGroup2.addNewValueAtGroup('Scale', true);
+                let scaleGroup2 = transformGroup2.addNewValueAtGroup('Scale', false);
                 scaleGroup2.addValueAt(va_scale_x2, 'Scale X', 1, '#5197ff'); 
                 scaleGroup2.addValueAt(va_scale_y2, 'Scale Y', 1, '#5197ff');            
 
-                let rotateGroup2 = transformGroup2.addNewValueAtGroup('Rotate', true);
+                let rotateGroup2 = transformGroup2.addNewValueAtGroup('Rotate', false);
                 rotateGroup2.addValueAt(va_rotate_x2, 'Rotate X', 1, '#D0FF72');
                 rotateGroup2.addValueAt(va_rotate_y2, 'Rotate Y', 1, '#D0FF72');
                 rotateGroup2.addValueAt(va_rotate_z2, 'Rotate Z', 1, '#D0FF72');

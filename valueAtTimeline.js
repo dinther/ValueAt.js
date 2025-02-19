@@ -177,7 +177,6 @@ export class ValueAtTimeLine{
         document.addEventListener('pointerdown', (e)=>{
             if ( e.button == 0 && (e.ctrlKey || e.shiftKey)){
                 this.#selectPointDown = {x: e.pageX, y: e.pageY};
-                console.log('down');
             }
         });
         document.addEventListener('pointermove', (e)=>{
@@ -289,7 +288,6 @@ export class ValueAtTimeLine{
                 this.#scrollbarDiv.scrollLeft = scrollLeft;
             }
             this.update(start_time_offset, time_range_offset);
-            console.log('setView');
         }
     }
 
