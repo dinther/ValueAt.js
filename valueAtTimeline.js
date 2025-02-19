@@ -8,6 +8,7 @@ export class ValueAtTimeLine{
     #headerDiv;
     #scrollContainerDiv;
     #stickyWrapperDiv;
+    #scaleWrapperDiv;
     #scaleDiv;
     #lineWrapDiv;
     #scrollRemainderDiv;
@@ -48,7 +49,8 @@ export class ValueAtTimeLine{
     #scrollbarContentDiv;
     
     #duration = 1;
-    #timePerPixel;
+    #timeUnitPerPixel;
+    #pixelPerTimeUnit;
     constructor(parent, startTime, timeRange){
         this.#parentDiv = parent;
 
@@ -59,6 +61,7 @@ export class ValueAtTimeLine{
         this.#headerDiv = VA_Utils.createEl('div', {className: 'valueAt-header'}, this.#containerDiv);
  
         //  build wave display and scale container
+        //this.scaleWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-scale-wrapper'}, this.#containerDiv);
         this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#containerDiv);
  
         this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor', className: 'valueAt-cursor'}, this.#containerDiv);
@@ -206,15 +209,17 @@ export class ValueAtTimeLine{
     }
     #updateTimePerPixel(){
         if (this.#scrollContainerDiv.offsetWidth > 0){
-            this.#timePerPixel = this.#timeRange / this.#scrollContainerDiv.offsetWidth;//this.#cursorDiv.parentElement.parentElement.offsetWidth;
+            this.#timeUnitPerPixel = this.#timeRange / this.#lineWrapDiv.offsetWidth;//this.#cursorDiv.parentElement.parentElement.offsetWidth;
+            this.#pixelPerTimeUnit = this.#lineWrapDiv.offsetWidth / this.#timeRange;
         }
     }
 
     #updateCursor(){
         this.#cursorDiv.style.height = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight + 'px';
-        if (this.#timePerPixel === undefined){ this.#updateTimePerPixel() }
-        let x = (this.#cursorTime - this.#startTime) / this.#timePerPixel;
-        this.#cursorDiv.style.left = (this.#cursorTime - this.#startTime) / (this.#timeRange) * 100 + '%';       
+        if (this.#timeUnitPerPixel === undefined){ this.#updateTimePerPixel() }
+        let x = 5 + (this.#cursorTime - this.#startTime) * this.#pixelPerTimeUnit;
+        this.#cursorDiv.style.left =  x + 'px';//(this.#cursorTime - this.#startTime) / this.#timeUnitPerPixel;
+        // (this.#cursorTime - this.#startTime) / (this.#timeRange) * 100 * (this.#lineWrapDiv.offsetWidth / this.#scrollContainerDiv.offsetWidth) + '%';       
         this.#cursorLabel.innerText = this.#cursorTime.toFixed(0);
     }
 
