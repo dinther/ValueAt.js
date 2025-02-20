@@ -104,12 +104,25 @@ export class ValueAtLine{
     #handleOnChange(){
         this.update();
     }
-
+    #isInView(){
+        if (this.#lineDiv.classList.contains('valueAt-collapse')){ return false; }
+        const rect = this.#lineDiv.getBoundingClientRect();
+        let result =  (
+            rect.top    >= this.#timeLine.scrollContainerDiv.offsetTop &&
+            rect.left   >= this.#timeLine.scrollContainerDiv.offsetLeft &&
+            rect.bottom <= this.#timeLine.scrollContainerDiv.offsetTop + this.#timeLine.scrollContainerDiv.offsetHeight &&
+            rect.right  <= this.#timeLine.scrollContainerDiv.offsetLeft + this.#timeLine.scrollContainerDiv.offsetWidth
+        );
+        if (!result){
+            console.log(this.labelName);
+        }
+        return result;       
+    }
     #render(){
-        if (!this.#lineDiv.classList.contains('valueAt-hide')){
+        if (!this.#lineDiv.classList.contains('valueAt-hide') && this.#isInView()){
             this.#path.setAttribute('stroke-width', this.#strokeWidth);
             this.#path.setAttribute('stroke', this.#strokeColor);
-            let steps = Math.floor(this.#timeLine.parentDiv.offsetWidth * 0.5);
+            let steps = Math.floor(this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
             let w = this.#timeLine.lineWrapDiv.offsetWidth;
             let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
             let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
@@ -156,12 +169,15 @@ export class ValueAtLine{
             this.#handleSelectedChanged(selectedChanged);
         }
     }
-    update(startTime_offset, timeRange_offset){
-        //if (this.#valueAtGroup.expanded){
-            this.#render(startTime_offset, timeRange_offset);
-        //}
+    update(){
+        this.#render();
     }
-
+    setTime(time){
+        this.#valueAt.setTime(time);
+    }
+    setTimeFast(time){
+        this.#valueAt.setValueFast(time);
+    }
     get valueAt(){
         return this.#valueAt;
     }

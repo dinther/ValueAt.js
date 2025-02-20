@@ -93,6 +93,8 @@ export class ValueKey{
 
 export class ValueAtTime{
     #name;
+    #object;
+    #propertyName;
     #valueKeys=[];
     #minTime;
     #maxTime;
@@ -102,8 +104,10 @@ export class ValueAtTime{
     #onChange;
 
 
-    constructor(name=''){
+    constructor(name='', object, propertyName){
         this.#name = name;
+        this.#object = object;
+        this.#propertyName = propertyName;
     }
 
     lerp(a, b, t){
@@ -223,8 +227,22 @@ export class ValueAtTime{
         return this.lerp(beforeKey.value, afterKey.value, t);
     }
 
+    setTime(time){
+        if (this.#object && this.object[this.propertyName] !== undefined){
+            this.#object[this.#propertyName] = this.getValueAt(time);
+        }
+    }
+
     get name(){
         return this.#name;
+    }
+
+    get object(){
+        return this.#object;
+    }
+
+    get propertyName(){
+        return this.#propertyName;
     }
 
     get valueKeys(){
@@ -259,8 +277,8 @@ export class LookupAtTime extends ValueAtTime{
     #minValue;
     #maxValue;    
     #valueRange;
-    constructor(name, className=null){
-        super(name);
+    constructor(name, object, propertyName, className=null){
+        super(name, object, propertyName);
         this.#className = className;
     }
 
@@ -356,6 +374,24 @@ export class LookupAtTime extends ValueAtTime{
     getValueAtKeyframe(time){  //  slowest but accurate
         time = this.clampTime(time);
         return this.getSourceValueAt(time);
+    }
+
+    setValueFast(time){
+        if (this.object && this.object[this.propertyName] !== undefined){
+            this.object[this.propertyName] = this.getValueFast(time);
+        }
+    }
+
+    setValueAt(time){
+        if (this.object && this.object[this.propertyName] !== undefined){
+            this.object[this.propertyName] = this.getValueAt(time);
+        }
+    }
+
+    setValueAtKeyFrame(time){
+        if (this.object && this.object[this.propertyName] !== undefined){
+            this.object[this.propertyName] = this.getValueAtKeyframe(time);
+        }
     }
 
     getValueRange(interval, startTime=null, endTime=null, className=null){

@@ -105,6 +105,7 @@ div {
     z-index: 10;
     width: 100%;
     height: var(--scale-row-height);
+    position: relative;
 }
 
 .valueAt-cursor{

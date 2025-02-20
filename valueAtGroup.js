@@ -123,6 +123,23 @@ export class ValueAtGroup{
             valueAtGroup.update(startTime_offset, timeRange_offset);
         });
     }
+    setTime(time){
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            valueAtLine.setTime(time);
+        });
+        this.#valueAtGroups.forEach((valueAtGroup)=>{
+            valueAtGroup.setTime(time);
+        });        
+    }
+    setTimeFast(time){
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            valueAtLine.setTimeFast(time);
+        });
+        this.#valueAtGroups.forEach((valueAtGroup)=>{
+            valueAtGroup.setTimeFast(time);
+        });        
+    }
+
     addNewValueAtGroup(name, expanded=true){
         let valueAtGroup = new ValueAtGroup(this.#timeLine, name, this, expanded);
         this.#valueAtGroups.push(valueAtGroup);
