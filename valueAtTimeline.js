@@ -57,10 +57,10 @@ export class ValueAtTimeLine{
     #scrollbarContentDiv;
     #pixelsPerSegment = 2;
     
-    #duration1 = 1;
     #labelWidth = null;
     #timeUnitPerPixel;
     #pixelPerTimeUnit;
+    #onZoom;
     constructor(parent, timeRangeStart, timeRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
         //  build scrolling UI container
@@ -105,8 +105,8 @@ export class ValueAtTimeLine{
         this.#zoomLabel = VA_Utils.createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
         this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0', max:'0.999', step: '0.001', value: '0'}, this.#zoomGroupDiv);
 
-        //  build container for valueAt lines
-
+        //  create root valueAt group
+        this.#rootValueAtGroup = new ValueAtGroup(this, '', null, true);
 
         //  build select box
         this.#selectBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-select-box', style: 'display: none'}, this.#containerDiv);
@@ -163,8 +163,7 @@ export class ValueAtTimeLine{
             this.setView(this.#timeRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#timeRange), this.#viewRange);
         });
 
-        //  create root valueAt group
-        this.#rootValueAtGroup = new ValueAtGroup(this, '', null, true);
+
 
         document.addEventListener('keydown', (e)=>{
             if (e.shiftKey){
@@ -210,12 +209,16 @@ export class ValueAtTimeLine{
             }
         });   
         window.addEventListener('resize', (e)=>{
-            this.#updateTimePerPixel(this.#viewRange);
-            this.#updateCursor();
+            this.#handleWindowSize();
         });
-        
+        this.#handleWindowSize();
         this.setView(this.#viewStart, this.viewRange);
         this.setTime(0);
+    }
+    #handleWindowSize(){
+        this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
+        this.#updateTimePerPixel(this.#viewRange);
+        this.#updateCursor();
     }
 
     #setTimeRange(startTime, endTime){
@@ -318,6 +321,9 @@ export class ValueAtTimeLine{
             return parentGroup.addNewValueAtGroup(name, expanded);
         }
     }    
+    get maximizeHeight(){
+        return this.#cursorDiv.offsetHeight;
+    }
     get parentDiv(){
         return this.#parentDiv;
     }
@@ -385,6 +391,14 @@ export class ValueAtTimeLine{
     }
     get rootValueAtGroup(){
         return this.#rootValueAtGroup;
+    }
+    get onZoom(){
+        return this.#onZoom;
+    }
+    set onZoom(value){
+        if(typeof value === 'function'){
+            this.#onZoom = value;
+        }
     }
     getValueAtNodes(){
         let valueAtNodes = this.#rootValueAtGroup.getValueAtNodes();

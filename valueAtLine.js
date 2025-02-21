@@ -8,6 +8,7 @@ export class ValueAtLine{
     #labelName;
     #labelDiv;
     #labelSpan;
+    #labelExpandDiv;
     #lineDiv;
     #svgWrapperDiv;
     #svg;
@@ -48,6 +49,7 @@ export class ValueAtLine{
         this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
+        this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', className: 'valueAt-expand-button' + collapseClass}, this.#labelDiv);
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
@@ -66,6 +68,32 @@ export class ValueAtLine{
         //this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
         valueAtGroup.expandDiv.appendChild(this.#lineDiv);
         
+        this.#labelExpandDiv.addEventListener('click', (e)=>{
+            if (!e.ctrlKey && !e.shiftKey){
+                this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
+                    if (lineDiv != this.#lineDiv){
+                        lineDiv.classList.remove('valueAt-maximized');
+                    }
+                });
+            }
+            if (this.#lineDiv.classList.contains('valueAt-maximized')){
+                this.#lineDiv.classList.remove('valueAt-maximized');
+            } else{
+                if (e.shiftKey){
+                    let firstMaximizedDiv = this.#timeLine.containerDiv.querySelector('.valueAt-line.valueAt-maximized');
+                    if (firstMaximizedDiv && firstMaximizedDiv != this.#lineDiv){
+                        let lineDivs = Array.from(this.#timeLine.containerDiv.querySelectorAll('.valueAt-line'));
+                        let startIndex = lineDivs.indexOf(firstMaximizedDiv);
+                        let endIndex = lineDivs.indexOf(this.#lineDiv);
+                        for (let i=startIndex; i<endIndex; i++){
+                            lineDivs[i].classList.add('valueAt-maximized');
+                        }
+                    }
+                }
+                this.#lineDiv.classList.add('valueAt-maximized');
+            }
+        });
+
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
@@ -100,7 +128,6 @@ export class ValueAtLine{
         this.#render();
         this.#valueAt.onChange = ()=>{this.#handleOnChange()};
     }
-
     #handleOnChange(){
         this.update();
     }
