@@ -187,7 +187,7 @@
                 }
                 const elapsed = (timestamp - start) / 1000;
                 timeLine.setTime(elapsed);
-                if (elapsed <= timeLine.timeRangeEnd){
+                if (elapsed <= timeLine.dataRangeEnd){
                     requestAnimationFrame(stepFrame);
                 }
             }
@@ -207,6 +207,8 @@
                 //let myNumberArray = arrayBuffer.getChannelData(0); //  We only want one channel
 
                 //console.log(myNumberArray);
+
+                //timeLine.setDataRange(0, Math.floor(audioBuffer.duration * 1000));
 
                 waveDisplay = new WaveDisplay({
                     data: audioBuffer.getChannelData(0),

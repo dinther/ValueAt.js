@@ -24,6 +24,7 @@
     --graph-back-color: #313131;
     --scale-back-color: #989898;
     --cursor-color: #ff9900;
+    --range-cursor-color: #ff6200;
     --sb-track-color: #28292e;
     --sb-thumb-color: #616470;
     --sb-size: 14px;
@@ -101,6 +102,7 @@ div {
 
 .valueAt-scale {
     top: 0;
+    left: var(--label-width);
     display: flex;
     align-items: center;
     background-color: var(--scale-back-color);
@@ -114,13 +116,27 @@ div {
     display: flex;
     position: absolute;
     top: var(--header-height);
-    width: 1px;
-    height: 100%;
-    border: 1px solid var( --cursor-color );
+    width: 5px;
     z-index: 100;
     justify-content: center;
     cursor: ew-resize;
     transform: translate(-50%, 0px);
+}
+
+.valueAt-cursor span{
+    border-left: 1px solid var(--cursor-color);
+}
+
+.valueAt-cursor div {
+    border: 2px solid var( --cursor-color );
+    color: var(--cursor-text-color);
+    font-weight: 500;
+    background-color: #ffffff;
+    height: fit-content;
+    padding: 0px 9px;
+    border-radius: 8px;
+    cursor: ew-resize;
+    position: absolute;
 }
 
 .valueAt-scroll-container {
@@ -384,17 +400,6 @@ div {
     position: absolute;
     border: 1px solid rgb(232, 232, 232);
     z-index: 1000;
-}
-
-.valueAt-cursor div {
-    border: 2px solid var( --cursor-color );
-    color: var(--cursor-text-color);
-    font-weight: 500;
-    background-color: #ffffff;
-    height: fit-content;
-    padding: 0px 9px;
-    border-radius: 8px;
-    cursor: ew-resize;
 }
 
 .valueAt-cursor-area input {

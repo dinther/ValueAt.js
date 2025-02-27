@@ -19,6 +19,7 @@ export class ValueAtLine{
     #pointerTime = 0;
     #lineHeight = 0;
     #firstValueAtNodeSelected= null;
+    #inView = false;
     onSelectedChanged;
     constructor(valueAt, timeLine, valueAtGroup, labelName, strokeWidth=1, strokeColor='#fff'){
         this.#valueAt = valueAt;
@@ -134,39 +135,38 @@ export class ValueAtLine{
     #isInView(){
         if (this.#lineDiv.classList.contains('valueAt-collapse')){ return false; }
         const rect = this.#lineDiv.getBoundingClientRect();
-        let result =  (
-            rect.top    >= this.#timeLine.scrollContainerDiv.offsetTop &&
-            rect.left   >= this.#timeLine.scrollContainerDiv.offsetLeft &&
-            rect.bottom <= this.#timeLine.scrollContainerDiv.offsetTop + this.#timeLine.scrollContainerDiv.offsetHeight &&
-            rect.right  <= this.#timeLine.scrollContainerDiv.offsetLeft + this.#timeLine.scrollContainerDiv.offsetWidth
-        );
+        let result = VA_Utils.domRectIntersect(rect, this.#timeLine.scrollContainerDiv.getBoundingClientRect())
         if (!result){
-            console.log(this.labelName);
+            console.log(this.#labelName);
         }
         return result;       
     }
     #render(){
-        if (!this.#lineDiv.classList.contains('valueAt-hide') && this.#isInView()){
-            this.#path.setAttribute('stroke-width', this.#strokeWidth);
-            this.#path.setAttribute('stroke', this.#strokeColor);
-            let steps = Math.floor(this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
-            let w = this.#timeLine.lineWrapDiv.offsetWidth;
-            let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
-            let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
-            path += 'L';
-            for (let i = 1; i <= steps; i++){
-                let f = i / steps;
-                let x =  this.#timeLine.viewStart + this.#timeLine.viewRange * f;
-                let y = this.#valueAt.getValueAtKeyframe(x);
-                path += x + ' ' + y + ' ';
+        if (!this.#lineDiv.classList.contains('valueAt-hide')){
+            let inView = this.#isInView();
+            if (inView){  //  only render if this was not in view and now it is in view
+                this.#path.setAttribute('stroke-width', this.#strokeWidth);
+                this.#path.setAttribute('stroke', this.#strokeColor);
+                let steps = Math.floor(this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
+                let w = this.#timeLine.lineWrapDiv.offsetWidth;
+                let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
+                let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
+                path += 'L';
+                for (let i = 1; i <= steps; i++){
+                    let f = i / steps;
+                    let x =  this.#timeLine.viewStart + this.#timeLine.viewRange * f;
+                    let y = this.#valueAt.getValueAtKeyframe(x);
+                    path += x + ' ' + y + ' ';
+                }
+
+                let margin = valueRange / this.#lineHeight * this.#strokeWidth * 2;
+                let hm = margin * 0.5;
+
+                this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
+                this.#svg.querySelector('path').setAttribute('d', path);
+                this.#svg.setAttribute('preserveAspectRatio', 'none');
             }
-
-            let margin = valueRange / this.#lineHeight * this.#strokeWidth * 2;
-            let hm = margin * 0.5;
-
-            this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
-            this.#svg.querySelector('path').setAttribute('d', path);
-            this.#svg.setAttribute('preserveAspectRatio', 'none');
+            this.#inView = inView;
         }
         let v_offset = this.#strokeWidth / this.#lineHeight * 100;
 

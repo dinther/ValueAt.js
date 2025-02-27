@@ -18,3 +18,7 @@ export function clamp(minValue, value=0, maxValue){
     let minVal = Math.min(minValue, maxValue);
     return Math.max(minVal, Math.min(value, maxVal));
 }
+
+export function domRectIntersect(domRect1, domRect2){
+    return (domRect2.right >= domRect1.left && domRect2.left <= domRect1.right && domRect2.top <= domRect1.bottom && domRect2.bottom >= domRect1.top);
+}

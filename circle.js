@@ -19,6 +19,7 @@ export class Circle{
         this.#div.style.color = 'white';
         this.#div.style.opacity = 0.6;
         this.#div.style.aspectRatio = '1 / 1';
+        this.#div.style.pointerEvents = 'none';
         this.#div.innerHTML = '<div>' + name + '</div>';
 
         this.name = name;

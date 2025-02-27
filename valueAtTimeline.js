@@ -18,13 +18,13 @@ export class ValueAtTimeLine{
 
     #selectBoxDiv;
     
-    #timeRangeStartGroupDiv;
-    #timeRangeStartLabel;
-    #timeRangeStartInput;
+    #dataRangeStartGroupDiv;
+    #dataRangeStartLabel;
+    #dataRangeStartInput;
 
-    #timeRangeEndGroupDiv;
-    #timeRangeEndLabel;
-    #timeRangeEndInput;
+    #dataRangeEndGroupDiv;
+    #dataRangeEndLabel;
+    #dataRangeEndInput;
 
     #scrollGroupDiv;
     #scrollLabel;  
@@ -38,9 +38,9 @@ export class ValueAtTimeLine{
 
     #valueAtDiv;
 
-    #timeRangeStart;
-    #timeRangeEnd;
-    #timeRange;
+    #dataRangeStart;
+    #dataRangeEnd;
+    #dataRange;
 
     #viewStart;
     #viewEnd;
@@ -58,10 +58,11 @@ export class ValueAtTimeLine{
     #pixelsPerSegment = 2;
     
     #labelWidth = null;
+    #scrollbarWidth = null;
     #timeUnitPerPixel;
     #pixelPerTimeUnit;
     #onZoom;
-    constructor(parent, timeRangeStart, timeRangeEnd, pixelsPerSegment=2){
+    constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
         //  build scrolling UI container
         this.#containerDiv = VA_Utils.createEl('div', {className: 'valueAt-container'});
@@ -73,7 +74,8 @@ export class ValueAtTimeLine{
         //this.scaleWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-scale-wrapper'}, this.#containerDiv);
         this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#containerDiv);
         this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor', className: 'valueAt-cursor'}, this.#containerDiv);
-        this.#cursorLabel = VA_Utils.createEl('div', {id: 'cursorlabel', innerText: '0'}, this.#cursorDiv);
+        let span = VA_Utils.createEl('span', {}, this.#cursorDiv);
+        this.#cursorLabel = VA_Utils.createEl('div', {innerText: '0'}, this.#cursorDiv);
 
         this.#scrollContainerDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
         //this.#stickyWrapperDiv = VA_Utils.createEl('div', {id: 'stickyWrapper'}, this.#scrollContainerDiv);
@@ -93,13 +95,13 @@ export class ValueAtTimeLine{
         this.#remainingDiv = VA_Utils.createEl('div',{className:'valueAt-remaining'}, this.#containerDiv);
         this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer'}, this.#containerDiv);
 
-        this.#timeRangeStartGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
-        this.#timeRangeStartLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'timeRangeStartInput', innerText: 'Start time'}, this.#timeRangeStartGroupDiv);
-        this.#timeRangeStartInput = VA_Utils.createEl('input', {id: 'timeRangeStartInput', type: 'number', step: '1', value: timeRangeStart.toFixed(0)}, this.#timeRangeStartGroupDiv);
+        this.#dataRangeStartGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        this.#dataRangeStartLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeStartInput', innerText: 'Start time'}, this.#dataRangeStartGroupDiv);
+        this.#dataRangeStartInput = VA_Utils.createEl('input', {id: 'dataRangeStartInput', type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#dataRangeStartGroupDiv);
 
-        this.#timeRangeEndGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
-        this.#timeRangeEndLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'timeRangeEndInput', innerText: 'End time'}, this.#timeRangeEndGroupDiv);
-        this.#timeRangeEndInput = VA_Utils.createEl('input', {id: 'timeRangeEndInput', type: 'number', step: '1', value: timeRangeEnd.toFixed(0)}, this.#timeRangeEndGroupDiv);
+        this.#dataRangeEndGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        this.#dataRangeEndLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeEndInput', innerText: 'End time'}, this.#dataRangeEndGroupDiv);
+        this.#dataRangeEndInput = VA_Utils.createEl('input', {id: 'dataRangeEndInput', type: 'number', step: '1', value: dataRangeEnd.toFixed(0)}, this.#dataRangeEndGroupDiv);
 
         this.#zoomGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
         this.#zoomLabel = VA_Utils.createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
@@ -123,29 +125,34 @@ export class ValueAtTimeLine{
             }
         });
 
-        this.#timeRangeStartInput.addEventListener('change', (e)=>{
-            this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
+        this.#scrollContainerDiv.addEventListener('scroll', (e)=>{
+            this.update();
+        });
+
+        this.#dataRangeStartInput.addEventListener('change', (e)=>{
+            this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
             this.setView(this.#viewStart, this.#viewRange, true, true);
             //this.update();
         });
 
-        this.#timeRangeEndInput.addEventListener('change', (e)=>{
-            this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
+        this.#dataRangeEndInput.addEventListener('change', (e)=>{
+            this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
             this.setView(this.#viewStart, this.#viewRange, true, true);
             //this.update();
         });
    
         this.#root = document.querySelector(':root');
         this.#labelWidth = parseFloat(this.getCSSVariable('--label-width').replace('px',''));
-        this.#viewStart = timeRangeStart;
-        this.#viewEnd = timeRangeEnd;
+        this.#viewStart = dataRangeStart;
+        this.#viewEnd = dataRangeEnd;
         this.#updateTimePerPixel(this.#viewEnd - this.#viewStart);
-        this.#setTimeRange(timeRangeStart, timeRangeEnd);
+        this.setDataRange(dataRangeStart, dataRangeEnd);
 
         this.#zoomSlider.addEventListener('input', (e)=>{
-            let viewRange = this.#timeRange * (1 - this.#zoomSlider.value);
+            //this.zoom(this.#zoomSlider.value);
+            let viewRange = this.#dataRange * (1 - this.#zoomSlider.value);
             this.#updateTimePerPixel(viewRange);
-            this.#setTimeRange(parseFloat(this.#timeRangeStartInput.value), parseFloat(this.#timeRangeEndInput.value));
+            //this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
             this.setView(this.#viewStart, viewRange, true);
         });
         this.#zoomSlider.addEventListener('pointerdown', (e)=>{
@@ -156,11 +163,11 @@ export class ValueAtTimeLine{
         });
 
         this.#scrollbarDiv.addEventListener('scroll', (e)=>{
-            this.setView(this.#timeRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#timeRange), this.#viewRange);
+            this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
         });
 
         this.#scrollbarDiv.addEventListener('scrollend', (e)=>{
-            this.setView(this.#timeRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#timeRange), this.#viewRange);
+            this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
         });
 
 
@@ -215,21 +222,32 @@ export class ValueAtTimeLine{
         this.setView(this.#viewStart, this.viewRange);
         this.setTime(0);
     }
+    zoom(value){
+        let viewRange = this.#dataRange * (1 - value);
+        this.#updateTimePerPixel(viewRange);
+        //this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
+        this.setView(this.#viewStart, viewRange, true);
+    }
     #handleWindowSize(){
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
+        this.#scrollbarWidth = this.#containerDiv.offsetWidth - this.#lineWrapDiv.offsetWidth;
         this.#updateTimePerPixel(this.#viewRange);
-        this.#updateCursor();
+        this.#updateCursors();
     }
 
-    #setTimeRange(startTime, endTime){
-        this.#timeRangeStart = Math.min(startTime, endTime);// - this.#timeUnitPerPixel * this.#labelWidth;
-        this.#timeRangeEnd = Math.max(startTime + 1, endTime);
-        this.#timeRange = this.#timeRangeEnd - this.#timeRangeStart;
+    setDataRange(startTime, endTime){
+        this.#dataRangeStart = Math.min(startTime, endTime);// - this.#timeUnitPerPixel * this.#labelWidth;
+        this.#dataRangeEnd = Math.max(startTime + 1, endTime);
+        this.#dataRange = this.#dataRangeEnd - this.#dataRangeStart;
 
-        //  ensure view is inside the timeRange
-        this.#viewStart = VA_Utils.clamp(this.#timeRangeStart, this.#viewStart, this.#timeRangeEnd);
-        this.#viewEnd = VA_Utils.clamp(this.#timeRangeStart, this.#viewEnd, this.#timeRangeEnd);
+        this.#dataRangeStartInput.value = this.#dataRangeStart;
+        this.#dataRangeEndInput.value = this.#dataRangeEnd;
+
+        //  ensure view is inside the dataRange
+        this.#viewStart = VA_Utils.clamp(this.#dataRangeStart, this.#viewStart, this.#dataRangeEnd);
+        this.#viewEnd = VA_Utils.clamp(this.#dataRangeStart, this.#viewEnd, this.#dataRangeEnd);
         this.#viewRange = this.#viewEnd - this.#viewStart;
+        this.update();
     }
 
     getCSSVariable(name){
@@ -249,16 +267,18 @@ export class ValueAtTimeLine{
         }
     }
 
-    #updateCursor(){
-        this.#cursorDiv.style.height = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight + 'px';
+    #updateCursors(){
+        let cursorHeight = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight;
+        this.#cursorDiv.style.height = cursorHeight + 'px';
         if (this.#timeUnitPerPixel === undefined || true){ this.#updateTimePerPixel(this.#viewRange) }
-        let x = ((this.#cursorTime - this.#viewStart) * this.#pixelPerTimeUnit);
+        let x = (this.#cursorTime - this.#viewStart) * this.#pixelPerTimeUnit;
+        this.#cursorDiv.style.display = x<0? 'none' : ''; 
         this.#cursorDiv.style.left =  'calc(var(--label-width) + ' + x + 'px)';
         this.#cursorLabel.innerText = this.#cursorTime.toFixed(2);
     }
 
     update(){
-        this.#updateCursor();
+        this.#updateCursors();
         this.#rootValueAtGroup.update();
     }
 
@@ -272,13 +292,13 @@ export class ValueAtTimeLine{
 
     setTime(time){
         this.#cursorTime = time;
-        this.#updateCursor();
+        this.#updateCursors();
         this.#rootValueAtGroup.setTime(time);
     }
 
     setTimeFast(time){
         this.#cursorTime = time;
-        this.#updateCursor();
+        this.#updateCursors();
         this.#rootValueAtGroup.setTimeFast(time);
     }
 
@@ -291,10 +311,10 @@ export class ValueAtTimeLine{
 
             this.#updateTimePerPixel(this.#viewRange);
 
-            this.#zoomSlider.value = 1 - (this.#viewRange / this.#timeRange);
+            this.#zoomSlider.value = 1 - (this.#viewRange / this.#dataRange);
             this.#scrollbarContentDiv.style.width = (100 /  (1 - this.#zoomSlider.value)) + '%';
             
-            let scrollLeft = (this.#viewStart - this.#timeRangeStart) / this.#timeRange * this.#scrollbarDiv.scrollWidth;
+            let scrollLeft = (this.#viewStart - this.#dataRangeStart) / this.#dataRange * this.#scrollbarDiv.scrollWidth;
             if (scrollLeft != this.#scrollbarDiv.scrollLeft){
                 this.#scrollbarDiv.scrollLeft = scrollLeft;
             }
@@ -361,15 +381,16 @@ export class ValueAtTimeLine{
         this.#pixelsPerSegment = value;
         this.update();
     }
-    get timeRangeStart(){
-        return this.#timeRangeStart;
+    get dataRangeStart(){
+        return this.#dataRangeStart;
     };
-    get timeRangeEnd(){
-        return this.#timeRangeEnd;
+    get dataRangeEnd(){
+        return this.#dataRangeEnd;
     };
-    get timeRange(){
-        return this.#timeRange;
+    get dataRange(){
+        return this.#dataRange;
     };
+
     get viewStart(){
         return this.#viewStart;
     }
@@ -386,6 +407,7 @@ export class ValueAtTimeLine{
         this.#viewRange = this.#viewEnd - this.#viewStart;
         this.update();
     }
+
     get viewRange(){
         return this.#viewRange;
     }
