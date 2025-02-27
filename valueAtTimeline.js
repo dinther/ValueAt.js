@@ -218,21 +218,31 @@ export class ValueAtTimeLine{
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
         });
+        //this.#handleWindowSize();
+        //this.setView(this.#viewStart, this.viewRange);
+        //this.setTime(0);
+    }
+
+    init(){
         this.#handleWindowSize();
         this.setView(this.#viewStart, this.viewRange);
-        this.setTime(0);
+        this.setTime(this.#cursorTime);
+        this.update();
     }
+
     zoom(value){
         let viewRange = this.#dataRange * (1 - value);
         this.#updateTimePerPixel(viewRange);
         //this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
         this.setView(this.#viewStart, viewRange, true);
     }
+
     #handleWindowSize(){
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
         this.#scrollbarWidth = this.#containerDiv.offsetWidth - this.#lineWrapDiv.offsetWidth;
         this.#updateTimePerPixel(this.#viewRange);
-        this.#updateCursors();
+        this.update();
+        //this.#updateCursors();
     }
 
     setDataRange(startTime, endTime){
@@ -280,6 +290,14 @@ export class ValueAtTimeLine{
     update(){
         this.#updateCursors();
         this.#rootValueAtGroup.update();
+
+        //  temp stats
+        let lines = this.#rootValueAtGroup.getAllValueAtLines();
+        let inViewCount = 0;
+        lines.forEach((line)=>{
+            inViewCount += line.inView? 1 : 0;
+        });
+        console.log('rendered ' + inViewCount + ' lines');
     }
 
     addValueAtNodeToSelectedList(valueAtNode){

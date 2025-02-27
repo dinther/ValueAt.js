@@ -12,6 +12,7 @@
     --nodesize: 12px;
     --nodeselectedsize: 16px;
     --label-width: 140px;
+    --grouped-lines-opacity: 0.4;
     --main-text-color: #ffffff;
     --dim-text-color: #aaaaaa;
     --cursor-text-color: #000000;
@@ -222,12 +223,16 @@ div {
 .valueAt-expand {
     position: relative;
     width: 100%;
-    z-index: 9;
+    /*z-index: 9;*/
 }
 
 .valueAt-expand.valueAt-collapse {
     position: absolute;
     top: 0px;
+}
+
+.valueAt-expand.valueAt-grouped-lines {
+    opacity: var(--grouped-lines-opacity);
 }
 
 .valueAt-flex-hor{
@@ -243,7 +248,7 @@ div {
     position: relative;
     height: var(--line-row-height);
     width: 100%;
-    z-index: 0;
+    /*z-index: 0;*/
 }
 
 .valueAt-line.valueAt-collapse {
@@ -316,7 +321,8 @@ div {
 }
 
 .valueAt-line-label.valueAt-collapse{
-    display: none;
+    /*display: none;*/
+    opacity: 0;
 }
 
 .valueAt-expand-button {

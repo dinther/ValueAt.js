@@ -52,7 +52,6 @@ export class ValueAtGroup{
             this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
             this.#labelSpanDiv = VA_Utils.createEl('span', {innerText: this.#name}, this.#labelContent);
             this.#labelContent.addEventListener('pointerdown', (e)=>{
-                //this.expanded = !this.expanded;
                 this.#setExpanded(!this.#expanded, e.ctrlKey);
                 e.stopPropagation();
             });
@@ -66,24 +65,64 @@ export class ValueAtGroup{
             this.onSelectedChanged(this, valueAtUI);
         }
     }
+    #setExpanded(value, setState = false){
+        if (value != this.#expanded || setState){
+            if (value==true){
+                this.#expanded = value;
+                this.expand(setState);
+            } else {
+                this.#expanded = value;
+                this.collapse(setState);
+            }
+            this.#expanded = value;
+            this.#updateCaret();
+            this.update();
+        }
+    }
+
+    //  Traces ValueAtGroups back to the root of the tree and returns all not expanded groups in an Array
+    getLogicallyCollapsedParentGroups(collapsedGroups=[]){
+        if (this.#parentValueAtGroup){
+            if (!this.#expanded && collapsedGroups.indexOf(this) == -1) collapsedGroups.push(this);
+            if (!this.#parentValueAtGroup.expanded && collapsedGroups.indexOf(this.#parentValueAtGroup) == -1) collapsedGroups.push(this.#parentValueAtGroup);
+            return this.#parentValueAtGroup.getLogicallyCollapsedParentGroups(collapsedGroups);
+        } else {
+            return collapsedGroups;
+        }
+    }
+
     collapse(setState=false){
         if (setState) {
             this.#expanded = false;
         }
-        this.#expandDiv.classList.add('valueAt-collapse');
-        this.#valueAtGroups.forEach((valueAtGroup)=>{
-            valueAtGroup.collapse(setState);
-            valueAtGroup.labelDiv.classList.add('valueAt-collapse');
-        });
 
-        if ((!this.#parentValueAtGroup.expandDiv.classList.contains('valueAt-collapse') || this.#parentValueAtGroup != this.#timeLine.rootValueAtGroup) && !this.#expanded){
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.lineDiv.classList.add('valueAt-hide');
-            });
+        //  Only set the very first logically and visually expanded group expandDiv to semi transparent
+        if (this.#parentValueAtGroup.expanded && !this.#parentValueAtGroup.expandDiv.classList.contains('valueAt-collapse')){
+            this.#expandDiv.classList.add('valueAt-grouped-lines');
+        } else {
+            this.#expandDiv.classList.remove('valueAt-grouped-lines');
         }
-        this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.lineDiv.classList.add('valueAt-collapse');
-        });
+
+        for (let i=0; i<this.#valueAtLines.length; i++){
+            this.#valueAtLines[i].lineDiv.classList.add('valueAt-collapse');
+            this.#valueAtLines[i].labelDiv.classList.add('valueAt-collapse');
+        }
+
+        this.#expandDiv.classList.add('valueAt-collapse');
+        if (!this.#parentValueAtGroup.expanded)
+            this.#labelDiv.classList.add('valueAt-collapse');
+        
+        for (let i=0; i<this.#valueAtGroups.length; i++){
+            this.#valueAtGroups[i].collapse(setState);
+        }
+
+        //  Hide value lines when the any group between the tree root and this group is logicaly collapsed (!expanded)
+        let collapsedParentGroups = this.getLogicallyCollapsedParentGroups();
+        if (collapsedParentGroups.length > 1){
+            for (let i=0; i<this.#valueAtLines.length; i++){
+                this.#valueAtLines[i].lineDiv.classList.add('valueAt-hide');
+            }
+        }
     }
 
     expand(setState=false){
@@ -91,18 +130,25 @@ export class ValueAtGroup{
             this.#expanded = true;
         }
         if (this.#labelDiv && this.#parentValueAtGroup.expanded) this.#labelDiv.classList.remove('valueAt-collapse');
-        if (this.#expandDiv && this.#parentValueAtGroup.expanded && this.#expanded) this.#expandDiv.classList.remove('valueAt-collapse');
+        if (this.#expandDiv && this.#parentValueAtGroup.expanded){
+            if (this.#expanded){
+                this.#expandDiv.classList.remove('valueAt-collapse');
+                this.#expandDiv.classList.remove('valueAt-grouped-lines');
+            } else {
+                this.#parentValueAtGroup.expandDiv.classList.remove('valueAt-grouped-lines');
+                this.#expandDiv.classList.add('valueAt-grouped-lines');
+            }
+        }
         this.#valueAtGroups.forEach((valueAtGroup)=>{
-            if (this.#expanded) valueAtGroup.expand(setState);
+            valueAtGroup.expand(setState);
         });
         if (this.#parentValueAtGroup.expanded){
             this.#valueAtLines.forEach((valueAtLine)=>{
-                //valueAtLine.labelDiv.classList.remove('valueAt-hide');
                 valueAtLine.lineDiv.classList.remove('valueAt-hide');
             });
         }
         this.#valueAtLines.forEach((valueAtLine)=>{
-            if (this.#expanded){
+            if (this.#parentValueAtGroup.expanded && this.#expanded){
                 valueAtLine.labelDiv.classList.remove('valueAt-collapse');
                 valueAtLine.lineDiv.classList.remove('valueAt-collapse');
             }
@@ -115,12 +161,12 @@ export class ValueAtGroup{
             else this.#labelCaretDiv.classList.remove('caret-down');
         }
     }
-    update(startTime_offset, timeRange_offset){
+    update(){
         this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.update(startTime_offset, timeRange_offset);
+            valueAtLine.update();
         });
         this.#valueAtGroups.forEach((valueAtGroup)=>{
-            valueAtGroup.update(startTime_offset, timeRange_offset);
+            valueAtGroup.update();
         });
     }
     setTime(time){
@@ -163,22 +209,14 @@ export class ValueAtGroup{
         });
         return valueAtNodes;
     }
-    #setExpanded(value, setState = false){
-        if (value != this.#expanded || setState){
-            if (value==true){
-                this.#expanded = value;
-                this.expand(setState);
-                this.#expandDiv.style.opacity = 1.0;
-            } else {
-                this.#expanded = value;
-                this.collapse(setState);
-                this.#expandDiv.style.opacity = 0.3;
-            }
-            this.#expanded = value;
-            this.#updateCaret();
-            this.update();
-        }
+    getAllValueAtLines(valueAtLinesList = []){
+        valueAtLinesList = valueAtLinesList.concat(this.#valueAtLines);
+        this.#valueAtGroups.forEach((valueAtGroup)=>{
+            valueAtLinesList = valueAtGroup.getAllValueAtLines(valueAtLinesList);
+        });
+        return valueAtLinesList;
     }
+
     get expanded(){
         return this.#expanded;
     }

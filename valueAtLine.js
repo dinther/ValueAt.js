@@ -126,19 +126,19 @@ export class ValueAtLine{
             }
             this.#valueAtNodes.push(valueAtNode);
         }
-        this.#render();
         this.#valueAt.onChange = ()=>{this.#handleOnChange()};
+        this.#render();
     }
     #handleOnChange(){
         this.update();
     }
     #isInView(){
-        if (this.#lineDiv.classList.contains('valueAt-collapse')){ return false; }
+        //if (this.#lineDiv.classList.contains('valueAt-collapse')){ return false; }
         const rect = this.#lineDiv.getBoundingClientRect();
         let result = VA_Utils.domRectIntersect(rect, this.#timeLine.scrollContainerDiv.getBoundingClientRect())
-        if (!result){
-            console.log(this.#labelName);
-        }
+        //if (!result){
+        //    console.log(this.#labelName);
+        //}
         return result;       
     }
     #render(){
@@ -165,21 +165,23 @@ export class ValueAtLine{
                 this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
                 this.#svg.querySelector('path').setAttribute('d', path);
                 this.#svg.setAttribute('preserveAspectRatio', 'none');
+
+                let v_offset = this.#strokeWidth / this.#lineHeight * 100;
+
+                this.#valueAtNodes.forEach((valueAtNode)=>{
+                    let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
+                    if (percent >= 0 && percent<= 100){
+                        valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
+                        valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';
+                        valueAtNode.div.style.display = '';
+                    } else {
+                        valueAtNode.div.style.display = 'none';
+                    }
+                });                
             }
             this.#inView = inView;
         }
-        let v_offset = this.#strokeWidth / this.#lineHeight * 100;
 
-        this.#valueAtNodes.forEach((valueAtNode)=>{
-            let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
-            if (percent >= 0 && percent<= 100){
-                valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
-                valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';
-                valueAtNode.div.style.display = '';
-            } else {
-                valueAtNode.div.style.display = 'none';
-            }
-        });
     }
     #handleSelectedChanged(){
         if (typeof onSelectedChanged === 'function'){
@@ -204,6 +206,9 @@ export class ValueAtLine{
     }
     setTimeFast(time){
         this.#valueAt.setValueFast(time);
+    }
+    get inView(){
+        return this.#inView;
     }
     get valueAt(){
         return this.#valueAt;

@@ -152,12 +152,11 @@
             colorGroup1.addValueAt(va_green1, 'Green', 1, '#0f0');
             colorGroup1.addValueAt(va_blue1, 'Blue', 1, '#00f');
 
-            let transformGroup1 = circlegroup1.addNewValueAtGroup('Tranform', true);
+            let transformGroup1 = circlegroup1.addNewValueAtGroup('Transform', true);
 
             let positionGroup1 = transformGroup1.addNewValueAtGroup('Position', true);
             positionGroup1.addValueAt(va_pos_x1, 'Pos X', 1);
             positionGroup1.addValueAt(va_pos_y1, 'Pos y', 1);
-
 
             let circlegroup2 = timeLine.addNewValueAtGroup('Circle 2', true);
             circlegroup2.addValueAt(va_radius2, 'Radius', 1, '#f0f', true);
@@ -166,11 +165,13 @@
             colorGroup2.addValueAt(va_green2, 'Green', 1, '#0f0');
             colorGroup2.addValueAt(va_blue2, 'Blue', 1, '#00f');
 
-            let transformGroup2 = circlegroup2.addNewValueAtGroup('Tranform', true);
+            let transformGroup2 = circlegroup2.addNewValueAtGroup('Transform', true);
 
             let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', true);
             positionGroup2.addValueAt(va_pos_x2, 'Pos X', 1);
             positionGroup2.addValueAt(va_pos_y2, 'Pos y', 1);
+
+            timeLine.init();
 
             window.computeStepList = lookupAtExport.computeStepList;
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
