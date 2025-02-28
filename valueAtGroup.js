@@ -14,11 +14,14 @@ export class ValueAtGroup{
     #indent = 0;
     #parentValueAtGroup;
     #expanded;
+    #groupIconsDiv;
+    #hideAnimation = false;
+    #hideValueAnimationDiv;
     #valueAtGroups = [];
     #valueAtLines = [];
     #onChanged;
 
-    constructor(timeLine, name, parentValueGroup, expanded=true){
+    constructor(timeLine, name, parentValueGroup, expanded=true, indent=20){
         let labelCollapseClass = '';
         let expandedCollapseClass = '';
         if (parentValueGroup){
@@ -37,7 +40,7 @@ export class ValueAtGroup{
         this.#parentValueAtGroup = parentValueGroup;
         let parentDiv = this.#timeLine.lineWrapDiv;
         if (this.#parentValueAtGroup != null){
-            this.#indent = this.#parentValueAtGroup.indent + 20;
+            this.#indent = this.#parentValueAtGroup.indent + indent;
             parentDiv = this.#parentValueAtGroup.expandDiv;
         }
         this.#expanded = expanded;
@@ -46,14 +49,30 @@ export class ValueAtGroup{
         if (this.#parentValueAtGroup != null){
             this.#groupHeaderDiv = VA_Utils.createEl('div', {className: 'valueAt-group-header'}, this.#groupDiv);
             this.#labelDiv = VA_Utils.createEl('div', {className: 'valueAt-group-label' + labelCollapseClass}, this.#groupHeaderDiv);
-                       
+                  
+            this.#groupIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
+            this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle animation on/off', className: 'valueAt-expand-button'}, this.#groupIconsDiv);
+            
+
             this.#labelContent = VA_Utils.createEl('div', {className: 'valueAt-group-label-span'}, this.#labelDiv);
             this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret', innerText:'▶'}, this.#labelContent);
             this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
             this.#labelSpanDiv = VA_Utils.createEl('span', {innerText: this.#name}, this.#labelContent);
             this.#labelContent.addEventListener('pointerdown', (e)=>{
-                this.#setExpanded(!this.#expanded, e.ctrlKey);
-                e.stopPropagation();
+                if (e.button == 0){
+                    this.#setExpanded(!this.#expanded, e.ctrlKey);
+                    e.stopPropagation();
+                }
+            });
+            this.#hideValueAnimationDiv.addEventListener('pointerdown', (e)=>{
+                if (e.button == 0){
+                    this.#hideAnimation = !this.#hideAnimation;
+                    if (this.#hideAnimation){
+                        this.#hideValueAnimationDiv.classList.add('valueAt-hide-animation');
+                    } else {
+                        this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
+                    }
+                }
             });
             this.#updateCaret();
         }
@@ -161,7 +180,7 @@ export class ValueAtGroup{
             else this.#labelCaretDiv.classList.remove('caret-down');
         }
     }
-    update(){
+    update(){        
         this.#valueAtLines.forEach((valueAtLine)=>{
             valueAtLine.update();
         });
@@ -169,18 +188,33 @@ export class ValueAtGroup{
             valueAtGroup.update();
         });
     }
+    setTimeAccurate(time){
+        if (!this.#hideAnimation){
+            this.#valueAtLines.forEach((valueAtLine)=>{
+                valueAtLine.setTimeAccurate(time);
+            });
+        }
+        this.#valueAtGroups.forEach((valueAtGroup)=>{
+            valueAtGroup.setTimeAccurate(time);
+        });        
+    }
+
     setTime(time){
-        this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.setTime(time);
-        });
+        if (!this.#hideAnimation){
+            this.#valueAtLines.forEach((valueAtLine)=>{
+                valueAtLine.setTime(time);
+            });
+        }
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             valueAtGroup.setTime(time);
         });        
     }
     setTimeFast(time){
-        this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.setTimeFast(time);
-        });
+        if (!this.#hideAnimation){
+            this.#valueAtLines.forEach((valueAtLine)=>{
+                valueAtLine.setTimeFast(time);
+            });
+        }
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             valueAtGroup.setTimeFast(time);
         });        

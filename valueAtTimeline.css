@@ -11,7 +11,7 @@
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 16px;
-    --label-width: 140px;
+    --label-width: 160px;
     --grouped-lines-opacity: 0.4;
     --main-text-color: #ffffff;
     --dim-text-color: #aaaaaa;
@@ -23,7 +23,7 @@
     --group-label-back-color: #181818;
     --main-back-color: #1f1f1f;
     --graph-back-color: #313131;
-    --scale-back-color: #989898;
+    --scale-back-color: #615e5e;
     --cursor-color: #ff9900;
     --range-cursor-color: #ff6200;
     --sb-track-color: #28292e;
@@ -66,7 +66,7 @@ div {
   *::-webkit-scrollbar-thumb {
     border-radius: calc(var(--sb-size) - 2px);
     background-color: var(--sb-thumb-color);
-    bborder: 1px solid #28292e;
+    /*border: 1px solid #28292e;*/
   }
   
   *::-webkit-scrollbar-thumb:hover {
@@ -79,7 +79,7 @@ div {
 
 .valueAt-container {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 0.8em;
+    font-size: 0.7em;
     background-color: var(--main-back-color);
     color: var(--main-text-color);
     overflow: hidden;
@@ -108,9 +108,16 @@ div {
     align-items: center;
     background-color: var(--scale-back-color);
     z-index: 10;
-    width: 100%;
+    width: calc(100% - var(--sb-size) - var(--label-width));
     height: var(--scale-row-height);
     position: relative;
+    flex-direction: column;
+}
+
+.valueAt-cursor-dragbox {
+    height: 16px;
+    width: 100%;
+    pointer-events: all;
 }
 
 .valueAt-cursor{
@@ -186,6 +193,7 @@ div {
 }
 
 .valueAt-group-label {
+    color: var(--dim-text-color);
     background-color: var(--group-label-back-color);
     position: relative;
     padding: 2px 0px;
@@ -303,6 +311,7 @@ div {
     text-wrap-mode: nowrap;
     z-index: 25;
     width: var(--label-width);
+    color: var(--dim-text-color);
     height: 100%;
     border-top: 1px solid var(--line-color);
     border-bottom: 1px solid var(--line-color);
@@ -310,6 +319,7 @@ div {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    position: relative;
 }
 
 .valueAt-hide {
@@ -325,21 +335,32 @@ div {
     opacity: 0;
 }
 
+.valueAt-hide-animation {
+    opacity: 0.5;
+}
+
+.valueAt-line-icons {
+    display: flex;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    color: var(--dim-text-color);
+    margin-right: 4px;
+    font-size: 1.0em;
+    align-items: center;
+    background-color: transparent;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
 .valueAt-expand-button {
     display: flex;
     color: var(--dim-text-color);
-    margin-right: 4px;
-    font-size: 1.2em;
-    width: 18px;
-    height: 18px;
-    /* position: relative; */
-    /* top: 0px; */
-    /* transform: translate(0%, -50%); */
+    width: 14px;
+    height: 14px;
     align-items: center;
     border: 1px solid transparent;
-    /* aspect-ratio: 1 / 1; */
     justify-content: center;
-    padding: 0 0 1px 0;
     background-color: transparent;
 }
 
@@ -378,7 +399,7 @@ div {
     position: absolute;
     border-radius: 50%;
     border: 1px solid #000000;
-    background-color: #ffff83ad;
+    background-color: #ffff8368;
     aspect-ratio: 1 / 1;
     height: var(--nodesize);
     cursor: var(--nodecursor);
@@ -389,13 +410,13 @@ div {
 .valueAt-node-active {
     height: var(--nodeselectedsize);
     border: 1px solid #ffff00;
-    background-color: #ff0000ad;
+    background-color: #ff000064;
 }
 
 .valueAt-node-selected {
     height: var(--nodeselectedsize);
     border: 1px solid #ffff00;
-    background-color: #f00;
+    background-color: #ff000064;
 }
 
 .valueAt-h-scroll{

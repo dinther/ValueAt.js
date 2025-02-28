@@ -8,13 +8,19 @@ export class ValueAtLine{
     #labelName;
     #labelDiv;
     #labelSpan;
+    #lineIconsDiv;
+    #hideValueAnimationDiv;
     #labelExpandDiv;
+    #previousKeyFrameDiv
+    #onNodeDiv;
+    #nextKeyFrameDiv
     #lineDiv;
     #svgWrapperDiv;
     #svg;
     #path;
     #strokeColor;
     #strokeWidth;
+    #hideAnimation = false;
     #valueAtNodes = [];
     #pointerTime = 0;
     #lineHeight = 0;
@@ -40,17 +46,16 @@ export class ValueAtLine{
             }
         });
 
-        this.#lineDiv.addEventListener('pointermove', (e)=>{
-            if (e.buttons==1){
-                let f = e.offsetX/this.#lineDiv.offsetWidth;
-                this.#pointerTime = this.#timeLine.startTime + (this.#timeLine.timeRange * f);
-            }
-        });
-
         this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
-        this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', className: 'valueAt-expand-button' + collapseClass}, this.#labelDiv);
+        this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
+        this.#previousKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏴', title: 'Cursor to previous keyframe', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#onNodeDiv = VA_Utils.createEl('div', {innerText: '◈', title: 'cursor to next keyframe.', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#nextKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏵', title: 'Cursor on keyframe indicator', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', title: 'Maximize this line graph', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle animation on/off', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+                            
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
@@ -69,16 +74,29 @@ export class ValueAtLine{
         //this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
         valueAtGroup.expandDiv.appendChild(this.#lineDiv);
         
-        this.#labelExpandDiv.addEventListener('click', (e)=>{
+        this.#hideValueAnimationDiv.addEventListener('pointerdown', (e)=>{
+            if (e.button == 0){
+                this.#hideAnimation = !this.#hideAnimation;
+                if (this.#hideAnimation){
+                    this.#hideValueAnimationDiv.classList.add('valueAt-hide-animation');
+                } else {
+                    this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
+                }
+            }
+        });
+
+        this.#labelExpandDiv.addEventListener('pointerdown', (e)=>{
             if (!e.ctrlKey && !e.shiftKey){
                 this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
                     if (lineDiv != this.#lineDiv){
                         lineDiv.classList.remove('valueAt-maximized');
+                        this.update();
                     }
                 });
             }
             if (this.#lineDiv.classList.contains('valueAt-maximized')){
                 this.#lineDiv.classList.remove('valueAt-maximized');
+                this.update();
             } else{
                 if (e.shiftKey){
                     let firstMaximizedDiv = this.#timeLine.containerDiv.querySelector('.valueAt-line.valueAt-maximized');
@@ -88,10 +106,32 @@ export class ValueAtLine{
                         let endIndex = lineDivs.indexOf(this.#lineDiv);
                         for (let i=startIndex; i<endIndex; i++){
                             lineDivs[i].classList.add('valueAt-maximized');
+                            lineDivs[i].update();
                         }
                     }
                 }
                 this.#lineDiv.classList.add('valueAt-maximized');
+                this.update();
+            }
+        });
+
+        this.#previousKeyFrameDiv.addEventListener('pointerdown', (e)=>{
+            if (e.button==0){
+                let beforeKey = this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(this.#timeLine.cursorTime, true)];
+                if (beforeKey){
+                    this.#timeLine.setTime(beforeKey.time);
+                    this.#timeLine.panTocursor();
+                }
+            }
+        });
+
+        this.#nextKeyFrameDiv.addEventListener('pointerdown', (e)=>{
+            if (e.button==0){
+                let afterKey = this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(this.#timeLine.cursorTime, true)];
+                if(afterKey){
+                    this.#timeLine.setTime(afterKey.time);
+                    this.#timeLine.panTocursor();
+                }
             }
         });
 
@@ -141,7 +181,7 @@ export class ValueAtLine{
         //}
         return result;       
     }
-    #render(){
+    #render1(){
         if (!this.#lineDiv.classList.contains('valueAt-hide')){
             let inView = this.#isInView();
             if (inView){  //  only render if this was not in view and now it is in view
@@ -181,7 +221,108 @@ export class ValueAtLine{
             }
             this.#inView = inView;
         }
+    }
+    #render(){
+        let count = 0;
+        if (!this.#lineDiv.classList.contains('valueAt-hide')){
+            let inView = this.#isInView();
+            if (inView){  //  only render if this was not in view and now it is in view
+                this.#path.setAttribute('stroke-width', this.#strokeWidth);
+                this.#path.setAttribute('stroke', this.#strokeColor);
 
+                let w = this.#timeLine.lineWrapDiv.offsetWidth;
+
+                //  Render svg data from viewStart to the first ValueKey that falls inside the timeRange
+                let beforeIndex = this.#valueAt.getBeforeValueKeyIndex(this.#timeLine.viewStart);
+                let beforeKey = this.#valueAt.valueKeys[beforeIndex];
+                let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart) + 'L';
+                count++;
+                let range = this.#timeLine.viewStart - beforeKey.time;
+                let sliceSteps = (range / this.#timeLine.viewRange)  / this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment;
+                //let sliceSteps = Math.round(range/targetTimeSlice);
+                let x = this.#timeLine.viewStart;
+                if (sliceSteps > 0 ){
+                    let slice = sliceSteps;
+                    let timeBreak = beforeKey.time - (slice * 0.5);
+                    x += slice;
+                    while(x < timeBreak){
+                        let y = this.#valueAt.getValueAtKeyframe(x);
+                        path += x + ' ' + y + ' ';
+                        count++;
+                        x += slice;
+                    }   
+                }
+                
+                //  Render svg data between ValueKeys stepping close to timeSlice
+                for (let index = beforeIndex; index < this.#valueAt.valueKeys.length-1; index++){
+                    let beforeKey = this.#valueAt.valueKeys[index];
+                    let afterKey = this.#valueAt.valueKeys[index+1]; 
+                    let range = (afterKey.time - beforeKey.time);
+                    let sliceSteps = Math.round((range / this.#timeLine.viewRange) * this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
+                    //let sliceSteps = Math.round(range/targetTimeSlice);
+                    if (sliceSteps > 0){
+                        let slice = range / sliceSteps;
+                        let timeBreak = Math.min(afterKey.time - (slice * 0.5), this.#timeLine.viewEnd - (slice * 0.5));
+                        path += beforeKey.time + ' ' + beforeKey.value + ' ';
+                        count++;
+                        x += slice;
+                        while(x < timeBreak){
+                            let y = this.#valueAt.getValueAtKeyframe(x);
+                            path += x + ' ' + y + ' ';
+                            count++;
+                            x += slice;
+                        }   
+                    }
+                }
+                //  Render svg data from the last ValueKey that falls inside the timeRange and viewEnd
+                beforeIndex = this.#valueAt.valueKeys.length - 1;
+                beforeKey = this.#valueAt.valueKeys[beforeIndex];
+                path += beforeKey.time + ' ' + beforeKey.value + ' ';
+                range = (this.#timeLine.viewEnd - beforeKey.time) / this.#timeLine.dataRange;
+                sliceSteps = range / this.#timeLine.lineWrapDiv.offsetWidth;
+                //sliceSteps = Math.round((range / this.#timeLine.viewRange) * this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
+                if (sliceSteps > 0){
+                    let slice = range / sliceSteps;
+                    let timeBreak = this.#timeLine.viewEnd - (slice * 0.5);
+                    x += slice;
+                    while(x < timeBreak){
+                        let y = this.#valueAt.getValueAtKeyframe(x);
+                        path += x + ' ' + y + ' ';
+                        count++;
+                        x += slice;
+                    }
+                    path += this.#timeLine.viewEnd + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewEnd) + ' ';  
+                    count++;         
+                }
+
+                let marginFactor = this.#valueAt.valueRange * (this.#strokeWidth / this.#lineDiv.offsetHeight);
+                let hm = marginFactor * 0.5;
+
+                this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (this.#valueAt.valueRange + hm + hm));
+                this.#svg.querySelector('path').setAttribute('d', path);
+                this.#svg.setAttribute('preserveAspectRatio', 'none');
+
+                //let v_offset = this.#strokeWidth / this.#lineDiv.offsetHeight * 100;
+                //let usableHeight = this.#lineDiv.offsetHeight;
+                let usableHeight = (this.#lineDiv.offsetHeight - this.#strokeWidth);// * 100;
+
+                this.#valueAtNodes.forEach((valueAtNode)=>{
+                    let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
+                    if (percent >= 0 && percent<= 100){
+                        valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
+                        //valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';
+//                        let height =  
+                        valueAtNode.div.style.bottom = ((this.#strokeWidth*0.5) + ((valueAtNode.valueKey.value - this.#valueAt.minValue) / this.#valueAt.valueRange * usableHeight)) + 'px';
+
+                        valueAtNode.div.style.display = '';
+                        
+                    } else {
+                        valueAtNode.div.style.display = 'none';
+                    }
+                });
+            }
+            this.#inView = inView;
+        }
     }
     #handleSelectedChanged(){
         if (typeof onSelectedChanged === 'function'){
@@ -201,11 +342,22 @@ export class ValueAtLine{
     update(){
         this.#render();
     }
+
+    setTimeAccurate(time){
+        if (!this.#hideAnimation){
+            this.#valueAt.setValueAccurate(time);
+        }
+    }
+    
     setTime(time){
-        this.#valueAt.setTime(time);
+        if (!this.#hideAnimation){
+            this.#valueAt.setTime(time);
+        }
     }
     setTimeFast(time){
-        this.#valueAt.setValueFast(time);
+        if (!this.#hideAnimation){
+            this.#valueAt.setValueFast(time);
+        }
     }
     get inView(){
         return this.#inView;

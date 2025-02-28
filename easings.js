@@ -6,6 +6,11 @@ export function linear( t ) {
     return t;
 }
 
+export function stepped( t , magnitude = 1) {
+    let steps = 1 / magnitude;
+    return Math.round(t * steps) / steps;
+}
+
 // Slight acceleration from zero to full speed
 export function easeInSine( t ) {
     return -1 * Math.cos( t * ( Math.PI / 2 ) ) + 1;

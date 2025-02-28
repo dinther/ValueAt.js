@@ -10,6 +10,7 @@ export class ValueAtTimeLine{
     #stickyWrapperDiv;
     #scaleWrapperDiv;
     #scaleDiv;
+    #cursorDragBoxDiv;
     #lineWrapDiv;
     #scrollRemainderDiv;
     #scrollbarDiv;
@@ -56,16 +57,16 @@ export class ValueAtTimeLine{
     
     #scrollbarContentDiv;
     #pixelsPerSegment = 2;
-    
     #labelWidth = null;
     #scrollbarWidth = null;
     #timeUnitPerPixel;
     #pixelPerTimeUnit;
+    #cursorDragging = false;
     #onZoom;
     constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
         //  build scrolling UI container
-        this.#containerDiv = VA_Utils.createEl('div', {className: 'valueAt-container'});
+        this.#containerDiv = VA_Utils.createEl('div', {className: 'valueAt-container'});  //  attach the whole branch to parent at the end
 
         //  build stickyheader
         this.#headerDiv = VA_Utils.createEl('div', {className: 'valueAt-header'}, this.#containerDiv);
@@ -73,6 +74,7 @@ export class ValueAtTimeLine{
         //  build wave display and scale container
         //this.scaleWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-scale-wrapper'}, this.#containerDiv);
         this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#containerDiv);
+        this.#cursorDragBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-cursor-dragbox'}, this.#scaleDiv);
         this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor', className: 'valueAt-cursor'}, this.#containerDiv);
         let span = VA_Utils.createEl('span', {}, this.#cursorDiv);
         this.#cursorLabel = VA_Utils.createEl('div', {innerText: '0'}, this.#cursorDiv);
@@ -129,6 +131,10 @@ export class ValueAtTimeLine{
             this.update();
         });
 
+        this.#cursorDiv.addEventListener('pointerdown', (e)=>{
+            this.#cursorDragging = true;
+        });
+
         this.#dataRangeStartInput.addEventListener('change', (e)=>{
             this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
             this.setView(this.#viewStart, this.#viewRange, true, true);
@@ -170,7 +176,15 @@ export class ValueAtTimeLine{
             this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
         });
 
+        this.#cursorDragBoxDiv.addEventListener('pointermove', (e)=>{
+            this.#handlecursorDrag(e);
+        });
 
+        this.#cursorDragBoxDiv.addEventListener('pointerdown', (e)=>{
+            let f = (e.pageX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
+            this.setTime(this.#viewStart + this.#viewRange * f);
+            e.stopPropagation();
+        });
 
         document.addEventListener('keydown', (e)=>{
             if (e.shiftKey){
@@ -196,6 +210,8 @@ export class ValueAtTimeLine{
                 this.#selectBoxDiv.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
                 this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#selectPointDown.x) + 'px';
                 this.#selectBoxDiv.style.height = Math.abs(e.pageY -this.#selectPointDown.y) + 'px';
+            } else {
+                this.#handlecursorDrag(e);
             }
         });
         document.addEventListener('pointerup', (e)=>{
@@ -214,6 +230,7 @@ export class ValueAtTimeLine{
                     }
                 });
             }
+            this.#cursorDragging = false;
         });   
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
@@ -236,10 +253,18 @@ export class ValueAtTimeLine{
         //this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
         this.setView(this.#viewStart, viewRange, true);
     }
+    #handlecursorDrag(e){
+        if (this.#cursorDragging){
+            let f = (e.pageX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
+            this.setTime(this.#viewStart + this.#viewRange * f);
+            e.stopPropagation();
+        }
+    }
 
     #handleWindowSize(){
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
         this.#scrollbarWidth = this.#containerDiv.offsetWidth - this.#lineWrapDiv.offsetWidth;
+        console.log('scrollbar width: ' + this.#scrollbarWidth);
         this.#updateTimePerPixel(this.#viewRange);
         this.update();
         //this.#updateCursors();
@@ -292,12 +317,14 @@ export class ValueAtTimeLine{
         this.#rootValueAtGroup.update();
 
         //  temp stats
+        /*
         let lines = this.#rootValueAtGroup.getAllValueAtLines();
         let inViewCount = 0;
         lines.forEach((line)=>{
             inViewCount += line.inView? 1 : 0;
         });
         console.log('rendered ' + inViewCount + ' lines');
+        */
     }
 
     addValueAtNodeToSelectedList(valueAtNode){
@@ -308,16 +335,29 @@ export class ValueAtTimeLine{
         }
     }
 
-    setTime(time){
-        this.#cursorTime = time;
+    panTocursor(){
+        if(this.#cursorTime < this.#viewStart || this.#cursorTime > this.#viewEnd){
+            //  attempt to scroll so the cursor is at 30 of the width
+            this.setView(Math.max(this.#dataRangeStart, this.#cursorTime - this.#viewRange * 0.3));
+        }
+    }
+
+    setTimeAccurate(time){
+        this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
         this.#updateCursors();
-        this.#rootValueAtGroup.setTime(time);
+        this.#rootValueAtGroup.setTime(this.#cursorTime );
+    }
+
+    setTime(time){
+        this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        this.#updateCursors();
+        this.#rootValueAtGroup.setTimeAccurate(this.#cursorTime );
     }
 
     setTimeFast(time){
-        this.#cursorTime = time;
+        this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
         this.#updateCursors();
-        this.#rootValueAtGroup.setTimeFast(time);
+        this.#rootValueAtGroup.setTimeFast(this.#cursorTime);
     }
 
     setView(viewStart, viewRange=null, force = false ){
@@ -359,6 +399,9 @@ export class ValueAtTimeLine{
             return parentGroup.addNewValueAtGroup(name, expanded);
         }
     }    
+    get cursorTime(){
+        return this.#cursorTime;
+    }
     get maximizeHeight(){
         return this.#cursorDiv.offsetHeight;
     }

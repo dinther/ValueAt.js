@@ -11,6 +11,7 @@ export class Circle{
         this.#div = VA_Utils.createEl('div', {}, this.#parent);
         this.#div.style.display = 'flex';
         this.#div.style.position = 'absolute';
+        this.#div.style.fontSize = '0.8em';
         this.#div.style.borderRadius = '50%';
         this.#div.style.transform = 'translate(-50%, 50%)';
         this.#div.style.zIndex = 50;

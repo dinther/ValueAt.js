@@ -12,6 +12,7 @@
         <div id="timeline"></div>
 
         <script type="module">
+            import * as VA_Utils from "./valueAtUtils.js";
             import {LookupAtTime} from "./valueat.js"
             import * as lookupAtExport from "./lookupAtToStepList.js";
             import * as Easings from "./easings.js";
@@ -24,20 +25,20 @@
             document.body.style.position = 'relative';
             document.body.style.overflow = 'hidden';
 
-            var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100, 1);
-            var waveDisplay;
+
 
             var circle1 = new Circle(document.querySelector('#timeline'), 'circle1', 10, 50, 127, 200, 50, 50);
             var circle2 = new Circle(document.querySelector('#timeline'), 'circle2', 10, 50, 127, 200, 50, 50);
 
             var va_radius1 = new LookupAtTime('radius', circle1, 'radius');
+            var magnitude = 1.70158;
             va_radius1.addValueKey(0,10);
-            va_radius1.addValueKey(1,0, Easings.easeInBack, 0.9);
-            va_radius1.addValueKey(2,5, Easings.easeInBack, 0.9);
-            va_radius1.addValueKey(45,15, Easings.easeInOutBack, 0.9);
-            va_radius1.addValueKey(55,17, Easings.easeInOutBack, 0.9);
-            va_radius1.addValueKey(75,18, Easings.easeInOutBack, 0.9);
-            va_radius1.addValueKey(100,1,Easings.easeInOutBack, 0.9);
+            va_radius1.addValueKey(1,0, Easings.easeInBack, magnitude);
+            va_radius1.addValueKey(2,5, Easings.easeInBack, magnitude);
+            va_radius1.addValueKey(45,15, Easings.easeInOutBack, magnitude);
+            va_radius1.addValueKey(55,17, Easings.easeInOutBack, magnitude);
+            va_radius1.addValueKey(75,18, Easings.easeInOutBack, magnitude);
+            va_radius1.addValueKey(100,1,Easings.easeInOutBack, magnitude);
             va_radius1.init(0.1);
 
             var va_red1 = new LookupAtTime('red', circle1, 'r');
@@ -50,10 +51,10 @@
                 va_red1.addValueKey(x,v, Easings.easeOutSine); x += step; step *= r;
                 va_red1.addValueKey(x,0, Easings.easeInSine); x += step; v *= r;   
             }
-            va_red1.addValueKey(16.5,140,Easings.easeInOutCirc);
-            va_red1.addValueKey(40,250,Easings.easeInOutCirc);
-            va_red1.addValueKey(86,0,Easings.easeInOutCirc);
-            va_red1.addValueKey(90,127,Easings.easeInOutCirc);
+            va_red1.addValueKey(16.5,140, Easings.easeInOutCirc);
+            va_red1.addValueKey(40,250, Easings.easeInOutCirc);
+            va_red1.addValueKey(86,0, Easings.easeInOutCirc);
+            va_red1.addValueKey(90,127, Easings.easeInOutCirc);
             va_red1.init(0.1);
              
             var va_green1 = new LookupAtTime('green', circle1, 'g');
@@ -61,14 +62,14 @@
             va_green1.addValueKey(40,155, Easings.easeInOutCubic);
             va_green1.addValueKey(75,40, Easings.easeInOutCubic);
             va_green1.addValueKey(100,255,Easings.easeInOutCubic);
-            va_green1.init(1);
+            va_green1.init(0.1);
 
             var va_blue1 = new LookupAtTime('blue', circle1, 'b');
             va_blue1.addValueKey(0,0);
-            va_blue1.addValueKey(50,255, Easings.easeinBounce, 0.5);
-            va_blue1.addValueKey(95,60, Easings.easeInOutQuad);
-            va_blue1.addValueKey(100,0,Easings.easeOutCirc);
-            va_blue1.init(1);            
+            va_blue1.addValueKey(50,255, Easings.easeInOutCubic, 0.5);
+            va_blue1.addValueKey(95,60, Easings.stepped);
+            va_blue1.addValueKey(100,0, Easings.easeInOutCubic);
+            va_blue1.init(0.1);            
 
             var va_pos_x1 = new LookupAtTime('xpos', circle1, 'x');
             va_pos_x1.addValueKey(10,40);
@@ -76,10 +77,11 @@
             va_pos_x1.addValueKey(37,30, Easings.easeInOutCubic, 0.5);
             va_pos_x1.addValueKey(60,60, Easings.easeInOutCubic, 0.5);
             va_pos_x1.addValueKey(75,10, Easings.easeInOutCubic);
-            va_pos_x1.addValueKey(100,60,Easings.easeIn);
-            va_pos_x1.init(1);     
+            va_pos_x1.addValueKey(100,60, Easings.easeIn);
+            va_pos_x1.init(0.1);     
 
             var va_pos_y1 = new LookupAtTime('ypos', circle1, 'y');
+
             //  construct our own bounce animation
             step = 1;
             r = 0.8;
@@ -90,24 +92,33 @@
                 va_pos_y1.addValueKey(x,v, Easings.easeOutSine); x += step; step *= r;
                 va_pos_y1.addValueKey(x,0, Easings.easeInSine); x += step; v *= r;   
             }
-            va_pos_y1.addValueKey(x, 10,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(36.5, 40,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(40, 4,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(43, 79,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(60, 70,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(67, 25,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(86, 74,Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(90, 0,Easings.easeInOutCirc);
-            va_pos_y1.init(0.1);
+            va_pos_y1.addValueKey(x, 10, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey(13.5, 80, Easings.stepped, 0.1);
+            va_pos_y1.addValueKey(14.5, 2, Easings.stepped, 0.3);
+            va_pos_y1.addValueKey(15, 80, Easings.stepped, 0.1);
+            va_pos_y1.addValueKey(15.5, 2, Easings.stepped, 0.3);
+            va_pos_y1.addValueKey(40, 4, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey(43, 79, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey(60, 70, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey(67, 25, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey(86, 74, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey(90, 0, Easings.easeInOutCirc);
+            va_pos_y1.init(0.01);
 
             var va_radius2 = new LookupAtTime('radius', circle2, 'radius');
-            va_radius2.addValueKey(0,5);
-            va_radius2.addValueKey(40,11, Easings.easeOutCubic, 0.5);
-            va_radius2.addValueKey(50,20, Easings.easeInOutCubic);
-            va_radius2.addValueKey(65,1, Easings.easeInOutCubic);
-            va_radius2.addValueKey(75,15, Easings.easeInOutCubic);
-            va_radius2.addValueKey(100,5,Easings.easeInCubic);
-            va_radius2.init(1);
+            va_radius2.addValueKey(0,3);
+            step = 0.25
+            let repeat = 40;
+            x = step;
+            for (let i=0; i<repeat; i++){
+                va_radius2.addValueKey(x, 20, Easings.easeOutCirc); x+= step;
+                va_radius2.addValueKey(x, 5, Easings.easeInCirc); x+= step;
+            }
+            va_radius2.addValueKey(30,13,Easings.easeOutBounce,5);
+            va_radius2.addValueKey(50,30,Easings.easeOutBounce,5);
+            va_radius2.addValueKey(60,7,Easings.easeOutBounce,5);
+            va_radius2.addValueKey(80,2,Easings.easeOutBounce,5);            
+            va_radius2.init(0.1);
 
             var va_red2 = new LookupAtTime('red', circle2, 'r');
             var va_green2 = new LookupAtTime('green', circle2, 'g');
@@ -118,15 +129,21 @@
                 va_green2.addValueKey(Math.random()*100, Math.random()*255, Easings.easeOutBounce);
                 va_blue2.addValueKey(Math.random()*100, Math.random()*255, Easings.easeOutBounce);
             }
-            va_red2.init(1);
-            va_green2.init(1);
-            va_blue2.init(1);
+            va_red2.init(0.1);
+            va_green2.init(0.1);
+            va_blue2.init(0.1);
 
             var va_pos_x2 = new LookupAtTime('xpos', circle2, 'x');
-            va_pos_x2.addValueKey(0,0);
-            va_pos_x2.addValueKey(50,100, Easings.easeOutCirc);
-            va_pos_x2.addValueKey(100,0,Easings.easeInCirc);
-            va_pos_x2.init(1);
+            va_pos_x2.addValueKey(0,31, Easings.easeOutCubic, 0.5);
+            for (let i=0; i< 37; i++){
+                va_pos_x2.addValueKey(5+ Math.random()*30, Math.random()*100, Easings.easeOutBounce);
+            }
+            va_pos_x2.addValueKey(40,11, Easings.easeOutCubic, 0.5);
+            va_pos_x2.addValueKey(50,20, Easings.easeInOutCubic);
+            va_pos_x2.addValueKey(65,1, Easings.easeInOutCubic);
+            va_pos_x2.addValueKey(75,15, Easings.easeInOutCubic);
+            va_pos_x2.addValueKey(100,5, Easings.easeInCubic);
+            va_pos_x2.init(0.1);
 
             var va_pos_y2 = new LookupAtTime('ypos', circle2, 'y');
             //  Random generated value keys. They are automatically sorted by time on init.
@@ -134,16 +151,37 @@
                 va_pos_y2.addValueKey(Math.random()*100, Math.random()*100, Easings.easeOutBounce);
             }
             va_pos_y2.init(1);     
+         
+            var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100, 1);
 
-            let button = document.createElement('button');
-            button.innerText = 'Play';
-            button.style.width = '100px';
-            button.addEventListener('click', (e)=>{
-                timeLine.setTime(0);
+            var waveDisplay;
+
+            let resetBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏮'}, timeLine.footerDiv);
+            resetBtn.addEventListener('click', (e)=>{
+                playStop = true;
+                start = undefined;
+                timeLine.setTimeFast(timeLine.dataRangeStart);
+            });
+
+            let playBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'▶'}, timeLine.footerDiv);
+            playBtn.addEventListener('click', (e)=>{
+                playStop = false;
                 start = undefined;
                 requestAnimationFrame(stepFrame);
             });
-            timeLine.footerDiv.appendChild(button);
+
+            let stopBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏹'}, timeLine.footerDiv);
+            stopBtn.addEventListener('click', (e)=>{
+                //timeLine.setTime(0);
+                playStop = true;
+            });
+
+            let toEndBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏭'}, timeLine.footerDiv);
+            toEndBtn.addEventListener('click', (e)=>{
+                playStop = true;
+                start = undefined;
+                timeLine.setTime(timeLine.dataRangeEnd);
+            });
 
             let circlegroup1 = timeLine.addNewValueAtGroup('Circle 1', true);
             circlegroup1.addValueAt(va_radius1, 'Radius', 1, '#f0f', true);
@@ -177,18 +215,21 @@
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
             window.Easings = Easings;
             window.valueAtTimeline = timeLine;
-            window.va_red1 = va_red1;
+            window.va_radius = va_radius1;
             window.circle1 = circle1;
             window.circle2 = circle2;
 
             let start;
+            let cursorStart;
+            let playStop = false;
             function stepFrame(timestamp) {
                 if (start === undefined) {
                     start = timestamp;
+                    cursorStart = timeLine.cursorTime; 
                 }
                 const elapsed = (timestamp - start) / 1000;
-                timeLine.setTime(elapsed);
-                if (elapsed <= timeLine.dataRangeEnd){
+                timeLine.setTime(cursorStart + elapsed);
+                if (!playStop && elapsed <= timeLine.dataRangeEnd){
                     requestAnimationFrame(stepFrame);
                 }
             }
@@ -219,7 +260,7 @@
                     zoomRate: 0.1,
                     decelerationTime: 4,
                     scale: 1,
-                    zoom: 1,
+                    zoom: 2,
                 });
 
                 window.waveDisplay = waveDisplay;
