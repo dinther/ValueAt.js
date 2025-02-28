@@ -163,14 +163,6 @@ div {
     z-index: 5;
 }
 
-.valueAt-scrollbar {
-    overflow-x: scroll;
-    background-color: #28292e;
-    z-index: 15;
-    font-size: 0.7em;
-    color:#6d6e6f;
-}
-
 .valueAt-remaining {
     height: 100px;
     z-index: 10;
@@ -277,16 +269,21 @@ div {
 }
 
 .valueAt-scrollbar {
-    overflow-x: scroll;
+    position: relative;
     background-color: #28292e;
     z-index: 15;
     font-size: 0.7em;
     color:#6d6e6f;
+    height: var(--sb-size);
 }
 
 .valueAt-scrollbar div {
-    height: 1px;
+    height: 100%;
+    min-width: 50px;
     background-color: var(--main-back-color);
+    background-color: var(--sb-thumb-color);
+    border-radius: calc(var(--sb-size) / 2);
+    position: relative;
 }
 
 .valueAt-v-size {

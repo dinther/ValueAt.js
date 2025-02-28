@@ -62,6 +62,7 @@ export class ValueAtTimeLine{
     #timeUnitPerPixel;
     #pixelPerTimeUnit;
     #cursorDragging = false;
+    #scrollBarDragoffset = null;
     #onZoom;
     constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
@@ -131,6 +132,13 @@ export class ValueAtTimeLine{
             this.update();
         });
 
+        this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
+            if (e.button==0){
+
+            }
+            this.update();
+        });
+
         this.#cursorDiv.addEventListener('pointerdown', (e)=>{
             this.#cursorDragging = true;
         });
@@ -155,11 +163,16 @@ export class ValueAtTimeLine{
         this.setDataRange(dataRangeStart, dataRangeEnd);
 
         this.#zoomSlider.addEventListener('input', (e)=>{
-            //this.zoom(this.#zoomSlider.value);
+            let target = this.#viewStart + (this.#viewRange * 0.5);  //  center by default
+            if (this.#cursorTime > this.#viewStart && this.#cursorTime < this.#viewEnd){
+                target = this.#cursorTime;
+            }
+            this.zoom(this.#zoomSlider.value, target);
+            /*
             let viewRange = this.#dataRange * (1 - this.#zoomSlider.value);
             this.#updateTimePerPixel(viewRange);
-            //this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
             this.setView(this.#viewStart, viewRange, true);
+            */
         });
         this.#zoomSlider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
@@ -168,21 +181,17 @@ export class ValueAtTimeLine{
             e.stopPropagation();
         });
 
-        this.#scrollbarDiv.addEventListener('scroll', (e)=>{
-            this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
-        });
-
-        this.#scrollbarDiv.addEventListener('scrollend', (e)=>{
-            this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
-        });
-
-        this.#cursorDragBoxDiv.addEventListener('pointermove', (e)=>{
-            this.#handlecursorDrag(e);
+        this.#scrollbarContentDiv.addEventListener('pointerdown', (e)=>{
+            if (e.button == 0){
+                this.#scrollBarDragoffset = e.offsetX;
+            }
+            //this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
         });
 
         this.#cursorDragBoxDiv.addEventListener('pointerdown', (e)=>{
             let f = (e.pageX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
             this.setTime(this.#viewStart + this.#viewRange * f);
+            this.#cursorDragging = true;
             e.stopPropagation();
         });
 
@@ -211,7 +220,10 @@ export class ValueAtTimeLine{
                 this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#selectPointDown.x) + 'px';
                 this.#selectBoxDiv.style.height = Math.abs(e.pageY -this.#selectPointDown.y) + 'px';
             } else {
-                this.#handlecursorDrag(e);
+                if (e.buttons == 1){
+                    this.#handleCursorDrag(e);
+                    this.#handleScrollBar(e);
+                }
             }
         });
         document.addEventListener('pointerup', (e)=>{
@@ -231,6 +243,7 @@ export class ValueAtTimeLine{
                 });
             }
             this.#cursorDragging = false;
+            this.#scrollBarDragoffset = null;
         });   
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
@@ -242,22 +255,37 @@ export class ValueAtTimeLine{
 
     init(){
         this.#handleWindowSize();
-        this.setView(this.#viewStart, this.viewRange);
+        this.setView(this.#viewStart, this.viewRange, true);
         this.setTime(this.#cursorTime);
         this.update();
     }
 
-    zoom(value){
+    zoom(value, target=null){
+        if (target == null){
+            target = this.#viewStart + (this.#viewRange * 0.5);
+        }
+        let factor = (target - this.#viewStart) / this.#viewRange;
         let viewRange = this.#dataRange * (1 - value);
+        let viewStart = target - (viewRange * factor);
         this.#updateTimePerPixel(viewRange);
-        //this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
-        this.setView(this.#viewStart, viewRange, true);
+        this.setView(viewStart, viewRange, true);
     }
-    #handlecursorDrag(e){
+    #handleCursorDrag(e){
         if (this.#cursorDragging){
             let f = (e.pageX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
             this.setTime(this.#viewStart + this.#viewRange * f);
             e.stopPropagation();
+        }
+    }
+
+    #handleScrollBar(e){
+        if (this.#scrollBarDragoffset != null){
+            let pixelMoveRange =  this.#scrollbarDiv.offsetWidth - this.#scrollbarContentDiv.offsetWidth;
+            let x = e.pageX - this.#scrollBarDragoffset;
+            let pixelRatio = x / pixelMoveRange;
+            let moveRange = this.#dataRange - this.#viewRange;
+            let viewStart = pixelRatio * moveRange;
+            this.setView(viewStart, this.#viewRange);
         }
     }
 
@@ -267,11 +295,10 @@ export class ValueAtTimeLine{
         console.log('scrollbar width: ' + this.#scrollbarWidth);
         this.#updateTimePerPixel(this.#viewRange);
         this.update();
-        //this.#updateCursors();
     }
 
     setDataRange(startTime, endTime){
-        this.#dataRangeStart = Math.min(startTime, endTime);// - this.#timeUnitPerPixel * this.#labelWidth;
+        this.#dataRangeStart = Math.min(startTime, endTime);
         this.#dataRangeEnd = Math.max(startTime + 1, endTime);
         this.#dataRange = this.#dataRangeEnd - this.#dataRangeStart;
 
@@ -297,7 +324,7 @@ export class ValueAtTimeLine{
     #updateTimePerPixel(viewRange){
         if (this.#lineWrapDiv.offsetWidth > 0){
             let width = this.#lineWrapDiv.offsetWidth - this.#labelWidth;
-            this.#timeUnitPerPixel = viewRange / width;//this.#cursorDiv.parentElement.parentElement.offsetWidth;
+            this.#timeUnitPerPixel = viewRange / width;
             this.#pixelPerTimeUnit = width / viewRange;
         }
     }
@@ -370,12 +397,23 @@ export class ValueAtTimeLine{
             this.#updateTimePerPixel(this.#viewRange);
 
             this.#zoomSlider.value = 1 - (this.#viewRange / this.#dataRange);
-            this.#scrollbarContentDiv.style.width = (100 /  (1 - this.#zoomSlider.value)) + '%';
-            
-            let scrollLeft = (this.#viewStart - this.#dataRangeStart) / this.#dataRange * this.#scrollbarDiv.scrollWidth;
-            if (scrollLeft != this.#scrollbarDiv.scrollLeft){
-                this.#scrollbarDiv.scrollLeft = scrollLeft;
+            let widthPercent = (1 - this.#zoomSlider.value) * 100;
+            if (this.#scrollbarContentDiv.offsetLeft == 0 && widthPercent==100){
+                this.#scrollbarDiv.style.display = 'none';
+            } else {
+                this.#scrollbarDiv.style.display = '';
             }
+            this.#scrollbarContentDiv.style.width = widthPercent + '%';
+            let moveRange = this.#dataRange - this.#viewRange;
+            let scrollLeft = 0;
+            if (moveRange > 0){
+                let ratio = this.#viewStart / moveRange;
+                let pixelMoveRange = this.#scrollbarDiv.offsetWidth - this.#scrollbarContentDiv.offsetWidth;
+                scrollLeft = ratio * pixelMoveRange;
+                this.#scrollbarContentDiv.style.left = scrollLeft + 'px';
+            }
+            //console.log(scrollLeft, this.#scrollBarDragoffset);
+
             this.update();
         }
     }
