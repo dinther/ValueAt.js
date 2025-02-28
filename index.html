@@ -78,7 +78,7 @@
             va_pos_x1.addValueKey(60,60, Easings.easeInOutCubic, 0.5);
             va_pos_x1.addValueKey(75,10, Easings.easeInOutCubic);
             va_pos_x1.addValueKey(100,60, Easings.easeIn);
-            va_pos_x1.init(0.1);     
+            va_pos_x1.init(0.01);     
 
             var va_pos_y1 = new LookupAtTime('ypos', circle1, 'y');
 
@@ -118,7 +118,7 @@
             va_radius2.addValueKey(50,30,Easings.easeOutBounce,5);
             va_radius2.addValueKey(60,7,Easings.easeOutBounce,5);
             va_radius2.addValueKey(80,2,Easings.easeOutBounce,5);            
-            va_radius2.init(0.1);
+            va_radius2.init(0.01);
 
             var va_red2 = new LookupAtTime('red', circle2, 'r');
             var va_green2 = new LookupAtTime('green', circle2, 'g');
@@ -143,14 +143,14 @@
             va_pos_x2.addValueKey(65,1, Easings.easeInOutCubic);
             va_pos_x2.addValueKey(75,15, Easings.easeInOutCubic);
             va_pos_x2.addValueKey(100,5, Easings.easeInCubic);
-            va_pos_x2.init(0.1);
+            va_pos_x2.init(0.01);
 
             var va_pos_y2 = new LookupAtTime('ypos', circle2, 'y');
             //  Random generated value keys. They are automatically sorted by time on init.
             for (let i=0; i< 37; i++){
                 va_pos_y2.addValueKey(Math.random()*100, Math.random()*100, Easings.easeOutBounce);
             }
-            va_pos_y2.init(1);     
+            va_pos_y2.init(0.01);     
          
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100, 1);
 
@@ -228,7 +228,7 @@
                     cursorStart = timeLine.cursorTime; 
                 }
                 const elapsed = (timestamp - start) / 1000;
-                timeLine.setTime(cursorStart + elapsed);
+                timeLine.setTimeAccurate(cursorStart + elapsed);
                 if (!playStop && elapsed <= timeLine.dataRangeEnd){
                     requestAnimationFrame(stepFrame);
                 }

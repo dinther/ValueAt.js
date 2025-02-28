@@ -345,13 +345,13 @@ export class ValueAtTimeLine{
     setTimeAccurate(time){
         this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
         this.#updateCursors();
-        this.#rootValueAtGroup.setTime(this.#cursorTime );
+        this.#rootValueAtGroup.setTimeAccurate(this.#cursorTime );
     }
 
     setTime(time){
         this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
         this.#updateCursors();
-        this.#rootValueAtGroup.setTimeAccurate(this.#cursorTime );
+        this.#rootValueAtGroup.setTime(this.#cursorTime );
     }
 
     setTimeFast(time){
