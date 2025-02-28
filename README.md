@@ -114,7 +114,7 @@ ValueAt.js comes with a UI value key editor. Not usable yet. But this timeline c
     ...
 ```
 
-![{751A1670-80D6-47AF-93D3-6095FEF47055}](https://github.com/user-attachments/assets/719c8fef-5ec3-4f59-8a9a-0174fc50a320)
+![image](https://github.com/user-attachments/assets/786ea79d-24d5-494a-8cee-662905e6b7e3)
 
 The groups allow the user to collapse the many animation curves into a single line. Rather than hiding the collapsed data, we still show all the key value nodes so that you always have a high level overview and instantly you can see if and where nodes have been defined.
 
