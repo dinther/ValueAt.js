@@ -8,7 +8,7 @@ And it does not matter how many keyframes are used to animate the value.
 
 Demo here: https://dinther.github.io/ValueAt.js/
 
-![{B761C25F-3039-4C01-B0BA-9B1B5887E57E}](https://github.com/user-attachments/assets/bf081ad8-f117-4afa-9a5d-026c9b749ae4)
+![image](https://github.com/user-attachments/assets/1664b21c-74fc-4f0c-96e4-a93af78db335)
 
 ##  usage
 
