@@ -16,7 +16,7 @@
     --main-text-color: #cccccc;
     --dim-text-color: #aaaaaa;
     --cursor-text-color: #000000;
-    --line-color: #2b2b2b;
+    --line-color: #606060;
     --label-back-color: #212121;
     --header-back-color: #181818;
     --group-header-back-color: #232323;
@@ -143,6 +143,11 @@ input:focus {
     grid-template-columns: 60px 1fr;
     grid-template-rows: 18px;
     align-items: baseline;
+}
+
+.valueAt-info-combined {
+    display: flex;
+    justify-content: space-between;
 }
 
 .valueAt-info input,select {
@@ -375,7 +380,7 @@ input:focus {
     width: var(--label-width);
     color: var(--dim-text-color);
     height: 100%;
-    border-top: 1px solid var(--line-color);
+    /*border-top: 1px solid var(--line-color);*/
     border-bottom: 1px solid var(--line-color);
     background-color: var(--label-back-color);
     display: flex;
@@ -403,9 +408,9 @@ input:focus {
 
 .valueAt-line-icons {
     display: flex;
-    position: absolute;
-    top: 0px;
-    right: 0px;
+    /*position: absolute;*/
+    /*top: 0px;*/
+    /*right: 0px;*/
     color: var(--dim-text-color);
     margin-right: 4px;
     font-size: 1.0em;
@@ -413,6 +418,7 @@ input:focus {
     background-color: transparent;
     flex-direction: row;
     justify-content: flex-end;
+    height: 100%;
 }
 
 .valueAt-expand-button {
@@ -440,7 +446,7 @@ input:focus {
     position: relative;
     height: 100%;
     flex: 1;
-    border-top: 1px solid var(--line-color);
+    /*border-top: 1px solid var(--line-color);*/
     border-bottom: 1px solid var(--line-color);
 }
 

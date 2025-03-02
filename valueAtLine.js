@@ -11,9 +11,6 @@ export class ValueAtLine{
     #lineIconsDiv;
     #hideValueAnimationDiv;
     #labelExpandDiv;
-    #previousKeyFrameDiv
-    #onNodeDiv;
-    #nextKeyFrameDiv
     #lineDiv;
     #svgWrapperDiv;
     #svg;
@@ -44,9 +41,6 @@ export class ValueAtLine{
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
-        this.#previousKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏴', title: 'Cursor to previous keyframe', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#onNodeDiv = VA_Utils.createEl('div', {innerText: '◈', title: 'cursor to next keyframe.', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#nextKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏵', title: 'Cursor on keyframe indicator', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
         this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', title: 'Maximize this line graph', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
         this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle animation on/off', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
                             
@@ -121,50 +115,28 @@ export class ValueAtLine{
             e.stopPropagation();
         });
 
-        this.#previousKeyFrameDiv.addEventListener('pointerdown', (e)=>{
-            if (e.button==0){
-                let beforeKey = this.getKeyFrameBefore(this.#timeLine.cursorTime, false);
-                if (beforeKey){
-                    this.#timeLine.setTime(beforeKey.time);
-                    this.#timeLine.panTocursor();
-                }
-            }
-        });
-
-        this.#nextKeyFrameDiv.addEventListener('pointerdown', (e)=>{
-            if (e.button==0){
-                let afterKey = this.getKeyFrameAfter(this.#timeLine.cursorTime, false);
-                if(afterKey){
-                    this.#timeLine.setTime(afterKey.time);
-                    this.#timeLine.panTocursor();
-                }
-            }
-        });
-
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
             let valueAtNode = new ValueAtNode(this, this.#svgWrapperDiv, valueKey);
             valueAtNode.onSelectedChanged = (valueAtNode, event)=>{
                 let selected = valueAtNode.selected;
-                if (event){
-                    if (!event.ctrlKey && !event.shiftKey){
-                        this.#timeLine.deselectAllValueAtNodes();
-                    }
-                    valueAtNode.selected = selected;
-                    this.#timeLine.addValueAtNodesToSelectedList([valueAtNode]);
-                    if(valueAtNode.selected){
-                        if (this.#firstValueAtNodeSelected == null){
-                            this.#firstValueAtNodeSelected = valueAtNode
-                        } else {
-                            if (event.shiftKey){
-                                //  select value nodes from firstValueAtNodeSelected up to valueAtNode
-                                let startIndex = Math.min(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
-                                let endIndex = Math.max(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
-                                for (let i = startIndex; i <= endIndex; i++){
-                                    this.#valueAtNodes[i].selected = true;
-                                    this.#timeLine.addValueAtNodesToSelectedList([this.#valueAtNodes[i]]);
-                                }
+                if (event && !event.ctrlKey && !event.shiftKey){
+                    this.#timeLine.deselectAllValueAtNodes();
+                }
+                valueAtNode.selected = selected;
+                this.#timeLine.addValueAtNodesToSelectedList([valueAtNode]);
+                if(valueAtNode.selected){
+                    if (this.#firstValueAtNodeSelected == null){
+                        this.#firstValueAtNodeSelected = valueAtNode
+                    } else {
+                        if (event && event.shiftKey){
+                            //  select value nodes from firstValueAtNodeSelected up to valueAtNode
+                            let startIndex = Math.min(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
+                            let endIndex = Math.max(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
+                            for (let i = startIndex; i <= endIndex; i++){
+                                this.#valueAtNodes[i].selected = true;
+                                this.#timeLine.addValueAtNodesToSelectedList([this.#valueAtNodes[i]]);
                             }
                         }
                     }
@@ -286,12 +258,27 @@ export class ValueAtLine{
         }
     }
 
-    getKeyFrameBefore(time, includeCurrentTime=false){
-        return this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
+    getValueAtNodeBefore(time, includeCurrentTime=false){
+        let valueKey = this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
+        for (let i=0; i<this.#valueAtNodes.length; i++){
+            if (this.#valueAtNodes[i].valueKey == valueKey){
+                return this.#valueAtNodes[i];
+            }
+        }
+        return null;
+        //return this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
     };
 
-    getKeyFrameAfter(time, includeCurrentTime=false){
-        return this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(time, !includeCurrentTime)];
+    getValueAtNodeAfter(time, includeCurrentTime=false){
+        let valueKey = this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(time, !includeCurrentTime)];
+        for (let i=0; i<this.#valueAtNodes.length; i++){
+            if (this.#valueAtNodes[i].valueKey == valueKey){
+                return this.#valueAtNodes[i];
+            }
+        }
+
+        return null;
+        //return this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(time, !includeCurrentTime)];
     };
 
     deselectAllValueAtNodes(){

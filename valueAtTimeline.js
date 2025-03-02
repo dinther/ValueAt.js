@@ -50,6 +50,9 @@ export class ValueAtTimeLine{
     #cursorNextNodeBtn;
 
     #keyFrameObjectNameDiv;
+    #lineIconsDiv;
+    #previousKeyFrameDiv;
+    #nextKeyFrameDiv;
     #keyFramePropertyNameDiv;
     #keyFrameValueInput;
     #keyFrameTimeInput;
@@ -84,6 +87,7 @@ export class ValueAtTimeLine{
     #suppressedNodesSelectedList = [];
     #suppressedNodesDeSelectedList = [];
     #infoValueAtNode = null;
+
     constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
         //  build scrolling UI container
@@ -104,9 +108,7 @@ export class ValueAtTimeLine{
         let span = VA_Utils.createEl('span', {}, this.#cursorDiv);
 
         this.#cursorLabel = VA_Utils.createEl('div', {className: 'valueAt-cursor-label'}, this.#cursorDiv);
-        this.#cursorPreviousNodeBtn = VA_Utils.createEl('div', {innerText: '⏴', className: 'valueAt-cursor-button-left', title: 'Cursor to previous keyframe'}, this.#cursorLabel);
         this.#cursorLabelText = VA_Utils.createEl('div', {innerText: '0', className: 'valueAt-cursor-text'}, this.#cursorLabel);
-        this.#cursorNextNodeBtn = VA_Utils.createEl('div', {innerText: '⏵', className: 'valueAt-cursor-button-right', title: 'Cursor to next keyframe'}, this.#cursorLabel);
 
         this.#scrollContainerDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
         //this.#stickyWrapperDiv = VA_Utils.createEl('div', {id: 'stickyWrapper'}, this.#scrollContainerDiv);
@@ -138,10 +140,19 @@ export class ValueAtTimeLine{
         this.#zoomLabel = VA_Utils.createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
         this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0', max:'0.999', step: '0.001', value: '0'}, this.#zoomGroupDiv);
 
+        this.#cursorPreviousNodeBtn = VA_Utils.createEl('div', {innerText: '⏴', className: 'valueAt-cursor-button-left', title: 'Cursor to previous keyframe'}, this.#headerDiv);
+        this.#cursorNextNodeBtn = VA_Utils.createEl('div', {innerText: '⏵', className: 'valueAt-cursor-button-right', title: 'Cursor to next keyframe'}, this.#headerDiv);
+
+
         //  ValueAtNode Info panel
         this.#keyFrameObjectNameDiv = VA_Utils.createEl('input', {type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
-        //this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {innerText: 'Object'}, this.#infoKeyFrameDiv);
-        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, this.#infoKeyFrameDiv);
+        let combined = VA_Utils.createEl('div', {className: 'valueAt-info-combined'}, this.#infoKeyFrameDiv);
+        this.#lineIconsDiv = VA_Utils.createEl('div', {className:'valueAt-line-icons'}, combined);
+        this.#previousKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏴', title: 'Cursor to previous keyframe', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        VA_Utils.createEl('div', {innerText: 'x', title: 'cursor to next keyframe.', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#nextKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏵', title: 'Cursor on keyframe indicator', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, combined);
+
         VA_Utils.createEl('div', {innerText: 'time'}, this.#infoKeyFrameDiv);
         this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {innerText: 'value'}, this.#infoKeyFrameDiv);
@@ -163,6 +174,42 @@ export class ValueAtTimeLine{
         this.#pixelsPerSegment = pixelsPerSegment;
 
         //  event handlers
+
+        this.#previousKeyFrameDiv.addEventListener('pointerdown', (e)=>{
+            if (this.#infoValueAtNode != null){
+                if (e.button==0){
+                    let beforeValueAtNode = this.#infoValueAtNode.valueAtLine.getValueAtNodeBefore(this.#cursorTime, false);
+                    if (beforeValueAtNode != null){
+                        this.setTime(beforeValueAtNode.valueKey.time);
+                        this.panTocursor();
+                        if (this.#infoValueAtNode.selected){
+                            if (this.#selectedNodeList.length < 2){
+                                this.deselectAllValueAtNodes();
+                                beforeValueAtNode.selected = true;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        this.#nextKeyFrameDiv.addEventListener('pointerdown', (e)=>{
+            if (this.#infoValueAtNode != null){
+                if (e.button==0){
+                    let afterValueAtNode = this.#infoValueAtNode.valueAtLine.getValueAtNodeAfter(this.#cursorTime, false);
+                    if(afterValueAtNode != null){
+                        this.setTime(afterValueAtNode.valueKey.time);
+                        this.panTocursor();
+                        if (this.#infoValueAtNode.selected){
+                            if (this.#selectedNodeList.length < 2){
+                                this.deselectAllValueAtNodes();
+                                afterValueAtNode.selected = true;
+                            }   
+                        }                     
+                    }
+                }
+            }
+        });
 
         this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
             if (e.offsetX > this.#labelWidth && !e.ctrlKey && !e.shiftKey){
@@ -366,9 +413,9 @@ export class ValueAtTimeLine{
             let time = null;
             let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
             valueAtLines.forEach((valueAtLine)=>{
-                let keyFrame = valueAtLine.getKeyFrameBefore(this.#cursorTime, false);
-                if (keyFrame){
-                    time = time==null? keyFrame.time : Math.max(time, keyFrame.time);
+                let valueAtNode = valueAtLine.getValueAtNodeBefore(this.#cursorTime, false);
+                if (valueAtNode){
+                    time = time==null? valueAtNode.valueKey.time : Math.max(time, valueAtNode.valueKey.time);
                 }
             });
             this.setTime(time);
@@ -380,9 +427,9 @@ export class ValueAtTimeLine{
             let time = null
             let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
             valueAtLines.forEach((valueAtLine)=>{
-                let keyFrame = valueAtLine.getKeyFrameAfter(this.#cursorTime, false);
-                if (keyFrame){
-                    time = time==null? keyFrame.time : Math.min(time, keyFrame.time);
+                let valueAtNode = valueAtLine.getValueAtNodeAfter(this.#cursorTime, false);
+                if (valueAtNode){
+                    time = time==null? valueAtNode.valueKey.time : Math.min(time, valueAtNode.valueKey.time);
                 }
             });
             this.setTime(time);
