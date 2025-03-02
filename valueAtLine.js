@@ -45,7 +45,6 @@ export class ValueAtLine{
                 this.deselectAllValueAtNodes();
             }
         });
-
         this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
@@ -117,7 +116,7 @@ export class ValueAtLine{
 
         this.#previousKeyFrameDiv.addEventListener('pointerdown', (e)=>{
             if (e.button==0){
-                let beforeKey = this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(this.#timeLine.cursorTime, true)];
+                let beforeKey = this.getKeyFrameBefore(this.#timeLine.cursorTime, false);
                 if (beforeKey){
                     this.#timeLine.setTime(beforeKey.time);
                     this.#timeLine.panTocursor();
@@ -127,7 +126,7 @@ export class ValueAtLine{
 
         this.#nextKeyFrameDiv.addEventListener('pointerdown', (e)=>{
             if (e.button==0){
-                let afterKey = this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(this.#timeLine.cursorTime, true)];
+                let afterKey = this.getKeyFrameAfter(this.#timeLine.cursorTime, false);
                 if(afterKey){
                     this.#timeLine.setTime(afterKey.time);
                     this.#timeLine.panTocursor();
@@ -138,7 +137,7 @@ export class ValueAtLine{
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
-            let valueAtNode = new ValueAtNode(this.#svgWrapperDiv, valueKey);
+            let valueAtNode = new ValueAtNode(this, this.#svgWrapperDiv, valueKey);
             valueAtNode.onSelectedChanged = (valueAtNode, event)=>{
                 let selected = valueAtNode.selected;
                 if (event){
@@ -146,7 +145,7 @@ export class ValueAtLine{
                         this.#timeLine.deselectAllValueAtNodes();
                     }
                     valueAtNode.selected = selected;
-                    this.#timeLine.addValueAtNodeToSelectedList(valueAtNode);
+                    this.#timeLine.addValueAtNodesToSelectedList([valueAtNode]);
                     if(valueAtNode.selected){
                         if (this.#firstValueAtNodeSelected == null){
                             this.#firstValueAtNodeSelected = valueAtNode
@@ -157,7 +156,7 @@ export class ValueAtLine{
                                 let endIndex = Math.max(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
                                 for (let i = startIndex; i <= endIndex; i++){
                                     this.#valueAtNodes[i].selected = true;
-                                    this.#timeLine.addValueAtNodeToSelectedList(this.#valueAtNodes[i]);
+                                    this.#timeLine.addValueAtNodesToSelectedList([this.#valueAtNodes[i]]);
                                 }
                             }
                         }
@@ -166,7 +165,9 @@ export class ValueAtLine{
             }
             this.#valueAtNodes.push(valueAtNode);
         }
-        this.#valueAt.onChange = ()=>{this.#handleOnChange()};
+        this.#valueAt.onChange = (valueAt, valueKey, propName)=>{
+            this.#handleOnChange(valueAt, valueKey, propName);
+        };
         this.#render();
     }
     #handleOnChange(){
@@ -181,47 +182,7 @@ export class ValueAtLine{
         //}
         return result;       
     }
-    #render1(){
-        if (!this.#lineDiv.classList.contains('valueAt-hide')){
-            let inView = this.#isInView();
-            if (inView){  //  only render if this was not in view and now it is in view
-                this.#path.setAttribute('stroke-width', this.#strokeWidth);
-                this.#path.setAttribute('stroke', this.#strokeColor);
-                let steps = Math.floor(this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
-                let w = this.#timeLine.lineWrapDiv.offsetWidth;
-                let valueRange = this.#valueAt.maxValue - this.#valueAt.minValue;
-                let path = 'M' + this.#timeLine.viewStart + ' ' + this.#valueAt.getValueAtKeyframe(this.#timeLine.viewStart);
-                path += 'L';
-                for (let i = 1; i <= steps; i++){
-                    let f = i / steps;
-                    let x =  this.#timeLine.viewStart + this.#timeLine.viewRange * f;
-                    let y = this.#valueAt.getValueAtKeyframe(x);
-                    path += x + ' ' + y + ' ';
-                }
 
-                let margin = valueRange / this.#lineHeight * this.#strokeWidth * 2;
-                let hm = margin * 0.5;
-
-                this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (valueRange + margin));
-                this.#svg.querySelector('path').setAttribute('d', path);
-                this.#svg.setAttribute('preserveAspectRatio', 'none');
-
-                let v_offset = this.#strokeWidth / this.#lineHeight * 100;
-
-                this.#valueAtNodes.forEach((valueAtNode)=>{
-                    let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
-                    if (percent >= 0 && percent<= 100){
-                        valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
-                        valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';
-                        valueAtNode.div.style.display = '';
-                    } else {
-                        valueAtNode.div.style.display = 'none';
-                    }
-                });                
-            }
-            this.#inView = inView;
-        }
-    }
     #render(){
         let count = 0;
         if (!this.#lineDiv.classList.contains('valueAt-hide')){
@@ -329,6 +290,15 @@ export class ValueAtLine{
             this.onSelectedChanged(this);
         }
     }
+
+    getKeyFrameBefore(time, includeCurrentTime=false){
+        return this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
+    };
+
+    getKeyFrameAfter(time, includeCurrentTime=false){
+        return this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(time, !includeCurrentTime)];
+    };
+
     deselectAllValueAtNodes(){
         let selectedChanged = [];
         this.#valueAtNodes.forEach((valueAtNode)=>{
@@ -359,6 +329,9 @@ export class ValueAtLine{
             this.#valueAt.setValueFast(time);
         }
     }
+    get valueAtGroup(){
+        return this.#valueAtGroup;
+    }
     get inView(){
         return this.#inView;
     }
@@ -374,7 +347,7 @@ export class ValueAtLine{
     get svgWrapperDiv(){
         return this.#svgWrapperDiv;
     }
-    get labelDivName(){
+    get labelName(){
         return this.#labelName;
     }
     set labelName(value){

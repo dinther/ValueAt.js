@@ -114,41 +114,41 @@
                 va_radius2.addValueKey(x, 20, Easings.easeOutCirc); x+= step;
                 va_radius2.addValueKey(x, 5, Easings.easeInCirc); x+= step;
             }
-            va_radius2.addValueKey(30,13,Easings.easeOutBounce,5);
-            va_radius2.addValueKey(50,30,Easings.easeOutBounce,5);
-            va_radius2.addValueKey(60,7,Easings.easeOutBounce,5);
-            va_radius2.addValueKey(80,2,Easings.easeOutBounce,5);            
+            va_radius2.addValueKey(30, 13, Easings.easeOutBounce,5);
+            va_radius2.addValueKey(50, 30, Easings.easeOutBounce,5);
+            va_radius2.addValueKey(60, 7, Easings.easeOutBounce,5);
+            va_radius2.addValueKey(80, 2, Easings.easeOutBounce,5);            
             va_radius2.init(0.01);
 
             var va_red2 = new LookupAtTime('red', circle2, 'r');
             var va_green2 = new LookupAtTime('green', circle2, 'g');
             var va_blue2 = new LookupAtTime('blue', circle2, 'b');
             //  Random generated value keys. They are automatically sorted by time on init.
-            for (let i=0; i< 37; i++){
-                va_red2.addValueKey(Math.random()*100, Math.random()*255, Easings.easeOutBounce);
-                va_green2.addValueKey(Math.random()*100, Math.random()*255, Easings.easeOutBounce);
-                va_blue2.addValueKey(Math.random()*100, Math.random()*255, Easings.easeOutBounce);
+            for (let i = 0; i < 17; i++){
+                va_red2.addValueKey(Math.random()  *100, Math.random() * 255, Easings.easeOutBounce);
+                va_green2.addValueKey(Math.random() * 100, Math.random() * 255, Easings.easeOutBounce);
+                va_blue2.addValueKey(Math.random() * 100, Math.random() * 255, Easings.easeOutBounce);
             }
             va_red2.init(0.1);
             va_green2.init(0.1);
             va_blue2.init(0.1);
 
             var va_pos_x2 = new LookupAtTime('xpos', circle2, 'x');
-            va_pos_x2.addValueKey(0,31, Easings.easeOutCubic, 0.5);
-            for (let i=0; i< 37; i++){
-                va_pos_x2.addValueKey(5+ Math.random()*30, Math.random()*100, Easings.easeOutBounce);
+            va_pos_x2.addValueKey(0, 31, Easings.easeOutCubic, 0.5);
+            for (let i = 0; i < 17; i++){
+                va_pos_x2.addValueKey(5 + Math.random() * 30, Math.random() * 100, Easings.easeOutBounce);
             }
-            va_pos_x2.addValueKey(40,11, Easings.easeOutCubic, 0.5);
-            va_pos_x2.addValueKey(50,20, Easings.easeInOutCubic);
-            va_pos_x2.addValueKey(65,1, Easings.easeInOutCubic);
-            va_pos_x2.addValueKey(75,15, Easings.easeInOutCubic);
-            va_pos_x2.addValueKey(100,5, Easings.easeInCubic);
+            va_pos_x2.addValueKey(40, 11, Easings.easeOutCubic, 0.5);
+            va_pos_x2.addValueKey(50, 20, Easings.easeInOutCubic);
+            va_pos_x2.addValueKey(65, 1, Easings.easeInOutCubic);
+            va_pos_x2.addValueKey(75, 15, Easings.easeInOutCubic);
+            va_pos_x2.addValueKey(100, 5, Easings.easeInCubic);
             va_pos_x2.init(0.01);
 
             var va_pos_y2 = new LookupAtTime('ypos', circle2, 'y');
             //  Random generated value keys. They are automatically sorted by time on init.
-            for (let i=0; i< 37; i++){
-                va_pos_y2.addValueKey(Math.random()*100, Math.random()*100, Easings.easeOutBounce);
+            for (let i = 0; i < 37; i++){
+                va_pos_y2.addValueKey(Math.random() * 100, Math.random() * 100, Easings.easeOutBounce);
             }
             va_pos_y2.init(0.01);     
          

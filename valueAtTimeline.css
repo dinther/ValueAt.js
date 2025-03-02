@@ -5,15 +5,15 @@
 
 :root {
     --header-height: 32px;
-    --scale-row-height: 64px;
+    --scale-row-height: 96px;
     --line-row-height: 32px;
     --line-maximized-height: 100px;
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 16px;
-    --label-width: 160px;
+    --label-width: 180px;
     --grouped-lines-opacity: 0.4;
-    --main-text-color: #ffffff;
+    --main-text-color: #cccccc;
     --dim-text-color: #aaaaaa;
     --cursor-text-color: #000000;
     --line-color: #2b2b2b;
@@ -38,6 +38,23 @@ body {
 
 div {
     touch-action: none;
+}
+
+input,select{
+    background-color: transparent;
+    color: var(--main-text-color);
+    border: none;
+    border-radius: 0;
+    font-size: 1em;
+    padding: 4px;
+}
+
+input:focus {
+    background-color: var(--header-back-color);
+    color: var(--main-text-color);
+    border: none;
+    border-radius: 0;
+    outline:1px solid #615e5e;
 }
 
 /* Firefox (uncomment to work in Firefox, although other properties will not work!)  */
@@ -101,17 +118,38 @@ div {
     z-index: 10;
 }
 
+.valueAt-info-scale {
+    height: var(--scale-row-height);
+    display: flex;
+    padding-right: var(--sb-size);
+}
+
 .valueAt-scale {
-    top: 0;
-    left: var(--label-width);
     display: flex;
     align-items: center;
     background-color: var(--scale-back-color);
     z-index: 10;
-    width: calc(100% - var(--sb-size) - var(--label-width));
-    height: var(--scale-row-height);
-    position: relative;
+    flex: 1;
     flex-direction: column;
+}
+
+.valueAt-info {
+    width: var(--label-width);
+    padding: 4px;
+}
+
+.valueAt-info-keyframe {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    
+    grid-template-rows: 24px;
+    
+    align-items: baseline;
+    grid-gap: 2px;
+}
+
+.valueAt-info input,select {
+    width: 100%;
 }
 
 .valueAt-cursor-dragbox {
@@ -135,16 +173,41 @@ div {
     border-left: 1px solid var(--cursor-color);
 }
 
-.valueAt-cursor div {
+.valueAt-cursor-label {
+    display: flex;
     border: 2px solid var( --cursor-color );
     color: var(--cursor-text-color);
     font-weight: 500;
     background-color: #ffffff;
-    height: fit-content;
-    padding: 0px 9px;
+    /*height: fit-content;*/
+    /*padding: 0px 9px;*/
     border-radius: 8px;
     cursor: ew-resize;
     position: absolute;
+}
+
+.valueAt-cursor-button-left {
+    cursor: pointer; 
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.valueAt-cursor-button-left:hover {
+    background-color: gray;
+}
+
+.valueAt-cursor-button-right {
+    cursor: pointer;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.valueAt-cursor-button-right:hover {
+    background-color: gray;
+}
+
+.valueAt-cursor-text {
+
 }
 
 .valueAt-scroll-container {
@@ -275,6 +338,10 @@ div {
     font-size: 0.7em;
     color:#6d6e6f;
     height: var(--sb-size);
+    top: 0;
+    left: var(--label-width);
+    width: calc(100% - var(--sb-size) - var(--label-width));
+    overflow: hidden;
 }
 
 .valueAt-scrollbar div {
@@ -298,6 +365,7 @@ div {
     gap: 5px;
     text-wrap-mode: nowrap;
     margin-right: 10px;
+    align-items: center;
 }
 
 .inlinelabelcontrolpair input{

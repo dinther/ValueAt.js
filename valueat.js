@@ -29,9 +29,10 @@ export class ValueKey{
     }
 
 
-    #handleChange(prop){
-        if (typeof value !== 'function'){
-            this.#onChange(this, prop);
+    #handleChange(propName){
+        //if (typeof this.#onChange !== 'function'){
+        if (typeof this.#onChange === 'function'){
+            this.#onChange(this, propName);
         }
     }
 
@@ -42,8 +43,10 @@ export class ValueKey{
 
 
     set time(value){
-        this.#time = value;
-        this.#handleChange(this['time']);
+        if (value != this.#time){
+            this.#time = value;
+            this.#handleChange('time');
+        }
     }
 
 
@@ -53,8 +56,10 @@ export class ValueKey{
 
 
     set value(value){
-        this.#value = value;
-        this.#handleChange(this['value']);
+        if (value != this.#value){
+            this.#value = value;
+            this.#handleChange('value');
+        }
     }
 
 
@@ -64,8 +69,10 @@ export class ValueKey{
 
 
     set easing(value){
-        this.#easing = value;
-        this.#handleChange(this['easing']);
+        if (value != this.#easing){
+            this.#easing = value;
+            this.#handleChange('easing');
+        }
     }
 
 
@@ -75,8 +82,10 @@ export class ValueKey{
 
 
     set magnitude(value){
-        this.#magnitude = value;
-        this.#handleChange(this['easing']);
+        if (value != this.#magnitude){
+            this.#magnitude = value;
+            this.#handleChange('easing');
+        }
     }
 
 
@@ -118,13 +127,13 @@ export class ValueAtTime{
         this.#valueKeys.sort((a, b) => a.time - b.time);
     }
 
-    #handleValueKeyChange(valueKey){
-        this.update(valueKey);
-        this.#handleChange(valueKey);
+    #handleValueKeyChange(valueKey, propName){
+        this.update(valueKey, propName);
+        this.#handleChange(valueKey, propName);
     }
-    #handleChange(prop){
+    #handleChange(valueKey, propName){
         if (typeof  this.#onChange === 'function'){
-            this.#onChange(this, prop);
+            this.#onChange(this, valueKey, propName);
         }
     }
 
@@ -140,7 +149,7 @@ export class ValueAtTime{
         return valueKey;
     }
 
-    update(){
+    update(valueKey, propName){
         for(let i=0; i<this.#valueKeys.length; i++){
             let value = this.#valueKeys[i].value;
             if (i==0){

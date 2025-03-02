@@ -2,18 +2,26 @@ import * as VA_Utils from "./valueAtUtils.js";
 import {ValueAtGroup} from "./valueAtGroup.js";
 import {ValueAtLine} from "./valueAtLine.js";
 
+const EasingNames = ['linear','stepped','easeInSine','easeOutSine','easeInOutSine','easeInQuad','easeOutQuad','easeInOutQuad','easeInCubic','easeOutCubic','easeInOutCubic','easeInQuart','easeOutQuart','easeInOutQuart','easeInQuint','easeOutQuint','easeInOutQuint','easeInExpo','easeOutExpo','easeInOutExpo','easeInCirc','easeOutCirc','easeInOutCirc','easeInBack','easeOutBack','easeInOutBack','easeInElastic','easeOutElastic','easeInOutElastic','easeOutBounce','easeInBounce','easeInOutBounce'];
+
 export class ValueAtTimeLine{
+
     #parentDiv;
     #containerDiv;
     #headerDiv;
     #scrollContainerDiv;
     #stickyWrapperDiv;
     #scaleWrapperDiv;
+    #infoScaleDiv;
+    #infoDiv;
+    #infoKeyFrameDiv;
     #scaleDiv;
     #cursorDragBoxDiv;
+    #cursorDragBoxRect;
     #lineWrapDiv;
     #scrollRemainderDiv;
     #scrollbarDiv;
+    #scrollbarRect;
     #remainingDiv;
     #footerDiv;
 
@@ -30,12 +38,22 @@ export class ValueAtTimeLine{
     #scrollGroupDiv;
     #scrollLabel;  
 
-
     #zoomGroupDiv;
     #zoomLabel;
     #zoomSlider;
+    #zoomFactor = 1;
+    #onZoom;
     #cursorDiv;
     #cursorLabel;
+    #cursorPreviousNodeBtn;
+    #cursorLabelText;
+    #cursorNextNodeBtn;
+
+    #keyFrameObjectNameDiv;
+    #keyFramePropertyNameDiv;
+    #keyFrameValueInput;
+    #keyFrameTimeInput;
+    #keyFrameEasingSelect;
 
     #valueAtDiv;
 
@@ -50,9 +68,8 @@ export class ValueAtTimeLine{
     #cursorTime = 0;
     #root;
     
-    #selectPointDown = null;
+    #boxSelectStartPoint = null;
     #rootValueAtGroup;
-    #valueAtLines = [];
     #selectedNodeList = [];
     
     #scrollbarContentDiv;
@@ -61,9 +78,12 @@ export class ValueAtTimeLine{
     #scrollbarWidth = null;
     #timeUnitPerPixel;
     #pixelPerTimeUnit;
+    #timePerScrollPixel;
     #cursorDragging = false;
     #scrollBarDragoffset = null;
-    #onZoom;
+    #suppressedNodesSelectedList = [];
+    #suppressedNodesDeSelectedList = [];
+    #infoValueAtNode = null;
     constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
         //  build scrolling UI container
@@ -74,11 +94,18 @@ export class ValueAtTimeLine{
  
         //  build wave display and scale container
         //this.scaleWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-scale-wrapper'}, this.#containerDiv);
-        this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#containerDiv);
+        this.#infoScaleDiv = VA_Utils.createEl('div', {className: 'valueAt-info-scale'}, this.#containerDiv);
+        this.#infoDiv = VA_Utils.createEl('div', {className: 'valueAt-info'}, this.#infoScaleDiv);
+        this.#infoKeyFrameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-keyframe'}, this.#infoDiv);
+        this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#infoScaleDiv);
         this.#cursorDragBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-cursor-dragbox'}, this.#scaleDiv);
         this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor', className: 'valueAt-cursor'}, this.#containerDiv);
         let span = VA_Utils.createEl('span', {}, this.#cursorDiv);
-        this.#cursorLabel = VA_Utils.createEl('div', {innerText: '0'}, this.#cursorDiv);
+
+        this.#cursorLabel = VA_Utils.createEl('div', {className: 'valueAt-cursor-label'}, this.#cursorDiv);
+        this.#cursorPreviousNodeBtn = VA_Utils.createEl('div', {innerText: '⏴', className: 'valueAt-cursor-button-left', title: 'Cursor to previous keyframe'}, this.#cursorLabel);
+        this.#cursorLabelText = VA_Utils.createEl('div', {innerText: '0', className: 'valueAt-cursor-text'}, this.#cursorLabel);
+        this.#cursorNextNodeBtn = VA_Utils.createEl('div', {innerText: '⏵', className: 'valueAt-cursor-button-right', title: 'Cursor to next keyframe'}, this.#cursorLabel);
 
         this.#scrollContainerDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
         //this.#stickyWrapperDiv = VA_Utils.createEl('div', {id: 'stickyWrapper'}, this.#scrollContainerDiv);
@@ -110,6 +137,19 @@ export class ValueAtTimeLine{
         this.#zoomLabel = VA_Utils.createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
         this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0', max:'0.999', step: '0.001', value: '0'}, this.#zoomGroupDiv);
 
+        //  ValueAtNode Info panel
+        this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {innerText: 'Object'}, this.#infoKeyFrameDiv);
+        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, this.#infoKeyFrameDiv);
+        VA_Utils.createEl('div', {innerText: 'time'}, this.#infoKeyFrameDiv);
+        this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
+        VA_Utils.createEl('div', {innerText: 'value'}, this.#infoKeyFrameDiv);
+        this.#keyFrameValueInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
+        VA_Utils.createEl('div', {innerText: 'easing'}, this.#infoKeyFrameDiv);
+        this.#keyFrameEasingSelect = VA_Utils.createEl('select', {}, this.#infoKeyFrameDiv);
+        EasingNames.forEach((easingName)=>{
+            VA_Utils.createEl('option', {value: EasingNames, innerText: easingName}, this.#keyFrameEasingSelect);
+        });
+
         //  create root valueAt group
         this.#rootValueAtGroup = new ValueAtGroup(this, '', null, true);
 
@@ -139,8 +179,37 @@ export class ValueAtTimeLine{
             this.update();
         });
 
+        this.#scrollContainerDiv.addEventListener('wheel', (e)=>{
+            this.#handleWheel(e);
+            if (e.ctrlKey && e.offsetX > this.#labelWidth){
+                let x = (e.offsetX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
+                let target = this.#viewStart + (x * this.viewRange);
+                let zoomFactor = this.#zoomFactor;
+                zoomFactor += (e.deltaY * 0.01) * 0.1;
+                this.zoom(zoomFactor, target);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
         this.#cursorDiv.addEventListener('pointerdown', (e)=>{
             this.#cursorDragging = true;
+        });
+
+        this.#cursorPreviousNodeBtn.addEventListener('pointerdown', (e)=>{
+            e.stopPropagation();
+        });
+
+        this.#cursorPreviousNodeBtn.addEventListener('pointerup', (e)=>{
+            this.#handleCursorToPreviousKeyFrame(e);
+        });
+
+        this.#cursorNextNodeBtn.addEventListener('pointerupdown', (e)=>{
+            e.stopPropagation();
+        });
+
+        this.#cursorNextNodeBtn.addEventListener('pointerup', (e)=>{
+            this.#handleCursorToNextKeyFrame(e);
         });
 
         this.#dataRangeStartInput.addEventListener('change', (e)=>{
@@ -163,22 +232,25 @@ export class ValueAtTimeLine{
         this.setDataRange(dataRangeStart, dataRangeEnd);
 
         this.#zoomSlider.addEventListener('input', (e)=>{
-            let target = this.#viewStart + (this.#viewRange * 0.5);  //  center by default
-            if (this.#cursorTime > this.#viewStart && this.#cursorTime < this.#viewEnd){
-                target = this.#cursorTime;
-            }
-            this.zoom(this.#zoomSlider.value, target);
-            /*
-            let viewRange = this.#dataRange * (1 - this.#zoomSlider.value);
-            this.#updateTimePerPixel(viewRange);
-            this.setView(this.#viewStart, viewRange, true);
-            */
+            this.#handleZoomSlider(e);
         });
         this.#zoomSlider.addEventListener('pointerdown', (e)=>{
             e.stopPropagation();
         });
         this.#zoomSlider.addEventListener('pointermove', (e)=>{ 
             e.stopPropagation();
+        });
+
+        this.#keyFrameTimeInput.addEventListener('change', (e)=>{
+            if (this.#infoValueAtNode){
+                this.#infoValueAtNode.valueKey.time = parseFloat(this.#keyFrameTimeInput.value);
+            }
+        });
+
+        this.#keyFrameValueInput.addEventListener('change', (e)=>{
+            if (this.#infoValueAtNode){
+                this.#infoValueAtNode.valueKey.value = parseFloat(this.#keyFrameValueInput.value);
+            }
         });
 
         this.#scrollbarContentDiv.addEventListener('pointerdown', (e)=>{
@@ -189,7 +261,7 @@ export class ValueAtTimeLine{
         });
 
         this.#cursorDragBoxDiv.addEventListener('pointerdown', (e)=>{
-            let f = (e.pageX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
+            let f = (e.pageX - this.#cursorDragBoxRect.left) / this.#cursorDragBoxRect.width;
             this.setTime(this.#viewStart + this.#viewRange * f);
             this.#cursorDragging = true;
             e.stopPropagation();
@@ -209,16 +281,16 @@ export class ValueAtTimeLine{
         });
         document.addEventListener('pointerdown', (e)=>{
             if ( e.button == 0 && (e.ctrlKey || e.shiftKey)){
-                this.#selectPointDown = {x: e.pageX, y: e.pageY};
+                this.#boxSelectStartPoint = {left: e.pageX, top: e.pageY};
             }
         });
         document.addEventListener('pointermove', (e)=>{
-            if ( this.#selectPointDown != null && (e.ctrlKey || e.shiftKey)){
+            if ( this.#boxSelectStartPoint != null && (e.ctrlKey || e.shiftKey)){
                 this.#selectBoxDiv.style.display = '';
-                this.#selectBoxDiv.style.left = Math.min(this.#selectPointDown.x, e.pageX) + 'px';
-                this.#selectBoxDiv.style.top = Math.min(this.#selectPointDown.y, e.pageY) + 'px';      
-                this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#selectPointDown.x) + 'px';
-                this.#selectBoxDiv.style.height = Math.abs(e.pageY -this.#selectPointDown.y) + 'px';
+                this.#selectBoxDiv.style.left = Math.min(this.#boxSelectStartPoint.left, e.pageX) + 'px';
+                this.#selectBoxDiv.style.top = Math.min(this.#boxSelectStartPoint.top, e.pageY) + 'px';      
+                this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#boxSelectStartPoint.left) + 'px';
+                this.#selectBoxDiv.style.height = Math.abs(e.pageY -this.#boxSelectStartPoint.top) + 'px';
             } else {
                 if (e.buttons == 1){
                     this.#handleCursorDrag(e);
@@ -227,20 +299,12 @@ export class ValueAtTimeLine{
             }
         });
         document.addEventListener('pointerup', (e)=>{
-            if ( this.#selectPointDown != null &&  (e.ctrlKey || e.shiftKey)){
+            if ( this.#boxSelectStartPoint != null &&  (e.ctrlKey || e.shiftKey)){
+                let deselect = (this.#boxSelectStartPoint.left > e.pageX && this.#boxSelectStartPoint.top > e.pageY)? true : false;
                 let selectRect = this.#selectBoxDiv.getBoundingClientRect();
                 this.#selectBoxDiv.style.display = 'none';
-                this.#selectPointDown = null;    
-                let valueAtNodes = this.getValueAtNodes();
-                valueAtNodes.forEach((valueAtNode)=>{
-                    if (!valueAtNode.parentDiv.parentElement.classList.contains('valueAt-collapse')){
-                        let rect = valueAtNode.div.getBoundingClientRect();
-                        if (rect.left >= selectRect.left && rect.left <= selectRect.right && rect.top >= selectRect.top && rect.top <= selectRect.bottom){
-                            valueAtNode.selected = true;
-                            this.addValueAtNodeToSelectedList(valueAtNode);
-                        }
-                    }
-                });
+                this.#boxSelectStartPoint = null;  
+                this.selectValueNodes(selectRect, deselect); 
             }
             this.#cursorDragging = false;
             this.#scrollBarDragoffset = null;
@@ -248,9 +312,6 @@ export class ValueAtTimeLine{
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
         });
-        //this.#handleWindowSize();
-        //this.setView(this.#viewStart, this.viewRange);
-        //this.setTime(0);
     }
 
     init(){
@@ -260,41 +321,129 @@ export class ValueAtTimeLine{
         this.update();
     }
 
-    zoom(value, target=null){
-        if (target == null){
-            target = this.#viewStart + (this.#viewRange * 0.5);
+    selectValueNodes(DOMRect, deselect=false){
+        let valueAtNodes = this.getAllValueAtNodes(false, true);
+        let selectedNodes = [];
+        valueAtNodes.forEach((valueAtNode)=>{
+            let rect = valueAtNode.div.getBoundingClientRect();
+            if (rect.left >= DOMRect.left && rect.left <= DOMRect.right && rect.top >= DOMRect.top && rect.top <= DOMRect.bottom){
+                valueAtNode.selected = !deselect;
+                selectedNodes.push(valueAtNode);
+            }
+        });
+        if (deselect){
+            this.removeValueAtNodesFromSelectedList(selectedNodes);
+        } else {
+            this.addValueAtNodesToSelectedList(selectedNodes);
         }
-        let factor = (target - this.#viewStart) / this.#viewRange;
-        let viewRange = this.#dataRange * (1 - value);
-        let viewStart = target - (viewRange * factor);
-        this.#updateTimePerPixel(viewRange);
-        this.setView(viewStart, viewRange, true);
+        return this.#selectedNodeList;
     }
+
+    #handleWheel(e){
+        if (e.ctrlKey && e.offsetX > this.#labelWidth){
+            let x = e.pageX - this.#cursorDragBoxRect.left;
+            let target = this.#viewStart + (x * this.#timeUnitPerPixel);
+            let zoomFactor = this.#zoomFactor;
+            zoomFactor += (e.deltaY * 0.01) * 0.01;
+            this.zoom(zoomFactor, target);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+
     #handleCursorDrag(e){
         if (this.#cursorDragging){
-            let f = (e.pageX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
+            let f = (e.pageX - this.#cursorDragBoxRect.left) / this.#cursorDragBoxRect.width;
             this.setTime(this.#viewStart + this.#viewRange * f);
             e.stopPropagation();
         }
     }
 
-    #handleScrollBar(e){
-        if (this.#scrollBarDragoffset != null){
-            let pixelMoveRange =  this.#scrollbarDiv.offsetWidth - this.#scrollbarContentDiv.offsetWidth;
-            let x = e.pageX - this.#scrollBarDragoffset;
-            let pixelRatio = x / pixelMoveRange;
-            let moveRange = this.#dataRange - this.#viewRange;
-            let viewStart = pixelRatio * moveRange;
-            this.setView(viewStart, this.#viewRange);
+    #handleCursorToPreviousKeyFrame(e){
+        if (e.button==0){
+            let time = null;
+            let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
+            valueAtLines.forEach((valueAtLine)=>{
+                let keyFrame = valueAtLine.getKeyFrameBefore(this.#cursorTime, false);
+                if (keyFrame){
+                    time = time==null? keyFrame.time : Math.max(time, keyFrame.time);
+                }
+            });
+            this.setTime(time);
         }
+    }
+
+    #handleCursorToNextKeyFrame(e){
+        if (e.button==0){
+            let time = null
+            let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
+            valueAtLines.forEach((valueAtLine)=>{
+                let keyFrame = valueAtLine.getKeyFrameAfter(this.#cursorTime, false);
+                if (keyFrame){
+                    time = time==null? keyFrame.time : Math.min(time, keyFrame.time);
+                }
+            });
+            this.setTime(time);
+        }
+    }
+
+    #handleValueAtNodeSelectedChanged(){
+        if (this.#selectedNodeList.length == 1){
+            let valueAtNode = this.#selectedNodeList[0];
+            this.#infoValueAtNode = valueAtNode;
+            this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueAtLine.valueAtGroup.getRootName();
+            this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName;
+            this.#keyFrameTimeInput.value = valueAtNode.valueKey.time;
+            this.#keyFrameValueInput.value = valueAtNode.valueKey.value;
+            this.#keyFrameEasingSelect.selectedIndex = EasingNames.indexOf(valueAtNode.valueKey.easing.name);
+        }
+        this.#infoKeyFrameDiv.style.display = (this.#selectedNodeList.length != 1)? 'none' : '';
     }
 
     #handleWindowSize(){
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
         this.#scrollbarWidth = this.#containerDiv.offsetWidth - this.#lineWrapDiv.offsetWidth;
-        console.log('scrollbar width: ' + this.#scrollbarWidth);
+        //  update coordinate references
+        this.#cursorDragBoxRect = this.#cursorDragBoxDiv.getBoundingClientRect(); 
+        this.#scrollbarRect = this.#scrollbarDiv.getBoundingClientRect();
+        this.#timePerScrollPixel = this.#cursorDragBoxRect.width / this.#dataRange;
         this.#updateTimePerPixel(this.#viewRange);
         this.update();
+    }
+
+    #handleZoomSlider(e){
+        let zoomTarget = this.#viewStart;  //  left align by default
+        //let zoomTarget = this.#viewStart + (this.#viewRange * 0.5);  //  center by default
+        if (this.#cursorTime > this.#viewStart && this.#cursorTime < this.#viewEnd){  //  center around cursor if on-screen
+            zoomTarget = this.#cursorTime;
+        }
+        this.zoom(1 - this.#zoomSlider.value, zoomTarget);
+    }
+
+    #updateTimePerPixel(viewRange){
+        if (this.#cursorDragBoxRect !== undefined){           
+            this.#timeUnitPerPixel = viewRange / this.#cursorDragBoxRect.width;
+            this.#pixelPerTimeUnit = this.#cursorDragBoxRect.width / viewRange;
+        }
+    }
+
+    #updateCursors(){
+        let cursorHeight = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight;
+        this.#cursorDiv.style.height = cursorHeight + 'px';
+        if (this.#timeUnitPerPixel === undefined || true){ this.#updateTimePerPixel(this.#viewRange) }
+        let x = (this.#cursorTime - this.#viewStart) * this.#pixelPerTimeUnit;
+        this.#cursorDiv.style.display = x<0? 'none' : ''; 
+        this.#cursorDiv.style.left =  'calc(var(--label-width) + ' + x + 'px)';
+        this.#cursorLabelText.innerText = this.#cursorTime.toFixed(2);
+    }
+
+    #handleScrollBar(e){
+        if (this.#scrollBarDragoffset != null){
+            //let timePerScrollPixel = this.#dataRange / this.#scrollbarRect.width;
+            let x = e.pageX - this.#scrollbarRect.left - this.#scrollBarDragoffset;
+            let viewStart = x * (this.#dataRange / this.#scrollbarRect.width);
+            this.setView(viewStart, this.#viewRange);
+        }
     }
 
     setDataRange(startTime, endTime){
@@ -321,24 +470,6 @@ export class ValueAtTimeLine{
         this.#root.style.setProperty(name, value);
     }
 
-    #updateTimePerPixel(viewRange){
-        if (this.#lineWrapDiv.offsetWidth > 0){
-            let width = this.#lineWrapDiv.offsetWidth - this.#labelWidth;
-            this.#timeUnitPerPixel = viewRange / width;
-            this.#pixelPerTimeUnit = width / viewRange;
-        }
-    }
-
-    #updateCursors(){
-        let cursorHeight = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight;
-        this.#cursorDiv.style.height = cursorHeight + 'px';
-        if (this.#timeUnitPerPixel === undefined || true){ this.#updateTimePerPixel(this.#viewRange) }
-        let x = (this.#cursorTime - this.#viewStart) * this.#pixelPerTimeUnit;
-        this.#cursorDiv.style.display = x<0? 'none' : ''; 
-        this.#cursorDiv.style.left =  'calc(var(--label-width) + ' + x + 'px)';
-        this.#cursorLabel.innerText = this.#cursorTime.toFixed(2);
-    }
-
     update(){
         this.#updateCursors();
         this.#rootValueAtGroup.update();
@@ -354,12 +485,24 @@ export class ValueAtTimeLine{
         */
     }
 
-    addValueAtNodeToSelectedList(valueAtNode){
-        if (valueAtNode.selected){
-            if (this.#selectedNodeList.indexOf(valueAtNode) == -1){
-                this.#selectedNodeList.push(valueAtNode);
+    addValueAtNodesToSelectedList(valueAtNodes){
+        valueAtNodes.forEach((valueAtNode)=>{
+            if (valueAtNode.selected){
+                if (this.#selectedNodeList.indexOf(valueAtNode) == -1){
+                    this.#selectedNodeList.push(valueAtNode);
+                }
             }
-        }
+        });
+        this.#handleValueAtNodeSelectedChanged();
+    }
+
+    removeValueAtNodesFromSelectedList(valueAtNodes){
+        valueAtNodes.forEach((valueAtNode)=>{
+            if (!valueAtNode.selected){
+                this.#selectedNodeList.splice(this.#selectedNodeList.indexOf(valueAtNode),1);
+            }
+        });
+        this.#handleValueAtNodeSelectedChanged();
     }
 
     panTocursor(){
@@ -387,49 +530,51 @@ export class ValueAtTimeLine{
         this.#rootValueAtGroup.setTimeFast(this.#cursorTime);
     }
 
+    zoom(zoomFactor, zoomTarget=null){
+        if (zoomTarget == null){
+            zoomTarget = this.#viewStart + (this.#viewRange * 0.5);
+        }
+        this.#zoomFactor = Math.max(Math.min(1, zoomFactor), 0.001);
+        console.log('zoomFactor: ' + this.#zoomFactor);
+        let viewRange = this.#dataRange * this.#zoomFactor;
+        this.#updateTimePerPixel(viewRange);
+        let factor = (zoomTarget - this.#viewStart) / this.#viewRange;
+        let viewStart = zoomTarget - (viewRange * factor);
+        this.setView(viewStart, viewRange, true);
+    }
+    
     setView(viewStart, viewRange=null, force = false ){
         viewRange = viewRange==null? this.#viewRange : Math.abs(viewRange);
         if (force || viewStart != this.#viewStart || viewRange != this.#viewRange){
-            this.#viewStart = viewStart;
+            this.#viewStart = VA_Utils.clamp(this.#dataRangeStart, viewStart, this.#dataRangeEnd - viewRange);
             this.#viewRange = viewRange;
-            this.#viewEnd = this.#viewStart + this.#viewRange;
+            this.#viewEnd = this.#viewStart + this.#viewRange; //VA_Utils.clamp(this.#dataRangeStart, this.#viewEnd, this.#dataRangeEnd);
 
             this.#updateTimePerPixel(this.#viewRange);
 
-            this.#zoomSlider.value = 1 - (this.#viewRange / this.#dataRange);
-            let widthPercent = (1 - this.#zoomSlider.value) * 100;
+            //this.#zoomSlider.value = 1 - (this.#viewRange / this.#dataRange);
+            let widthPercent = ((this.#viewRange / this.#dataRange) * 100);
+            //let widthPercent = this.#zoomFactor * 100;
+            this.#scrollbarContentDiv.style.width = widthPercent + '%';
+
+            let scrollLeft = this.#viewStart / (this.#dataRange / this.#scrollbarRect.width);
+            this.#scrollbarContentDiv.style.left = scrollLeft + 'px';
+
             if (this.#scrollbarContentDiv.offsetLeft == 0 && widthPercent==100){
                 this.#scrollbarDiv.style.display = 'none';
             } else {
                 this.#scrollbarDiv.style.display = '';
             }
-            this.#scrollbarContentDiv.style.width = widthPercent + '%';
-            let moveRange = this.#dataRange - this.#viewRange;
-            let scrollLeft = 0;
-            if (moveRange > 0){
-                let ratio = this.#viewStart / moveRange;
-                let pixelMoveRange = this.#scrollbarDiv.offsetWidth - this.#scrollbarContentDiv.offsetWidth;
-                scrollLeft = ratio * pixelMoveRange;
-                this.#scrollbarContentDiv.style.left = scrollLeft + 'px';
-            }
-            //console.log(scrollLeft, this.#scrollBarDragoffset);
+            console.log('viewStart: ' + this.#viewStart + ' viewRange: ' + this.#viewRange + ' timeUnitPerPixel: ' + this.#timeUnitPerPixel);
 
             this.update();
         }
     }
 
     deselectAllValueAtNodes(){
-        let selectedChanged = false;
-        this.#selectedNodeList.forEach((valueAtNode)=>{
-            if (valueAtNode.selected){selectedChanged = true}
-            valueAtNode.selected = false;
-        });
-        this.#selectedNodeList = [];
-        selectedChanged
+        this.removeValueAtNodesFromSelectedList(this.#selectedNodeList);
     }
-    addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
-        this.#valueAtLines.push(new ValueAtLine(valueAt, this, this.#rootValueAtGroup, labelName, strokeWidth, strokeColor));
-    }
+
     addNewValueAtGroup(name, expanded=true, parentGroup=null){
         if (parentGroup==null){
             return this.#rootValueAtGroup.addNewValueAtGroup(name, expanded);
@@ -437,6 +582,10 @@ export class ValueAtTimeLine{
             return parentGroup.addNewValueAtGroup(name, expanded);
         }
     }    
+
+    get selectedValueAtNodes(){
+        return this.#selectedNodeList;
+    }
     get cursorTime(){
         return this.#cursorTime;
     }
@@ -463,9 +612,6 @@ export class ValueAtTimeLine{
     }    
     get valueAtDiv(){
         return this.#valueAtDiv;
-    }
-    get valueAtLines(){
-        return this.#valueAtLines;
     }
     get selectBoxDiv(){
         return this.#selectBoxDiv;
@@ -521,24 +667,18 @@ export class ValueAtTimeLine{
             this.#onZoom = value;
         }
     }
-    getValueAtNodes(){
-        let valueAtNodes = this.#rootValueAtGroup.getValueAtNodes();
+
+    getAllValueAtLines(checkInView = false, checkExpanded = false){  //  params are selection criteria
+        let valueAtLines = this.#rootValueAtGroup.getAllValueAtLines(checkInView, checkExpanded);
+        return valueAtLines;
+    }
+    
+    getAllValueAtNodes(checkInView = false, checkExpanded = false){
+        let valueAtNodes = this.#rootValueAtGroup.getAllValueAtNodes(checkInView, checkExpanded);
         return valueAtNodes;
     }
-    getSelectedNodes(forceRefresh = false){
-        if (forceRefresh){
-            this.#selectedNodeList = [];
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.valueAtNodes.forEach((valueAtNode)=>{
-                    if (valueAtNode.selected){
-                        this.#selectedNodeList.push(valueAtNode);
-                    }
-                });
-            });
-        }
-        return this.#selectedNodeList;
-    }
 }
+
 
 
 

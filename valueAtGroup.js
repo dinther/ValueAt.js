@@ -209,6 +209,7 @@ export class ValueAtGroup{
             valueAtGroup.setTime(time);
         });        
     }
+
     setTimeFast(time){
         if (!this.#hideAnimation){
             this.#valueAtLines.forEach((valueAtLine)=>{
@@ -224,7 +225,8 @@ export class ValueAtGroup{
         let valueAtGroup = new ValueAtGroup(this.#timeLine, name, this, expanded);
         this.#valueAtGroups.push(valueAtGroup);
         return valueAtGroup;
-    }    
+    }  
+
     addValueAt(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
         let valueAtLine = new ValueAtLine(valueAt, this.#timeLine, this, labelName, strokeWidth, strokeColor);
         this.#valueAtLines.push(valueAtLine);
@@ -233,22 +235,43 @@ export class ValueAtGroup{
             this.collapse();
         }
     }
-    getValueAtNodes(){
-        let valueAtNodes = [];
+    getRootName(){
+        if (this.#parentValueAtGroup == this.#timeLine.rootValueAtGroup){
+            return this.#name;
+        } else {
+            return this.#parentValueAtGroup.getRootName();
+        }
+    }
+    getValueLines(checkInView = false, checkExpanded = false){
+        let valueAtLinesList = [];
         this.#valueAtLines.forEach((valueAtLine)=>{
+            if (checkInView && valueAtLine.inView || !checkInView){
+                if (checkExpanded && !valueAtLine.lineDiv.classList.contains('valueAt-collapse') || !checkExpanded){
+                    valueAtLinesList.push(valueAtLine);
+                }
+            }
+        });
+        return valueAtLinesList;
+    }
+
+    getAllValueAtLines(checkInView = false, checkExpanded = false){
+        let valueAtLinesList = this.getValueLines(checkInView, checkExpanded);
+        this.#valueAtGroups.forEach((valueAtGroup)=>{
+            valueAtLinesList = valueAtLinesList.concat( valueAtGroup.getAllValueAtLines(checkInView, checkExpanded));
+        });
+        return valueAtLinesList;
+    }
+
+    getAllValueAtNodes(checkInView = false, checkExpanded = false){
+        let valueAtNodes = [];
+        let valueAtLines = this.getValueLines(checkInView, checkExpanded);
+        valueAtLines.forEach((valueAtLine)=>{
             valueAtNodes = valueAtNodes.concat(valueAtLine.valueAtNodes);
         });
         this.#valueAtGroups.forEach((valueAtGroup)=>{
-            valueAtNodes = valueAtNodes.concat(valueAtGroup.getValueAtNodes());
+            valueAtNodes = valueAtNodes.concat(valueAtGroup.getAllValueAtNodes(checkInView, checkExpanded));
         });
         return valueAtNodes;
-    }
-    getAllValueAtLines(valueAtLinesList = []){
-        valueAtLinesList = valueAtLinesList.concat(this.#valueAtLines);
-        this.#valueAtGroups.forEach((valueAtGroup)=>{
-            valueAtLinesList = valueAtGroup.getAllValueAtLines(valueAtLinesList);
-        });
-        return valueAtLinesList;
     }
 
     get expanded(){

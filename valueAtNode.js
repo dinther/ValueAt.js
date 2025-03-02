@@ -1,6 +1,7 @@
 import * as VA_Utils from "./valueAtUtils.js";
 
 export class ValueAtNode{
+    #valueAtLine;
     #parentDiv;
     #div;
     #valueKey;
@@ -8,7 +9,8 @@ export class ValueAtNode{
     #active = false;
     onSelectedChanged;
     onActiveChanged;
-    constructor(parentDiv, valueKey){
+    constructor(valueAtLine, parentDiv, valueKey){
+        this.#valueAtLine = valueAtLine;
         this.#parentDiv = parentDiv;
         this.#valueKey = valueKey;
         this.#div = VA_Utils.createEl('div',{className: 'valueAt-node'}, parentDiv);
@@ -32,6 +34,7 @@ export class ValueAtNode{
             e.stopPropagation();
         });   
     }
+
     #handleSelectedChanged(e=null){
         if (this.#selected){
             this.#div.classList.add('valueAt-node-selected');
@@ -46,6 +49,9 @@ export class ValueAtNode{
         if (typeof this.onActiveChanged === 'function'){
             this.onActiveChanged(this, e);
         }
+    }
+    get valueAtLine(){
+        return this.#valueAtLine;
     }
     get parentDiv(){
         return this.#parentDiv;
