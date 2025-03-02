@@ -28,7 +28,7 @@
 
 
             var circle1 = new Circle(document.querySelector('#timeline'), 'circle1', 10, 50, 127, 200, 50, 50);
-            var circle2 = new Circle(document.querySelector('#timeline'), 'circle2', 10, 50, 127, 200, 50, 50);
+            var circle2 = null; //new Circle(document.querySelector('#timeline'), 'circle2', 10, 50, 127, 200, 50, 50);
 
             var va_radius1 = new LookupAtTime('radius', circle1, 'radius');
             var magnitude = 1.70158;
@@ -195,7 +195,7 @@
             let positionGroup1 = transformGroup1.addNewValueAtGroup('Position', true);
             positionGroup1.addValueAt(va_pos_x1, 'Pos X', 1);
             positionGroup1.addValueAt(va_pos_y1, 'Pos y', 1);
-
+/*
             let circlegroup2 = timeLine.addNewValueAtGroup('Circle 2', true);
             circlegroup2.addValueAt(va_radius2, 'Radius', 1, '#f0f', true);
             let colorGroup2 = circlegroup2.addNewValueAtGroup('Color', true);
@@ -208,7 +208,7 @@
             let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', true);
             positionGroup2.addValueAt(va_pos_x2, 'Pos X', 1);
             positionGroup2.addValueAt(va_pos_y2, 'Pos y', 1);
-
+*/
             timeLine.init();
 
             window.computeStepList = lookupAtExport.computeStepList;

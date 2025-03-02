@@ -81,37 +81,44 @@ export class ValueAtLine{
                 } else {
                     this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
                 }
+                e.stopPropagation();
             }
         });
 
+        this.#lineIconsDiv.addEventListener("contextmenu", e => e.preventDefault());
+
         this.#labelExpandDiv.addEventListener('pointerdown', (e)=>{
-            if (!e.ctrlKey && !e.shiftKey){
-                this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
-                    if (lineDiv != this.#lineDiv){
-                        lineDiv.classList.remove('valueAt-maximized');
-                        this.update();
-                    }
-                });
-            }
-            if (this.#lineDiv.classList.contains('valueAt-maximized')){
-                this.#lineDiv.classList.remove('valueAt-maximized');
-                this.update();
-            } else{
-                if (e.shiftKey){
-                    let firstMaximizedDiv = this.#timeLine.containerDiv.querySelector('.valueAt-line.valueAt-maximized');
-                    if (firstMaximizedDiv && firstMaximizedDiv != this.#lineDiv){
-                        let lineDivs = Array.from(this.#timeLine.containerDiv.querySelectorAll('.valueAt-line'));
-                        let startIndex = lineDivs.indexOf(firstMaximizedDiv);
-                        let endIndex = lineDivs.indexOf(this.#lineDiv);
-                        for (let i=startIndex; i<endIndex; i++){
-                            lineDivs[i].classList.add('valueAt-maximized');
-                            lineDivs[i].update();
+            if (e.button==0){
+                if (!e.ctrlKey && !e.shiftKey){
+                    this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
+                        if (lineDiv != this.#lineDiv){
+                            lineDiv.classList.remove('valueAt-maximized');
+                            this.update();
+                        }
+                    });
+                }
+                if (this.#lineDiv.classList.contains('valueAt-maximized')){
+                    this.#lineDiv.classList.remove('valueAt-maximized');
+                    this.update();
+                } else{
+                    if (e.shiftKey){
+                        let firstMaximizedDiv = this.#timeLine.containerDiv.querySelector('.valueAt-line.valueAt-maximized');
+                        if (firstMaximizedDiv && firstMaximizedDiv != this.#lineDiv){
+                            let lineDivs = Array.from(this.#timeLine.containerDiv.querySelectorAll('.valueAt-line'));
+                            let startIndex = lineDivs.indexOf(firstMaximizedDiv);
+                            let endIndex = lineDivs.indexOf(this.#lineDiv);
+                            for (let i=startIndex; i<endIndex; i++){
+                                lineDivs[i].classList.add('valueAt-maximized');
+                                lineDivs[i].update();
+                            }
                         }
                     }
+                    this.#lineDiv.classList.add('valueAt-maximized');
+                    this.update();
                 }
-                this.#lineDiv.classList.add('valueAt-maximized');
-                this.update();
             }
+            e.preventDefault();
+            e.stopPropagation();
         });
 
         this.#previousKeyFrameDiv.addEventListener('pointerdown', (e)=>{

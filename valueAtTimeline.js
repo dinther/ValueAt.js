@@ -97,6 +97,7 @@ export class ValueAtTimeLine{
         this.#infoScaleDiv = VA_Utils.createEl('div', {className: 'valueAt-info-scale'}, this.#containerDiv);
         this.#infoDiv = VA_Utils.createEl('div', {className: 'valueAt-info'}, this.#infoScaleDiv);
         this.#infoKeyFrameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-keyframe'}, this.#infoDiv);
+        this.#infoKeyFrameDiv.style.display = 'none';
         this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#infoScaleDiv);
         this.#cursorDragBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-cursor-dragbox'}, this.#scaleDiv);
         this.#cursorDiv = VA_Utils.createEl('div', {id: 'cursor', className: 'valueAt-cursor'}, this.#containerDiv);
@@ -392,10 +393,10 @@ export class ValueAtTimeLine{
             let valueAtNode = this.#selectedNodeList[0];
             this.#infoValueAtNode = valueAtNode;
             this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueAtLine.valueAtGroup.getRootName();
-            this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName;
+            this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName + ' (' + valueAtNode.valueAtLine.valueAtNodes.indexOf(valueAtNode) + ')';
             this.#keyFrameTimeInput.value = valueAtNode.valueKey.time;
             this.#keyFrameValueInput.value = valueAtNode.valueKey.value;
-            this.#keyFrameEasingSelect.selectedIndex = EasingNames.indexOf(valueAtNode.valueKey.easing.name);
+            this.#keyFrameEasingSelect.selectedIndex = valueAtNode.valueKey.easing? EasingNames.indexOf(valueAtNode.valueKey.easing.name) : 0;
         }
         this.#infoKeyFrameDiv.style.display = (this.#selectedNodeList.length != 1)? 'none' : '';
     }
@@ -534,7 +535,6 @@ export class ValueAtTimeLine{
             zoomTarget = this.#viewStart + (this.#viewRange * 0.5);
         }
         this.#zoomFactor = Math.max(Math.min(1, zoomFactor), 0.001);
-        console.log('zoomFactor: ' + this.#zoomFactor);
         let viewRange = this.#dataRange * this.#zoomFactor;
         this.#updateTimePerPixel(viewRange);
         let factor = (zoomTarget - this.#viewStart) / this.#viewRange;
@@ -564,8 +564,6 @@ export class ValueAtTimeLine{
             } else {
                 this.#scrollbarDiv.style.display = '';
             }
-            console.log('viewStart: ' + this.#viewStart + ' viewRange: ' + this.#viewRange + ' timeUnitPerPixel: ' + this.#timeUnitPerPixel);
-
             this.update();
         }
     }
