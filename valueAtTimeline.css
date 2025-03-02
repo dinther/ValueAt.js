@@ -5,8 +5,8 @@
 
 :root {
     --header-height: 32px;
-    --scale-row-height: 83px;
-    --line-row-height: 32px;
+    --scale-row-height: 75px;
+    --line-row-height: 28px;
     --line-maximized-height: 100px;
     --nodecursor: 'move';
     --nodesize: 12px;
@@ -26,7 +26,7 @@
     --scale-back-color: #615e5e;
     --cursor-color: #ff9900;
     --range-cursor-color: #ff6200;
-    --sb-track-color: #28292e;
+    --sb-track-color: #1f1f1f;
     --sb-thumb-color: #616470;
     --sb-size: 14px;
     touch-action: none;
@@ -41,20 +41,20 @@ div {
 }
 
 input,select{
-    background-color: transparent;
+    background-color: var(--main-back-color);
     color: var(--main-text-color);
     border: none;
     border-radius: 0;
     font-size: 1em;
-    padding: 4px;
+    padding: 2px 0px;
 }
 
 input:focus {
-    background-color: var(--header-back-color);
+    background-color: var(--scale-back-color);
     color: var(--main-text-color);
     border: none;
     border-radius: 0;
-    outline:1px solid #615e5e;
+    outline: none;
 }
 
 /* Firefox (uncomment to work in Firefox, although other properties will not work!)  */
@@ -153,6 +153,8 @@ input:focus {
     height: 16px;
     width: 100%;
     pointer-events: all;
+    background-color: #6f6f6f;
+
 }
 
 .valueAt-cursor{
@@ -224,9 +226,7 @@ input:focus {
 }
 
 .valueAt-remaining {
-    height: 100px;
     z-index: 10;
-    background-color: var(--main-back-color);
 }
 
 .valueAt-footer {
@@ -330,7 +330,7 @@ input:focus {
 
 .valueAt-scrollbar {
     position: relative;
-    background-color: #28292e;
+    background-color:var(--sb-track-color);
     z-index: 15;
     font-size: 0.7em;
     color:#6d6e6f;

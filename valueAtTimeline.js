@@ -139,7 +139,8 @@ export class ValueAtTimeLine{
         this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0', max:'0.999', step: '0.001', value: '0'}, this.#zoomGroupDiv);
 
         //  ValueAtNode Info panel
-        this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {innerText: 'Object'}, this.#infoKeyFrameDiv);
+        this.#keyFrameObjectNameDiv = VA_Utils.createEl('input', {type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
+        //this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {innerText: 'Object'}, this.#infoKeyFrameDiv);
         this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {innerText: 'time'}, this.#infoKeyFrameDiv);
         this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
@@ -392,7 +393,7 @@ export class ValueAtTimeLine{
         if (this.#selectedNodeList.length == 1){
             let valueAtNode = this.#selectedNodeList[0];
             this.#infoValueAtNode = valueAtNode;
-            this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueAtLine.valueAtGroup.getRootName();
+            this.#keyFrameObjectNameDiv.value = valueAtNode.valueAtLine.valueAtGroup.getRootName();
             this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName + ' (' + valueAtNode.valueAtLine.valueAtNodes.indexOf(valueAtNode) + ')';
             this.#keyFrameTimeInput.value = valueAtNode.valueKey.time;
             this.#keyFrameValueInput.value = valueAtNode.valueKey.value;
@@ -560,9 +561,9 @@ export class ValueAtTimeLine{
             this.#scrollbarContentDiv.style.left = scrollLeft + 'px';
 
             if (this.#scrollbarContentDiv.offsetLeft == 0 && widthPercent==100){
-                this.#scrollbarDiv.style.display = 'none';
+                this.#scrollbarDiv.firstChild.style.display = 'none';
             } else {
-                this.#scrollbarDiv.style.display = '';
+                this.#scrollbarDiv.firstChild.style.display = '';
             }
             this.update();
         }

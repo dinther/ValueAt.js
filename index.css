@@ -9,11 +9,14 @@ body {
 
 #timeline {
   font-family: Arial, Helvetica, sans-serif;
-    position: relative;
+    position: absolute;
+    bottom: 0px;
     left: 0px;
     width: 100dvw;
-    height: 100dvh;
+    height: 40dvh;
     overflow: hidden;
+    background-color: var(--main-back-color);
+    padding: 4px 4px 4px 4px;
 }
 
 .icon-button {
