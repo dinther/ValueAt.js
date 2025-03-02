@@ -5,7 +5,7 @@
 
 :root {
     --header-height: 32px;
-    --scale-row-height: 96px;
+    --scale-row-height: 83px;
     --line-row-height: 32px;
     --line-maximized-height: 100px;
     --nodecursor: 'move';
@@ -141,11 +141,8 @@ input:focus {
 .valueAt-info-keyframe {
     display: grid;
     grid-template-columns: 60px 1fr;
-    
-    grid-template-rows: 24px;
-    
+    grid-template-rows: 18px;
     align-items: baseline;
-    grid-gap: 2px;
 }
 
 .valueAt-info input,select {

@@ -241,13 +241,13 @@ export class ValueAtTimeLine{
             e.stopPropagation();
         });
 
-        this.#keyFrameTimeInput.addEventListener('change', (e)=>{
+        this.#keyFrameTimeInput.addEventListener('input', (e)=>{
             if (this.#infoValueAtNode){
                 this.#infoValueAtNode.valueKey.time = parseFloat(this.#keyFrameTimeInput.value);
             }
         });
 
-        this.#keyFrameValueInput.addEventListener('change', (e)=>{
+        this.#keyFrameValueInput.addEventListener('input', (e)=>{
             if (this.#infoValueAtNode){
                 this.#infoValueAtNode.valueKey.value = parseFloat(this.#keyFrameValueInput.value);
             }
@@ -498,9 +498,8 @@ export class ValueAtTimeLine{
 
     removeValueAtNodesFromSelectedList(valueAtNodes){
         valueAtNodes.forEach((valueAtNode)=>{
-            if (!valueAtNode.selected){
-                this.#selectedNodeList.splice(this.#selectedNodeList.indexOf(valueAtNode),1);
-            }
+            valueAtNode.selected = false;
+            this.#selectedNodeList.splice(this.#selectedNodeList.indexOf(valueAtNode),1);
         });
         this.#handleValueAtNodeSelectedChanged();
     }
@@ -572,7 +571,13 @@ export class ValueAtTimeLine{
     }
 
     deselectAllValueAtNodes(){
-        this.removeValueAtNodesFromSelectedList(this.#selectedNodeList);
+        let valueAtNodes = this.getAllValueAtNodes(false,true);
+        valueAtNodes.forEach((valueAtNode)=>{
+            valueAtNode.selected = false;
+        });
+        this.#selectedNodeList = [];
+        this.#handleValueAtNodeSelectedChanged();
+
     }
 
     addNewValueAtGroup(name, expanded=true, parentGroup=null){

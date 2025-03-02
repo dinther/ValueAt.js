@@ -6,14 +6,15 @@ export class ValueAtNode{
     #div;
     #valueKey;
     #selected = false;
-    #active = false;
+    //#active = false;
     onSelectedChanged;
-    onActiveChanged;
+    //onActiveChanged;
     constructor(valueAtLine, parentDiv, valueKey){
         this.#valueAtLine = valueAtLine;
         this.#parentDiv = parentDiv;
         this.#valueKey = valueKey;
         this.#div = VA_Utils.createEl('div',{className: 'valueAt-node'}, parentDiv);
+        /*
         this.#div.addEventListener('pointerenter', (e)=>{
             this.#active = true;
             this.#div.classList.add('valueAt-node-active');
@@ -25,12 +26,13 @@ export class ValueAtNode{
             this.#div.classList.remove('valueAt-node-active');
             this.#handleActiveChanged(e);
             e.stopPropagation();
-        });       
+        });
+        */       
         this.#div.addEventListener('pointerdown', (e)=>{
-            if (!this.#selected){
-                this.#selected = true;
+            //if (!this.#selected){
+                this.#selected = !this.#selected; //true;
                 this.#handleSelectedChanged(e);
-            }
+            //}
             e.stopPropagation();
         });   
     }
@@ -45,11 +47,13 @@ export class ValueAtNode{
             this.onSelectedChanged(this, e);
         }
     }
+    /*
     #handleActiveChanged(e){
         if (typeof this.onActiveChanged === 'function'){
             this.onActiveChanged(this, e);
         }
     }
+        */
     get valueAtLine(){
         return this.#valueAtLine;
     }
@@ -62,9 +66,9 @@ export class ValueAtNode{
     get valueKey(){
         return this.#valueKey;
     }
-    get active(){
-        return this.#active;
-    }
+    //get active(){
+    //    return this.#active;
+    //}
     get selected(){
         return this.#selected;
     }

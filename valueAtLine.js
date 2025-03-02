@@ -170,8 +170,11 @@ export class ValueAtLine{
         };
         this.#render();
     }
-    #handleOnChange(){
+    #handleOnChange(valueAt, valueKey, propName){
         this.update();
+        if (valueKey.time == this.#timeLine.cursorTime){
+            this.#timeLine.setTime(this.#timeLine.cursorTime);
+        }
     }
     #isInView(){
         //if (this.#lineDiv.classList.contains('valueAt-collapse')){ return false; }
@@ -300,6 +303,8 @@ export class ValueAtLine{
     };
 
     deselectAllValueAtNodes(){
+        this.#timeLine.deselectAllValueAtNodes();
+        /*
         let selectedChanged = [];
         this.#valueAtNodes.forEach((valueAtNode)=>{
             if (valueAtNode.selected){selectedChanged.push(valueAtNode)}
@@ -308,6 +313,7 @@ export class ValueAtLine{
         if (selectedChanged.length > 0){
             this.#handleSelectedChanged(selectedChanged);
         }
+        */
     }
     update(){
         this.#render();
