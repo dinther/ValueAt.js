@@ -40,11 +40,6 @@ export class ValueAtLine{
             collapseClass = ' valueAt-collapse';
         }
         this.#lineDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_graph', className: 'valueAt-line' + collapseClass});
-        this.#lineDiv.addEventListener('pointerdown', (e)=>{
-            if (!e.ctrlKey && !e.shiftKey){
-                this.deselectAllValueAtNodes();
-            }
-        });
         this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
@@ -56,6 +51,11 @@ export class ValueAtLine{
         this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle animation on/off', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
                             
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
+        this.#svgWrapperDiv.addEventListener('pointerdown', (e)=>{
+            if (!e.ctrlKey && !e.shiftKey){
+                this.deselectAllValueAtNodes();
+            }
+        });
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
         this.#svg.classList.add('valuesAt-svg');

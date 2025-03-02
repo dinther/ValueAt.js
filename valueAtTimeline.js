@@ -163,8 +163,8 @@ export class ValueAtTimeLine{
 
         //  event handlers
 
-        this.#containerDiv.addEventListener('pointerdown', (e)=>{
-            if (!e.ctrlKey && !e.shiftKey){
+        this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
+            if (e.offsetX > this.#labelWidth && !e.ctrlKey && !e.shiftKey){
                 this.deselectAllValueAtNodes();
             }
         });
