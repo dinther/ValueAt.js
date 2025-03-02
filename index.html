@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="wavedisplay.css">
 	</head>
 	<body>
+        <div id="workarea"></div>
         <div id="timeline"></div>
 
         <script type="module">
@@ -22,90 +23,86 @@
 
             import {Circle} from "./circle.js"
 
-            document.body.style.position = 'relative';
-            document.body.style.overflow = 'hidden';
+            var circle1 = new Circle(document.querySelector('#workarea'), 'circle1', 'circle',10, 50, 127, 200, 50, 50);
+            //var circle2 = new Circle(document.querySelector('#workarea'), 'circle2', 'circle', 10, 50, 127, 200, 50, 50);
 
-
-
-            var circle1 = new Circle(document.querySelector('#timeline'), 'circle1', 10, 50, 127, 200, 50, 50);
-            var circle2 = new Circle(document.querySelector('#timeline'), 'circle2', 10, 50, 127, 200, 50, 50);
-
-            var va_radius1 = new LookupAtTime('radius', circle1, 'radius');
+            var va_radius1 = new LookupAtTime({object: circle1, property: 'radius', min: 0, max: 40, listType: 'Float32Array'});
             var magnitude = 1.70158;
-            va_radius1.addValueKey(0,10);
-            va_radius1.addValueKey(1,0, Easings.easeInBack, magnitude);
-            va_radius1.addValueKey(2,5, Easings.easeInBack, magnitude);
-            va_radius1.addValueKey(45,15, Easings.easeInOutBack, magnitude);
-            va_radius1.addValueKey(55,17, Easings.easeInOutBack, magnitude);
-            va_radius1.addValueKey(75,18, Easings.easeInOutBack, magnitude);
-            va_radius1.addValueKey(100,1,Easings.easeInOutBack, magnitude);
+            va_radius1.addValueKey({time: 0, value: 10});
+            va_radius1.addValueKey({time: 1, value: 0, easing: Easings.easeInBack, magnitude: magnitude});
+            va_radius1.addValueKey({time: 2, value: 5, easing: Easings.easeInBack, magnitude: magnitude});
+            va_radius1.addValueKey({time: 45, value: 17, easing: Easings.easeInOutBack, magnitude: magnitude});
+            va_radius1.addValueKey({time: 55, value: 17, easing: Easings.easeInOutBack, magnitude: magnitude});
+            va_radius1.addValueKey({time: 75, value: 18, easing: Easings.easeInOutBack, magnitude: magnitude});
+            va_radius1.addValueKey({time: 100, value: 1, easing: Easings.easeInOutBack, magnitude: magnitude});
             va_radius1.init(0.1);
 
-            var va_red1 = new LookupAtTime('red', circle1, 'r');
+            var va_red1 = new LookupAtTime({object: circle1, property: 'r', min: 0, max: 255, listType: 'Int8Array'});
             let step = 1;
             let r = 0.6;
             let x = 0;
             let v = 100;
-            va_red1.addValueKey(x,0); x += step;
+            va_red1.addValueKey({time: x, value: 0, easing: Easings.easeInOutBack, magnitude: magnitude}); x += step;
             for (let i=0; i< 7; i++){
-                va_red1.addValueKey(x,v, Easings.easeOutSine); x += step; step *= r;
-                va_red1.addValueKey(x,0, Easings.easeInSine); x += step; v *= r;   
+                va_red1.addValueKey({time: x, value: v, easing: Easings.easeOutSine}); x += step; step *= r;
+                va_red1.addValueKey({time: x, value: 0, easing: Easings.easeInSine}); x += step; v *= r;   
             }
-            va_red1.addValueKey(16.5,140, Easings.easeInOutCirc);
-            va_red1.addValueKey(40,250, Easings.easeInOutCirc);
-            va_red1.addValueKey(86,0, Easings.easeInOutCirc);
-            va_red1.addValueKey(90,127, Easings.easeInOutCirc);
+            va_red1.addValueKey({time: 16.5, value: 140, easing: Easings.easeInOutCirc});
+            va_red1.addValueKey({time: 40, value: 250, easing: Easings.easeInOutCirc});
+            va_red1.addValueKey({time: 86, value: 0, easing: Easings.easeInOutCirc});
+            va_red1.addValueKey({time: 90, value: 127, easing: Easings.easeInOutCirc});
             va_red1.init(0.1);
              
-            var va_green1 = new LookupAtTime('green', circle1, 'g');
-            va_green1.addValueKey(0,255);
-            va_green1.addValueKey(40,155, Easings.easeInOutCubic);
-            va_green1.addValueKey(75,40, Easings.easeInOutCubic);
-            va_green1.addValueKey(100,255,Easings.easeInOutCubic);
+            var va_green1 = new LookupAtTime({object: circle1, property: 'g', min: 0, max: 255, listType: 'Uint8Array'});
+            va_green1.addValueKey({time: 0, value: 255});
+            va_green1.addValueKey({time: 40, value: 155, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 75, value: 40, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 100, value: 255, easing: Easings.easeInOutCubic});
             va_green1.init(0.1);
 
-            var va_blue1 = new LookupAtTime('blue', circle1, 'b');
-            va_blue1.addValueKey(0,0);
-            va_blue1.addValueKey(50,255, Easings.easeInOutCubic, 0.5);
-            va_blue1.addValueKey(95,60, Easings.stepped);
-            va_blue1.addValueKey(100,0, Easings.easeInOutCubic);
+            var va_blue1 = new LookupAtTime({object: circle1, property: 'b', min: 0, max: 255, listType: 'Uint8Array'});
+            va_blue1.addValueKey({time: 0, value: 0});
+            va_blue1.addValueKey({time: 50, value: 255, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 95, value: 60, easing: Easings.stepped});
+            va_blue1.addValueKey({time: 100, value: 0, easing: Easings.easeInOutCubic});
             va_blue1.init(0.1);            
 
-            var va_pos_x1 = new LookupAtTime('xpos', circle1, 'x');
-            va_pos_x1.addValueKey(10,40);
-            va_pos_x1.addValueKey(30,90, Easings.easeInOutCubic, 0.5);
-            va_pos_x1.addValueKey(37,30, Easings.easeInOutCubic, 0.5);
-            va_pos_x1.addValueKey(60,60, Easings.easeInOutCubic, 0.5);
-            va_pos_x1.addValueKey(75,10, Easings.easeInOutCubic);
-            va_pos_x1.addValueKey(100,60, Easings.easeIn);
+            var va_pos_x1 = new LookupAtTime({object: circle1, property: 'x', min: 0, max: 100, listType: 'Float32Array'});
+            va_pos_x1.addValueKey({time: 10, value: 40});
+            va_pos_x1.addValueKey({time: 30, value: 90, easing: Easings.easeInOutCubic});
+            va_pos_x1.addValueKey({time: 37, value: 30, easing: Easings.easeInOutCubic});
+            va_pos_x1.addValueKey({time: 60, value: 60, easing: Easings.easeInOutCubic});
+            va_pos_x1.addValueKey({time: 75, value: 10, easing: Easings.easeInOutCubic});
+            va_pos_x1.addValueKey({time: 100, value: 60, easing: Easings.easeIn});
             va_pos_x1.init(0.01);     
 
-            var va_pos_y1 = new LookupAtTime('ypos', circle1, 'y');
+            var va_pos_y1 = new LookupAtTime({object: circle1, property: 'y', min: 0, max: 100, listType: 'Float32Array'});
 
             //  construct our own bounce animation
             step = 1;
             r = 0.8;
             x = 0;
             v = 100;
-            va_pos_y1.addValueKey(x,0); x += step;
+            va_pos_y1.addValueKey({time: x, value: 0}); x += step;
             for (let i=0; i< 14; i++){
-                va_pos_y1.addValueKey(x,v, Easings.easeOutSine); x += step; step *= r;
-                va_pos_y1.addValueKey(x,0, Easings.easeInSine); x += step; v *= r;   
+                va_pos_y1.addValueKey({time: x, value: v, easing: Easings.easeOutSine}); x += step; step *= r;
+                va_pos_y1.addValueKey({time: x, value: 0, easing: Easings.easeInSine}); x += step; v *= r;   
             }
-            va_pos_y1.addValueKey(x, 10, Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(13.5, 80, Easings.stepped, 0.1);
-            va_pos_y1.addValueKey(14.5, 2, Easings.stepped, 0.3);
-            va_pos_y1.addValueKey(15, 80, Easings.stepped, 0.1);
-            va_pos_y1.addValueKey(25.5, 2, Easings.stepped, 0.05);
-            va_pos_y1.addValueKey(40, 4, Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(43, 79, Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(60, 70, Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(67, 25, Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(86, 74, Easings.easeInOutCirc);
-            va_pos_y1.addValueKey(90, 0, Easings.easeInOutCirc);
+            va_pos_y1.addValueKey({time: x, value: 10, easing: Easings.easeInOutCirc});
+            va_pos_y1.addValueKey({time: 13.5, value: 10, easing: Easings.stepped, magnitude: 0.1});
+            va_pos_y1.addValueKey({time: 14.4, value: 2, easing: Easings.stepped, magnitude: 0.3});
+            va_pos_y1.addValueKey({time: 15, value: 80, easing: Easings.stepped, magnitude: 0.1});
+            va_pos_y1.addValueKey({time: 25.5, value: 2, easing: Easings.stepped, magnitude: 0.05});
+            va_pos_y1.addValueKey({time: 40, value: 4, easing: Easings.easeInOutCirc});
+            va_pos_y1.addValueKey({time: 43, value: 79, easing: Easings.easeInOutCirc});
+            va_pos_y1.addValueKey({time: 60, value: 70, easing: Easings.easeInOutCirc});
+            va_pos_y1.addValueKey({time: 67, value: 25, easing: Easings.easeInOutCirc});
+            va_pos_y1.addValueKey({time: 86, value: 74, easing: Easings.easeInOutCirc});
+            va_pos_y1.addValueKey({time: 90, value: 0, easing: Easings.easeInOutCirc});
             va_pos_y1.init(0.01);
 
-            var va_radius2 = new LookupAtTime('radius', circle2, 'radius');
+            /*
+            var va_radius2 = new LookupAtTime(circle2, 'radius');
             va_radius2.addValueKey(0,3);
             step = 0.25
             let repeat = 40;
@@ -120,9 +117,9 @@
             va_radius2.addValueKey(80, 2, Easings.easeOutBounce,5);            
             va_radius2.init(0.01);
 
-            var va_red2 = new LookupAtTime('red', circle2, 'r');
-            var va_green2 = new LookupAtTime('green', circle2, 'g');
-            var va_blue2 = new LookupAtTime('blue', circle2, 'b');
+            var va_red2 = new LookupAtTime(circle2, 'r');
+            var va_green2 = new LookupAtTime(circle2, 'g');
+            var va_blue2 = new LookupAtTime(circle2, 'b');
             //  Random generated value keys. They are automatically sorted by time on init.
             for (let i = 0; i < 17; i++){
                 va_red2.addValueKey(Math.random()  *100, Math.random() * 255, Easings.easeOutBounce);
@@ -132,8 +129,9 @@
             va_red2.init(0.1);
             va_green2.init(0.1);
             va_blue2.init(0.1);
+            
 
-            var va_pos_x2 = new LookupAtTime('xpos', circle2, 'x');
+            var va_pos_x2 = new LookupAtTime(circle2, 'x');
             va_pos_x2.addValueKey(0, 31, Easings.easeOutCubic, 0.5);
             for (let i = 0; i < 17; i++){
                 va_pos_x2.addValueKey(5 + Math.random() * 30, Math.random() * 100, Easings.easeOutBounce);
@@ -145,12 +143,13 @@
             va_pos_x2.addValueKey(100, 5, Easings.easeInCubic);
             va_pos_x2.init(0.01);
 
-            var va_pos_y2 = new LookupAtTime('ypos', circle2, 'y');
+            var va_pos_y2 = new LookupAtTime(circle2, 'y');
             //  Random generated value keys. They are automatically sorted by time on init.
             for (let i = 0; i < 37; i++){
                 va_pos_y2.addValueKey(Math.random() * 100, Math.random() * 100, Easings.easeOutBounce);
             }
-            va_pos_y2.init(0.01);     
+            va_pos_y2.init(0.01);   
+            */  
          
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100, 1);
 
@@ -196,6 +195,7 @@
             positionGroup1.addValueAt(va_pos_x1, 'Pos X', 1);
             positionGroup1.addValueAt(va_pos_y1, 'Pos y', 1);
 
+            /*
             let circlegroup2 = timeLine.addNewValueAtGroup('Circle 2', true);
             circlegroup2.addValueAt(va_radius2, 'Radius', 1, '#f0f', true);
             let colorGroup2 = circlegroup2.addNewValueAtGroup('Color', true);
@@ -208,7 +208,7 @@
             let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', true);
             positionGroup2.addValueAt(va_pos_x2, 'Pos X', 1);
             positionGroup2.addValueAt(va_pos_y2, 'Pos y', 1);
-
+            */
             timeLine.init();
 
             window.computeStepList = lookupAtExport.computeStepList;
@@ -217,7 +217,8 @@
             window.valueAtTimeline = timeLine;
             window.va_radius = va_radius1;
             window.circle1 = circle1;
-            window.circle2 = circle2;
+            //window.circle2 = circle2;
+            window.va_pos_y1 = va_pos_y1;
 
             let start;
             let cursorStart;

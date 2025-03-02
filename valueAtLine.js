@@ -178,22 +178,16 @@ export class ValueAtLine{
         this.#render();
     }
     #handleOnChange(valueAt, valueKey, propName){
-        this.update();
-        if (valueKey.time == this.#timeLine.cursorTime){
-            this.#timeLine.setTime(this.#timeLine.cursorTime);
-        }
+        this.update(valueAt, valueKey, propName);
+        this.#timeLine.setTime(this.#timeLine.cursorTime);
     }
     #isInView(){
-        //if (this.#lineDiv.classList.contains('valueAt-collapse')){ return false; }
         const rect = this.#lineDiv.getBoundingClientRect();
         let result = VA_Utils.domRectIntersect(rect, this.#timeLine.scrollContainerDiv.getBoundingClientRect())
-        //if (!result){
-        //    console.log(this.#labelName);
-        //}
         return result;       
     }
 
-    #render(){
+    #render(valueAt, valueKey, propName){
         let count = 0;
         if (!this.#lineDiv.classList.contains('valueAt-hide')){
             let inView = this.#isInView();
@@ -210,7 +204,6 @@ export class ValueAtLine{
                 count++;
                 let range = this.#timeLine.viewStart - beforeKey.time;
                 let sliceSteps = (range / this.#timeLine.viewRange)  / this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment;
-                //let sliceSteps = Math.round(range/targetTimeSlice);
                 let x = this.#timeLine.viewStart;
                 if (sliceSteps > 0 ){
                     let slice = sliceSteps;
@@ -230,7 +223,6 @@ export class ValueAtLine{
                     let afterKey = this.#valueAt.valueKeys[index+1]; 
                     let range = (afterKey.time - beforeKey.time);
                     let sliceSteps = Math.round((range / this.#timeLine.viewRange) * this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
-                    //let sliceSteps = Math.round(range/targetTimeSlice);
                     if (sliceSteps > 0){
                         let slice = range / sliceSteps;
                         let timeBreak = Math.min(afterKey.time - (slice * 0.5), this.#timeLine.viewEnd - (slice * 0.5));
@@ -251,7 +243,6 @@ export class ValueAtLine{
                 path += beforeKey.time + ' ' + beforeKey.value + ' ';
                 range = (this.#timeLine.viewEnd - beforeKey.time) / this.#timeLine.dataRange;
                 sliceSteps = range / this.#timeLine.lineWrapDiv.offsetWidth;
-                //sliceSteps = Math.round((range / this.#timeLine.viewRange) * this.#timeLine.lineWrapDiv.offsetWidth / this.#timeLine.pixelsPerSegment);
                 if (sliceSteps > 0){
                     let slice = range / sliceSteps;
                     let timeBreak = this.#timeLine.viewEnd - (slice * 0.5);
@@ -268,25 +259,19 @@ export class ValueAtLine{
 
                 let marginFactor = this.#valueAt.valueRange * (this.#strokeWidth / this.#lineDiv.offsetHeight);
                 let hm = marginFactor * 0.5;
-
-                this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (this.#valueAt.minValue-hm) + ' ' + this.#timeLine.viewRange + ' ' + (this.#valueAt.valueRange + hm + hm));
+                let vb_min = (this.#valueAt.options.min != null)? this.#valueAt.options.min : this.#valueAt.minValue;
+                let vb_range = (this.#valueAt.options.max != null)? (this.#valueAt.options.max - vb_min) : this.#valueAt.valueRange;
+                this.#svg.setAttribute('viewBox', this.#timeLine.viewStart + ' ' + (vb_min-hm) + ' ' + this.#timeLine.viewRange + ' ' + (vb_range+ hm + hm));
                 this.#svg.querySelector('path').setAttribute('d', path);
                 this.#svg.setAttribute('preserveAspectRatio', 'none');
-
-                //let v_offset = this.#strokeWidth / this.#lineDiv.offsetHeight * 100;
-                //let usableHeight = this.#lineDiv.offsetHeight;
                 let usableHeight = (this.#lineDiv.offsetHeight - this.#strokeWidth);// * 100;
 
                 this.#valueAtNodes.forEach((valueAtNode)=>{
                     let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
                     if (percent >= 0 && percent<= 100){
                         valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
-                        //valueAtNode.div.style.bottom = ((v_offset*0.5) + (valueAtNode.valueKey.value - this.#valueAt.minValue) / (this.#valueAt.maxValue - this.#valueAt.minValue) * (100-v_offset)) + '%';
-//                        let height =  
-                        valueAtNode.div.style.bottom = ((this.#strokeWidth*0.5) + ((valueAtNode.valueKey.value - this.#valueAt.minValue) / this.#valueAt.valueRange * usableHeight)) + 'px';
-
-                        valueAtNode.div.style.display = '';
-                        
+                        valueAtNode.div.style.bottom = ((this.#strokeWidth*0.5) + ((valueAtNode.valueKey.value - vb_min) / vb_range * usableHeight)) + 'px';
+                        valueAtNode.div.style.display = '';                       
                     } else {
                         valueAtNode.div.style.display = 'none';
                     }
@@ -311,19 +296,9 @@ export class ValueAtLine{
 
     deselectAllValueAtNodes(){
         this.#timeLine.deselectAllValueAtNodes();
-        /*
-        let selectedChanged = [];
-        this.#valueAtNodes.forEach((valueAtNode)=>{
-            if (valueAtNode.selected){selectedChanged.push(valueAtNode)}
-            valueAtNode.selected = false;
-        });
-        if (selectedChanged.length > 0){
-            this.#handleSelectedChanged(selectedChanged);
-        }
-        */
     }
-    update(){
-        this.#render();
+    update(valueAt, valueKey, propName){
+        this.#render(valueAt, valueKey, propName);
     }
 
     setTimeAccurate(time){
@@ -334,7 +309,7 @@ export class ValueAtLine{
     
     setTime(time){
         if (!this.#hideAnimation){
-            this.#valueAt.setTime(time);
+            this.#valueAt.setValueAt(time);
         }
     }
     setTimeFast(time){

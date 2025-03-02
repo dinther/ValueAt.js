@@ -396,6 +396,12 @@ export class ValueAtTimeLine{
             this.#keyFrameObjectNameDiv.value = valueAtNode.valueAtLine.valueAtGroup.getRootName();
             this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName + ' (' + valueAtNode.valueAtLine.valueAtNodes.indexOf(valueAtNode) + ')';
             this.#keyFrameTimeInput.value = valueAtNode.valueKey.time;
+            if (valueAtNode.valueAtLine.valueAt.options.min != null){
+                this.#keyFrameValueInput.min = valueAtNode.valueAtLine.valueAt.options.min;
+            }
+            if (valueAtNode.valueAtLine.valueAt.options.max != null){
+                this.#keyFrameValueInput.max = valueAtNode.valueAtLine.valueAt.options.max;
+            }            
             this.#keyFrameValueInput.value = valueAtNode.valueKey.value;
             this.#keyFrameEasingSelect.selectedIndex = valueAtNode.valueKey.easing? EasingNames.indexOf(valueAtNode.valueKey.easing.name) : 0;
         }

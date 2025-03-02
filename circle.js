@@ -6,21 +6,9 @@ export class Circle{
     #r;
     #g;
     #b;
-    constructor(parent, name, radius, r, g, b, x, y){
+    constructor(parent, name, className, radius, r, g, b, x, y){
         this.#parent = parent;
-        this.#div = VA_Utils.createEl('div', {}, this.#parent);
-        this.#div.style.display = 'flex';
-        this.#div.style.position = 'absolute';
-        this.#div.style.fontSize = '0.8em';
-        this.#div.style.borderRadius = '50%';
-        this.#div.style.transform = 'translate(-50%, 50%)';
-        this.#div.style.zIndex = 50;
-        this.#div.style.alignItems = 'center';
-        this.#div.style.justifyContent = 'center';
-        this.#div.style.color = 'white';
-        this.#div.style.opacity = 0.6;
-        this.#div.style.aspectRatio = '1 / 1';
-        this.#div.style.pointerEvents = 'none';
+        this.#div = VA_Utils.createEl('div', {className: className}, this.#parent);
         this.#div.innerHTML = '<div>' + name + '</div>';
 
         this.name = name;
@@ -33,13 +21,13 @@ export class Circle{
         this.y = y;
     }
     #getColors(){
-        let colors = this.#div.style.backgroundColor.replace('rgb(', '').replace(')').split(',');
+        let colors = this.#div.style.borderColor.replace('rgb(', '').replace(')').split(',');
         this.#r = colors[0];
         this.#g = colors[1];
         this.#b = colors[2];
     }
     #setColors(){
-        this.#div.style.backgroundColor = 'rgb(' + this.#r + ',' + this.#g + ',' + this.#b + ')';
+        this.#div.style.borderColor = 'rgb(' + this.#r + ',' + this.#g + ',' + this.#b + ')';
     }
     get div(){
         return this.#div;

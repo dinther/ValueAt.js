@@ -14,18 +14,13 @@
 
 
 export class ValueKey{
-    #time;
-    #value;
-    #easing;
-    #magnitude = 1;
+    #options = {time: null, value: null, easing: null, magnitude: null}
+    #valueAt;
     #onChange=null;
 
-
-    constructor(time, value, easing=null, magnitude=null){
-        this.#time = time;
-        this.#value = value;
-        this.#easing = easing;
-        this.#magnitude = magnitude;
+    constructor(valueAt, options){ //time, value, easing=null, magnitude=null){
+        this.#valueAt = valueAt;
+        Object.assign(this.#options, options);
     }
 
 
@@ -36,64 +31,48 @@ export class ValueKey{
         }
     }
 
-
-    get time(){
-        return this.#time;
+    get valueAt(){
+        return this.#valueAt;
     }
-
-
+    get time(){
+        return this.#options.time;
+    }
     set time(value){
-        if (value != this.#time){
-            this.#time = value;
+        if (value != this.#options.time){
+            this.#options.time = value;
             this.#handleChange('time');
         }
     }
-
-
     get value(){
-        return this.#value;
+        return this.#options.value;
     }
-
-
     set value(value){
-        if (value != this.#value){
-            this.#value = value;
+        if (value != this.#options.value){
+            this.#options.value = this.#valueAt.clampValue(value);
             this.#handleChange('value');
         }
     }
-
-
     get easing(){
-        return this.#easing;
+        return this.#options.easing;
     }
-
-
     set easing(value){
-        if (value != this.#easing){
-            this.#easing = value;
+        if (value != this.#options.easing){
+            this.#options.easing = value;
             this.#handleChange('easing');
         }
     }
-
-
     get magnitude(){
-        return this.#magnitude;
+        return this.#options.magnitude;
     }
-
-
     set magnitude(value){
-        if (value != this.#magnitude){
-            this.#magnitude = value;
+        if (value != this.#options.magnitude){
+            this.#options.magnitude = value;
             this.#handleChange('easing');
         }
     }
-
-
     get onChange(){
         return this.#onChange;
     }
-
-
     set onChange(value){
         if (typeof value !== 'function'){  throw new Error('onChange expects a function'); }
         this.#onChange = value;
@@ -101,9 +80,7 @@ export class ValueKey{
 }
 
 export class ValueAtTime{
-    #name;
-    #object;
-    #propertyName;
+    #options = {object: null, property: '', min: null, max: null};
     #valueKeys=[];
     #minTime;
     #maxTime;
@@ -112,11 +89,8 @@ export class ValueAtTime{
     #onValueKeyChange;
     #onChange;
 
-
-    constructor(name='', object, propertyName){
-        this.#name = name;
-        this.#object = object;
-        this.#propertyName = propertyName;
+    constructor(options){
+        Object.assign(this.#options, options);
     }
 
     lerp(a, b, t){
@@ -141,8 +115,12 @@ export class ValueAtTime{
         return Math.max(this.minTime, Math.min(this.maxTime,time));
     }
 
-    addValueKey(time, value, easing = null, magnitude=null){
-        let valueKey = new ValueKey(time, value, easing, magnitude);
+    clampValue(value){
+        return Math.max(this.#options.min, Math.min(this.#options.max,value));
+    }
+
+    addValueKey(options){ //time, value, easing = null, magnitude=null){
+        let valueKey = new ValueKey(this, options);
         valueKey.onChange = this.#handleValueKeyChange.bind(this);
         this.#valueKeys.push(valueKey);
         this.#sortKeyTimes();
@@ -256,27 +234,17 @@ export class ValueAtTime{
     }
 
     setTime(time){
-        if (this.#object && this.object[this.propertyName] !== undefined){
-            this.#object[this.#propertyName] = this.getValueAt(time);
+        if (this.#options.object && this.#options.object[this.#options.property] != null){
+            this.#options.object[this.#options.property] = this.getValueAt(time);
         }
     }
 
-    get name(){
-        return this.#name;
+    get options(){
+        return this.#options;
     }
-
-    get object(){
-        return this.#object;
-    }
-
-    get propertyName(){
-        return this.#propertyName;
-    }
-
     get valueKeys(){
         return this.#valueKeys;
     }
-
     get minTime(){
         return this.#minTime;
     }
@@ -301,13 +269,13 @@ export class ValueAtTime{
 export class LookupAtTime extends ValueAtTime{ 
     #valueList;
     #interval;
-    #className;
     #minValue;
     #maxValue;    
     #valueRange;
-    constructor(name, object, propertyName, className=null){
-        super(name, object, propertyName);
-        this.#className = className;
+    #options = {object:null, property:'', min:null, max:null, listType:null};
+    constructor(options){
+        super(options);
+        Object.assign(this.#options, options);
     }
 
     #populateValueList(interval){
@@ -316,6 +284,8 @@ export class LookupAtTime extends ValueAtTime{
             let value = this.getSourceValueAt((i * interval) + this.minTime);
             this.#minValue = Math.min(this.#minValue, value);
             this.#maxValue = Math.max(this.#maxValue, value);
+            //this.#valueList[i] = value;
+            value = this.clampValue(value);
             this.#valueList[i] = value;
         }
         this.#valueRange = this.#maxValue - this.#minValue;
@@ -342,8 +312,8 @@ export class LookupAtTime extends ValueAtTime{
         return afterIndex;
     }
 
-    #createValueObject(className, length){
-        switch(className){
+    #createValueObject(listType, length){
+        switch(listType){
             case 'Float64Array': return new Float64Array(length);
             case 'Float32Array': return new Float32Array(length);
             case 'BigUint64Array': return new BigUint64Array(length);     
@@ -358,9 +328,9 @@ export class LookupAtTime extends ValueAtTime{
         }
     }
 
-    #clampValue(value, className){
+    #clampListValue(value, listType){
         value = (value - this.minValue) / this.#valueRange;
-        switch(className){
+        switch(listType){
             case 'Float64Array': return Math.max(-9223372036854775808, Math.min(9223372036854775807, 9223372036854775807 * ((value * 2) -1)));
             case 'Float32Array': return Math.max(-2147483648, Math.min(2147483647, 2147483647 * ((value * 2) - 1)));
             case 'BigUint64Array': return Math.max(0, Math.min(18446744073709551615, Math.round(18446744073709551615 * value)));
@@ -378,7 +348,7 @@ export class LookupAtTime extends ValueAtTime{
     update(){
         super.update();
         let length = Math.floor((this.maxTime - this.minTime)/this.#interval)+1;
-        this.#valueList = this.#createValueObject(this.#className, length);
+        this.#valueList = this.#createValueObject(this.#options.listType, length);
         this.#populateValueList(this.#interval);
     }
 
@@ -412,31 +382,31 @@ export class LookupAtTime extends ValueAtTime{
     }
 
     setValueFast(time){
-        if (this.object && this.object[this.propertyName] !== undefined){
-            this.object[this.propertyName] = this.getValueFast(time);
+        if (this.#options.object && this.#options.object[this.#options.property] !== undefined){
+            this.#options.object[this.#options.property] = this.getValueFast(time);
         }
     }
 
     setValueAt(time){
-        if (this.object && this.object[this.propertyName] !== undefined){
-            this.object[this.propertyName] = this.getValueAt(time);
+        if (this.#options.object && this.#options.object[this.#options.property] !== undefined){
+            this.#options.object[this.#options.property] = this.getValueAt(time);
         }
     }
 
     setValueAccurate(time){
-        if (this.object && this.object[this.propertyName] !== undefined){
-            this.object[this.propertyName] = this.getValueAtKeyframe(time);
+        if (this.#options.object && this.#options.object[this.#options.property] !== undefined){
+            this.#options.object[this.#options.property] = this.getValueAtKeyframe(time);
         }
     }
 
-    getValueRange(interval, startTime=null, endTime=null, className=null){
+    getValueRange(interval, startTime=null, endTime=null, listType=null){
         if( interval == 0 ){  throw new Error('Interval can not be zero.')  }
         startTime = startTime!=null? startTime : this.minTime;
         endTime = endTime!=null? endTime : this.maxTime;
         let length = Math.floor((endTime - startTime) /  interval) + 1;
-        let values = this.#createValueObject(className || this.#className, length);
+        let values = this.#createValueObject(listType || this.#options.listType, length);
         for (let i = 0; i < length; i++){
-            values[i] = this.#clampValue(this.getValueAt(startTime + i * interval), className);
+            values[i] = this.#clampListValue(this.getValueAt(startTime + i * interval), listType);
         }
         return values;
     }
