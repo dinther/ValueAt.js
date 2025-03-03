@@ -1,6 +1,5 @@
 * {
     box-sizing: border-box;
-    touch-action: none;
 }
 
 :root {
@@ -29,14 +28,6 @@
     --sb-track-color: #1f1f1f;
     --sb-thumb-color: #616470;
     --sb-size: 14px;
-    touch-action: none;
-}
-
-body {
-    touch-action: none;
-}
-
-div {
     touch-action: none;
 }
 
@@ -268,21 +259,17 @@ input:focus {
 
 .valueAt-group-caret {
     display: inline-block;
-    width: 20px;
-    height: 22px;
+    margin-right: 2px;
 }
 
 .caret-down {
     -ms-transform: rotate(90deg); /* IE 9 */
     -webkit-transform: rotate(90deg); /* Safari */
     transform: rotate(90deg);
-    -webkit-transform-origin: 27% 40%;
-    transform-origin: 27% 40%;
 }
 
 .valueAt-group-label-span {
     cursor: pointer;
-    margin-left: 5px;
 }
 
 .valueAt-expand {
@@ -414,11 +401,12 @@ input:focus {
     color: var(--dim-text-color);
     margin-right: 4px;
     font-size: 1.0em;
-    align-items: center;
+    align-items: flex-start;
     background-color: transparent;
     flex-direction: row;
     justify-content: flex-end;
     height: 100%;
+    margin-top: 4px;
 }
 
 .valueAt-expand-button {
@@ -479,12 +467,14 @@ input:focus {
     height: var(--nodeselectedsize);
     border: 1px solid #ffff00;
     background-color: #ff000064;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .valueAt-node-selected {
     height: var(--nodeselectedsize);
     border: 1px solid #ffff00;
     background-color: #ff000064;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .valueAt-h-scroll{

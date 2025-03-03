@@ -30,11 +30,18 @@ export class ValueAtNode{
         */       
 
         this.#div.addEventListener('pointerdown', (e)=>{
-            //if (!this.#selected){
-                this.#selected = !this.#selected; //true;
-                this.#handleSelectedChanged(e);
-            //}
-            e.stopPropagation();
+            if (e.button == 0){
+                if (!this.#selected && !e.ctrlKey && !e.shiftKey){
+                    this.#valueAtLine.deselectAllValueAtNodes();
+                }
+                if (this.#selected && (e.ctrlKey || e.shiftKey)){
+
+                } else {
+                    this.#selected = !this.#selected; //true;
+                    this.#handleSelectedChanged(e);
+                }
+                //e.stopPropagation();
+            }
         });   
     }
 
@@ -47,6 +54,10 @@ export class ValueAtNode{
         if (typeof this.onSelectedChanged === 'function'){
             this.onSelectedChanged(this, e);
         }
+    }
+
+    removeFromDOM(){
+        this.#div.remove();
     }
     /*
     #handleActiveChanged(e){

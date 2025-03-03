@@ -127,6 +127,13 @@ export class ValueAtTime{
         return valueKey;
     }
 
+    deleteValueKey(valueKey){
+        let index = this.#valueKeys.indexOf(valueKey);
+        if (index != -1){
+            this.#valueKeys.splice(index, 1);
+        }
+    }
+
     update(valueKey, propName){
         for(let i=0; i<this.#valueKeys.length; i++){
             let value = this.#valueKeys[i].value;

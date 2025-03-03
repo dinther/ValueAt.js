@@ -171,7 +171,6 @@
 
             let stopBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏹'}, timeLine.footerDiv);
             stopBtn.addEventListener('click', (e)=>{
-                //timeLine.setTime(0);
                 playStop = true;
             });
 
@@ -229,9 +228,11 @@
                     cursorStart = timeLine.cursorTime; 
                 }
                 const elapsed = (timestamp - start) / 1000;
-                timeLine.setTimeAccurate(cursorStart + elapsed);
+                timeLine.setTimeFast(cursorStart + elapsed);
                 if (!playStop && elapsed <= timeLine.dataRangeEnd){
                     requestAnimationFrame(stepFrame);
+                } else {
+                    playStop = true;
                 }
             }
 

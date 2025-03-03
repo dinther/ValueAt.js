@@ -17,7 +17,7 @@ export class ValueAtLine{
     #path;
     #strokeColor;
     #strokeWidth;
-    #hideAnimation = false;
+    #freezeChannel = false;
     #valueAtNodes = [];
     #pointerTime = 0;
     #lineHeight = 0;
@@ -43,14 +43,21 @@ export class ValueAtLine{
         span.style.left = this.#valueAtGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
         this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', title: 'Maximize this line graph', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle animation on/off', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel on/off', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
                             
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
+
         this.#svgWrapperDiv.addEventListener('pointerdown', (e)=>{
-            if (!e.ctrlKey && !e.shiftKey){
-                this.deselectAllValueAtNodes();
+            //if (!e.target.classList.contains('valueAt-node') && !e.ctrlKey && !e.shiftKey){ this.deselectAllValueAtNodes(); }
+
+            if (e.button==0 && !e.target.classList.contains('valueAt-node') && e.ctrlKey){  //  create new node
+                let time = e.offsetX * this.#timeLine.timeUnitsPerPixel;
+                let value = this.#valueAt.getValueAtKeyframe(time);
+                let valueKey = this.#valueAt.addValueKey({time: time, value: value, easing: Easings.easeInOutCubic});
+                this.#createvalueAtNode(valueKey);
             }
         });
+        
         this.#svg  = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.#svg.style.transform = 'scaleY(-1)';
         this.#svg.classList.add('valuesAt-svg');
@@ -65,17 +72,11 @@ export class ValueAtLine{
         this.#svg.appendChild(this.#path);
         this.#svgWrapperDiv.appendChild(this.#svg);
        
-        //this.#timeLine.scrollContainerDiv.appendChild(this.#lineDiv);
         valueAtGroup.expandDiv.appendChild(this.#lineDiv);
         
         this.#hideValueAnimationDiv.addEventListener('pointerdown', (e)=>{
             if (e.button == 0){
-                this.#hideAnimation = !this.#hideAnimation;
-                if (this.#hideAnimation){
-                    this.#hideValueAnimationDiv.classList.add('valueAt-hide-animation');
-                } else {
-                    this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
-                }
+                this.setChannelFreeze(!this.#freezeChannel);
                 e.stopPropagation();
             }
         });
@@ -119,37 +120,41 @@ export class ValueAtLine{
         //  create visual nodes
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
-            let valueAtNode = new ValueAtNode(this, this.#svgWrapperDiv, valueKey);
-            this.#valueKeyTovalueAtNodeMap.set(valueKey, valueAtNode);
-            valueAtNode.onSelectedChanged = (valueAtNode, event)=>{
-                let selected = valueAtNode.selected;
-                if (event && !event.ctrlKey && !event.shiftKey){
-                    this.#timeLine.deselectAllValueAtNodes();
-                }
-                valueAtNode.selected = selected;
-                this.#timeLine.addValueAtNodesToSelectedList([valueAtNode]);
-                if(valueAtNode.selected){
-                    if (this.#firstValueAtNodeSelected == null){
-                        this.#firstValueAtNodeSelected = valueAtNode
-                    } else {
-                        if (event && event.shiftKey){
-                            //  select value nodes from firstValueAtNodeSelected up to valueAtNode
-                            let startIndex = Math.min(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
-                            let endIndex = Math.max(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
-                            for (let i = startIndex; i <= endIndex; i++){
-                                this.#valueAtNodes[i].selected = true;
-                                this.#timeLine.addValueAtNodesToSelectedList([this.#valueAtNodes[i]]);
-                            }
-                        }
-                    }
-                }
-            }
-            this.#valueAtNodes.push(valueAtNode);
+            this.#createvalueAtNode(valueKey);
         }
         this.#valueAt.onChange = (valueAt, valueKey, propName)=>{
             this.#handleOnChange(valueAt, valueKey, propName);
         };
         this.#render();
+    }
+
+    #createvalueAtNode(valueKey){
+        let valueAtNode = new ValueAtNode(this, this.#svgWrapperDiv, valueKey);
+        this.#valueKeyTovalueAtNodeMap.set(valueKey, valueAtNode);
+        valueAtNode.onSelectedChanged = (valueAtNode, event)=>{
+            let selected = valueAtNode.selected;
+            if (event && !event.ctrlKey && !event.shiftKey){
+                //this.#timeLine.deselectAllValueAtNodes();
+            }
+            valueAtNode.selected = selected;
+            this.#timeLine.addValueAtNodesToSelectedList([valueAtNode]);
+            if(valueAtNode.selected){
+                if (this.#firstValueAtNodeSelected == null){
+                    this.#firstValueAtNodeSelected = valueAtNode
+                } else {
+                    if (event && event.shiftKey){
+                        //  select value nodes from firstValueAtNodeSelected up to valueAtNode
+                        let startIndex = Math.min(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
+                        let endIndex = Math.max(this.#valueAtNodes.indexOf(this.#firstValueAtNodeSelected), this.#valueAtNodes.indexOf(valueAtNode));
+                        for (let i = startIndex; i <= endIndex; i++){
+                            this.#valueAtNodes[i].selected = true;
+                            this.#timeLine.addValueAtNodesToSelectedList([this.#valueAtNodes[i]]);
+                        }
+                    }
+                }
+            }
+        }
+        this.#valueAtNodes.push(valueAtNode);
     }
     #handleOnChange(valueAt, valueKey, propName){
         this.update(valueAt, valueKey, propName);
@@ -260,6 +265,15 @@ export class ValueAtLine{
         }
     }
 
+    setChannelFreeze(freeze){
+        this.#freezeChannel = freeze;
+        if (this.#freezeChannel){
+            this.#hideValueAnimationDiv.classList.add('valueAt-hide-animation');
+        } else {
+            this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
+        }
+    }
+
     getValueAtNodeBefore(time, includeCurrentTime=false){
         let valueKey = this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
         return this.#valueKeyTovalueAtNodeMap.get(valueKey);
@@ -278,18 +292,18 @@ export class ValueAtLine{
     }
 
     setTimeAccurate(time){
-        if (!this.#hideAnimation){
+        if (!this.#freezeChannel){
             this.#valueAt.setValueAccurate(time);
         }
     }
     
     setTime(time){
-        if (!this.#hideAnimation){
+        if (!this.#freezeChannel){
             this.#valueAt.setValueAt(time);
         }
     }
     setTimeFast(time){
-        if (!this.#hideAnimation){
+        if (!this.#freezeChannel){
             this.#valueAt.setValueFast(time);
         }
     }

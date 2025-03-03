@@ -1,13 +1,50 @@
 import * as VA_Utils from "./valueAtUtils.js";
 import {ValueAtGroup} from "./valueAtGroup.js";
 import {ValueAtLine} from "./valueAtLine.js";
+import * as Easings from "./easings.js";
 
-const EasingNames = ['linear','stepped','easeInSine','easeOutSine','easeInOutSine','easeInQuad','easeOutQuad','easeInOutQuad','easeInCubic','easeOutCubic','easeInOutCubic','easeInQuart','easeOutQuart','easeInOutQuart','easeInQuint','easeOutQuint','easeInOutQuint','easeInExpo','easeOutExpo','easeInOutExpo','easeInCirc','easeOutCirc','easeInOutCirc','easeInBack','easeOutBack','easeInOutBack','easeInElastic','easeOutElastic','easeInOutElastic','easeOutBounce','easeInBounce','easeInOutBounce'];
+//['linear','stepped','easeInSine','easeOutSine','easeInOutSine','easeInQuad','easeOutQuad','easeInOutQuad','easeInCubic','easeOutCubic','easeInOutCubic','easeInQuart','easeOutQuart','easeInOutQuart','easeInQuint','easeOutQuint','easeInOutQuint','easeInExpo','easeOutExpo','easeInOutExpo','easeInCirc','easeOutCirc','easeInOutCirc','easeInBack','easeOutBack','easeInOutBack','easeInElastic','easeOutElastic','easeInOutElastic','easeOutBounce','easeInBounce','easeInOutBounce'];
+const EasingMap = new Map;
+EasingMap.set('linear', Easings.linear)
+EasingMap.set('stepped', Easings.stepped)
+EasingMap.set('easeInSine', Easings.easeInSine);
+EasingMap.set('easeOutSine', Easings.easeOutSine);
+EasingMap.set('easeInOutSine', Easings.easeOutSine);
+EasingMap.set('easeInQuad', Easings.easeInQuad);
+EasingMap.set('easeOutQuad', Easings.easeOutQuad);
+EasingMap.set('easeInOutQuad', Easings.easeInOutQuad);
+EasingMap.set('easeInCubic',Easings.easeInCubic);
+EasingMap.set('easeOutCubic', Easings.easeOutCubic);
+EasingMap.set('easeInOutCubic', Easings.easeOutCubic);
+EasingMap.set('easeInQuart', Easings.easeInQuart);
+EasingMap.set('easeOutQuart', Easings.easeOutQuart);
+EasingMap.set('easeInOutQuart', Easings.easeInOutQuart);
+EasingMap.set('easeInQuint', Easings.easeInQuint);
+EasingMap.set('easeOutQuint', Easings.easeOutQuint);
+EasingMap.set('easeInOutQuint', Easings.easeInOutQuint);
+EasingMap.set('easeInExpo', Easings.easeInExpo);
+EasingMap.set('easeOutExpo', Easings.easeOutExpo);
+EasingMap.set('easeInOutExpo', Easings.easeInOutExpo);
+EasingMap.set('easeInCirc', Easings.easeInCirc);
+EasingMap.set('easeOutCirc', Easings.easeOutCirc);
+EasingMap.set('easeInOutCirc', Easings.easeInOutCirc);
+EasingMap.set('easeInBack', Easings.easeInBack);
+EasingMap.set('easeOutBack', Easings.easeOutBack);
+EasingMap.set('easeInOutBack', Easings.easeInOutBack);
+EasingMap.set('easeInElastic', Easings.easeInElastic);
+EasingMap.set('easeOutElastic', Easings.easeOutElastic);
+EasingMap.set('easeInOutElastic', Easings.easeInOutElastic);
+EasingMap.set('easeOutBounce', Easings.easeOutBounce);
+EasingMap.set('easeInBounce', Easings.easeInBounce);
+EasingMap.set('easeInOutBounce', Easings.easeInOutBounce);
+
+const EasingNames = Array.from(EasingMap.keys());
 
 export class ValueAtTimeLine{
 
     #parentDiv;
     #containerDiv;
+    #containerRect;
     #headerDiv;
     #scrollContainerDiv;
     #stickyWrapperDiv;
@@ -72,6 +109,7 @@ export class ValueAtTimeLine{
     #root;
     
     #boxSelectStartPoint = null;
+    #valueAtNodeDragStartPoint = null;
     #rootValueAtGroup;
     #selectedNodeList = [];
     
@@ -79,8 +117,8 @@ export class ValueAtTimeLine{
     #pixelsPerSegment = 2;
     #labelWidth = null;
     #scrollbarWidth = null;
-    #timeUnitPerPixel;
-    #pixelPerTimeUnit;
+    #timeUnitsPerPixel;
+    #pixelsPerTimeUnit;
     #timePerScrollPixel;
     #cursorDragging = false;
     #scrollBarDragoffset = null;
@@ -129,11 +167,12 @@ export class ValueAtTimeLine{
         this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer'}, this.#containerDiv);
 
         this.#dataRangeStartGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
+        this.#dataRangeStartGroupDiv.style.display='none';
         this.#dataRangeStartLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeStartInput', innerText: 'Start time'}, this.#dataRangeStartGroupDiv);
         this.#dataRangeStartInput = VA_Utils.createEl('input', {id: 'dataRangeStartInput', type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#dataRangeStartGroupDiv);
 
         this.#dataRangeEndGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
-        this.#dataRangeEndLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeEndInput', innerText: 'End time'}, this.#dataRangeEndGroupDiv);
+        this.#dataRangeEndLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeEndInput', innerText: 'Duration'}, this.#dataRangeEndGroupDiv);
         this.#dataRangeEndInput = VA_Utils.createEl('input', {id: 'dataRangeEndInput', type: 'number', step: '1', value: dataRangeEnd.toFixed(0)}, this.#dataRangeEndGroupDiv);
 
         this.#zoomGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
@@ -159,9 +198,18 @@ export class ValueAtTimeLine{
         this.#keyFrameValueInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {innerText: 'easing'}, this.#infoKeyFrameDiv);
         this.#keyFrameEasingSelect = VA_Utils.createEl('select', {}, this.#infoKeyFrameDiv);
-        EasingNames.forEach((easingName)=>{
-            VA_Utils.createEl('option', {value: EasingNames, innerText: easingName}, this.#keyFrameEasingSelect);
+        EasingMap.entries().forEach((easing)=>{
+            VA_Utils.createEl('option', {value: easing[1], innerText: easing[0]}, this.#keyFrameEasingSelect);
+        })
+
+        this.#keyFrameEasingSelect.addEventListener('input', (e)=>{
+            if (this.#infoValueAtNode != null){
+                let name = EasingNames[this.#keyFrameEasingSelect.selectedIndex];
+                let easing = EasingMap.get(name);
+                this.#infoValueAtNode.valueKey.easing = easing;
+            }
         });
+
 
         //  create root valueAt group
         this.#rootValueAtGroup = new ValueAtGroup(this, '', null, true);
@@ -317,31 +365,52 @@ export class ValueAtTimeLine{
         });
 
         document.addEventListener('keydown', (e)=>{
-            if (e.shiftKey){
-                this.#root.style.setProperty('--nodecursor', 'ew-resize');
-            } else if (e.altKey){
-                this.#root.style.setProperty('--nodecursor', 'ns-resize');
-            } else {
-                this.#root.style.setProperty('--nodecursor', 'move');
-            }
+            this.#handleNodeCursor(e);
         });
         document.addEventListener('keyup', (e)=>{
-                this.#root.style.setProperty('--nodecursor', 'move');
+            this.#handleNodeCursor(e);
+            if (e.key == 'Delete' & e.ctrlKey){ //  delete selected nodes
+                let linesToUpdate =[];
+                this.#selectedNodeList.forEach((valueAtNode)=>{
+                    //  delete valueKey from valueAt
+                    valueAtNode.valueAtLine.valueAt.deleteValueKey(valueAtNode.valueKey);
+                    if (linesToUpdate.indexOf(valueAtNode.valueAtLine) == -1){
+                        linesToUpdate.push(valueAtNode.valueAtLine);
+                    }
+                    valueAtNode.removeFromDOM();
+                });
+                linesToUpdate.forEach((valueAtLine)=>{
+                    valueAtLine.valueAt.update();
+                    valueAtLine.update();
+                });
+            }
         });
         document.addEventListener('pointerdown', (e)=>{
-            if ( e.button == 0 && (e.ctrlKey || e.shiftKey)){
-                this.#boxSelectStartPoint = {left: e.pageX, top: e.pageY};
+            if ( e.button == 0 ){
+                if ((e.ctrlKey || e.shiftKey)){
+                    this.#boxSelectStartPoint = {left: e.pageX - this.#containerRect.left, top: e.pageY - this.#containerRect.top};
+                }
+                if (e.target.classList.contains('valueAt-node')){
+                    this.#valueAtNodeDragStartPoint = {left: e.pageX, top: e.pageY};
+
+                    console.log('nodedrag', this.#valueAtNodeDragStartPoint);
+                    e.stopPropagation();
+                }
             }
         });
         document.addEventListener('pointermove', (e)=>{
-            if ( this.#boxSelectStartPoint != null && (e.ctrlKey || e.shiftKey)){
-                this.#selectBoxDiv.style.display = '';
-                this.#selectBoxDiv.style.left = Math.min(this.#boxSelectStartPoint.left, e.pageX) + 'px';
-                this.#selectBoxDiv.style.top = Math.min(this.#boxSelectStartPoint.top, e.pageY) + 'px';      
-                this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#boxSelectStartPoint.left) + 'px';
-                this.#selectBoxDiv.style.height = Math.abs(e.pageY -this.#boxSelectStartPoint.top) + 'px';
-            } else {
-                if (e.buttons == 1){
+            if (e.buttons == 1 ){
+                if (this.#valueAtNodeDragStartPoint==null && this.#boxSelectStartPoint != null && (e.ctrlKey || e.shiftKey)){
+                    let x = Math.min(this.#boxSelectStartPoint.left, this.#boxSelectStartPoint.left, e.pageX - this.#containerRect.left);
+                    let y = Math.min(this.#boxSelectStartPoint.top, this.#boxSelectStartPoint.top, e.pageY - this.#containerRect.top);
+                    this.#selectBoxDiv.style.display = '';
+                    this.#selectBoxDiv.style.left = x + 'px';
+                    this.#selectBoxDiv.style.top = y + 'px';      
+                    this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#containerRect.left - this.#boxSelectStartPoint.left) + 'px';
+                    this.#selectBoxDiv.style.height = Math.abs(e.pageY - this.#containerRect.top - this.#boxSelectStartPoint.top) + 'px';
+                    console.log('select', this.#selectBoxDiv.offsetWidth);
+                } else {
+                    this.#handleValueAtNodeDrag(e);
                     this.#handleCursorDrag(e);
                     this.#handleScrollBar(e);
                 }
@@ -349,7 +418,7 @@ export class ValueAtTimeLine{
         });
         document.addEventListener('pointerup', (e)=>{
             if ( this.#boxSelectStartPoint != null &&  (e.ctrlKey || e.shiftKey)){
-                let deselect = (this.#boxSelectStartPoint.left > e.pageX && this.#boxSelectStartPoint.top > e.pageY)? true : false;
+                let deselect = (this.#boxSelectStartPoint.left > (e.pageX - this.#containerRect.left) && this.#boxSelectStartPoint.top > (e.pageY - this.#containerRect.top))? true : false;
                 let selectRect = this.#selectBoxDiv.getBoundingClientRect();
                 this.#selectBoxDiv.style.display = 'none';
                 this.#boxSelectStartPoint = null;  
@@ -357,6 +426,7 @@ export class ValueAtTimeLine{
             }
             this.#cursorDragging = false;
             this.#scrollBarDragoffset = null;
+            this.#valueAtNodeDragStartPoint = null;
         });   
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
@@ -388,14 +458,46 @@ export class ValueAtTimeLine{
         return this.#selectedNodeList;
     }
 
+    #handleNodeCursor(e){
+        if (e.shiftKey && e.altKey){
+            this.#root.style.setProperty('--nodecursor', 'move');
+        } else if (e.shiftKey){
+            this.#root.style.setProperty('--nodecursor', 'ew-resize');
+        } else if (e.altKey){
+            this.#root.style.setProperty('--nodecursor', 'ns-resize');
+        } else {
+            this.#root.style.setProperty('--nodecursor', 'pointer');
+        }
+    }
+
     #handleWheel(e){
         if (e.ctrlKey && e.offsetX > this.#labelWidth){
             let x = e.pageX - this.#cursorDragBoxRect.left;
-            let target = this.#viewStart + (x * this.#timeUnitPerPixel);
+            let target = this.#viewStart + (x * this.#timeUnitsPerPixel);
             let zoomFactor = this.#zoomFactor;
             zoomFactor += (e.deltaY * 0.01) * 0.01;
             this.zoom(zoomFactor, target);
             e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+
+    #handleValueAtNodeDrag(e){
+        if (this.#valueAtNodeDragStartPoint!=null && this.#infoValueAtNode != null){
+            if (e.shiftKey){  // sideways for time
+                let distanceMoved = e.movementX;
+                let f = distanceMoved / this.#cursorDragBoxRect.width;
+                let timeMoved = this.#viewStart + this.#viewRange * f;
+                this.#selectedNodeList.forEach((valueAtNode)=>{
+                    valueAtNode.valueKey.time += timeMoved;
+                });
+            }
+            if (e.altKey){  //  updown for value
+                let rect = this.#infoValueAtNode.parentDiv.getBoundingClientRect();
+                let f = (e.pageY - rect.top) / rect.height;
+                let range = this.#infoValueAtNode.valueAtLine.valueAt.options.max - this.#infoValueAtNode.valueAtLine.valueAt.options.min;
+                this.#infoValueAtNode.valueKey.value = range - (range * f);
+            }
             e.stopPropagation();
         }
     }
@@ -477,6 +579,7 @@ export class ValueAtTimeLine{
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
         this.#scrollbarWidth = this.#containerDiv.offsetWidth - this.#lineWrapDiv.offsetWidth;
         //  update coordinate references
+        this.#containerRect = this.#containerDiv.getBoundingClientRect();
         this.#cursorDragBoxRect = this.#cursorDragBoxDiv.getBoundingClientRect(); 
         this.#scrollbarRect = this.#scrollbarDiv.getBoundingClientRect();
         this.#timePerScrollPixel = this.#cursorDragBoxRect.width / this.#dataRange;
@@ -495,16 +598,16 @@ export class ValueAtTimeLine{
 
     #updateTimePerPixel(viewRange){
         if (this.#cursorDragBoxRect !== undefined){           
-            this.#timeUnitPerPixel = viewRange / this.#cursorDragBoxRect.width;
-            this.#pixelPerTimeUnit = this.#cursorDragBoxRect.width / viewRange;
+            this.#timeUnitsPerPixel = viewRange / this.#cursorDragBoxRect.width;
+            this.#pixelsPerTimeUnit = this.#cursorDragBoxRect.width / viewRange;
         }
     }
 
     #updateCursors(){
         let cursorHeight = this.#scaleDiv.offsetHeight + this.#scrollContainerDiv.offsetHeight;
         this.#cursorDiv.style.height = cursorHeight + 'px';
-        if (this.#timeUnitPerPixel === undefined || true){ this.#updateTimePerPixel(this.#viewRange) }
-        let x = (this.#cursorTime - this.#viewStart) * this.#pixelPerTimeUnit;
+        if (this.#timeUnitsPerPixel === undefined || true){ this.#updateTimePerPixel(this.#viewRange) }
+        let x = (this.#cursorTime - this.#viewStart) * this.#pixelsPerTimeUnit;
         this.#cursorDiv.style.display = x<0? 'none' : ''; 
         this.#cursorDiv.style.left =  'calc(var(--label-width) + ' + x + 'px)';
         this.#cursorLabelText.innerText = this.#cursorTime.toFixed(2);
@@ -657,7 +760,12 @@ export class ValueAtTimeLine{
             return parentGroup.addNewValueAtGroup(name, expanded);
         }
     }    
-
+    get timeUnitsPerPixel(){
+        return this.#timeUnitsPerPixel;
+    }
+    get pixelsPerTimeUnit(){
+        return this.#pixelsPerTimeUnit;
+    }
     get selectedValueAtNodes(){
         return this.#selectedNodeList;
     }
