@@ -410,29 +410,47 @@ export class ValueAtTimeLine{
 
     #handleCursorToPreviousKeyFrame(e){
         if (e.button==0){
-            let time = null;
+            let time = null
+            let priorValueAtNode = null;
             let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
             valueAtLines.forEach((valueAtLine)=>{
                 let valueAtNode = valueAtLine.getValueAtNodeBefore(this.#cursorTime, false);
-                if (valueAtNode){
-                    time = time==null? valueAtNode.valueKey.time : Math.max(time, valueAtNode.valueKey.time);
+                if (valueAtNode != null && valueAtNode != priorValueAtNode){
+                    priorValueAtNode = priorValueAtNode==null? valueAtNode : (valueAtNode.valueKey.time > priorValueAtNode.valueKey.time)? valueAtNode : priorValueAtNode;
+                    if (this.#infoValueAtNode != null && this.#infoValueAtNode.selected){
+                        if (this.#selectedNodeList.length < 2){
+                            this.deselectAllValueAtNodes();
+                            priorValueAtNode.selected = true;
+                        }   
+                    }
                 }
             });
-            this.setTime(time);
+            if (priorValueAtNode != null){
+                this.setTime(priorValueAtNode.valueKey.time);
+            }
         }
     }
 
     #handleCursorToNextKeyFrame(e){
         if (e.button==0){
             let time = null
+            let nextValueAtNode = null;
             let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
             valueAtLines.forEach((valueAtLine)=>{
                 let valueAtNode = valueAtLine.getValueAtNodeAfter(this.#cursorTime, false);
-                if (valueAtNode){
-                    time = time==null? valueAtNode.valueKey.time : Math.min(time, valueAtNode.valueKey.time);
+                if (valueAtNode != null && valueAtNode != nextValueAtNode){
+                    nextValueAtNode = nextValueAtNode==null? valueAtNode : (valueAtNode.valueKey.time < nextValueAtNode.valueKey.time)? valueAtNode : nextValueAtNode;
+                    if (this.#infoValueAtNode != null && this.#infoValueAtNode.selected){
+                        if (this.#selectedNodeList.length < 2){
+                            this.deselectAllValueAtNodes();
+                            nextValueAtNode.selected = true;
+                        }   
+                    }
                 }
             });
-            this.setTime(time);
+            if (nextValueAtNode != null){
+                this.setTime(nextValueAtNode.valueKey.time);
+            }
         }
     }
 

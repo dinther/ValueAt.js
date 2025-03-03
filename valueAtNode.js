@@ -28,6 +28,7 @@ export class ValueAtNode{
             e.stopPropagation();
         });
         */       
+
         this.#div.addEventListener('pointerdown', (e)=>{
             //if (!this.#selected){
                 this.#selected = !this.#selected; //true;

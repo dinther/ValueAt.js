@@ -21,6 +21,7 @@ export class ValueAtLine{
     #valueAtNodes = [];
     #pointerTime = 0;
     #lineHeight = 0;
+    #valueKeyTovalueAtNodeMap = new Map;
     #firstValueAtNodeSelected= null;
     #inView = false;
     onSelectedChanged;
@@ -119,6 +120,7 @@ export class ValueAtLine{
         for (let i = 0; i < this.#valueAt.valueKeys.length; i++){
             let valueKey = this.#valueAt.valueKeys[i];
             let valueAtNode = new ValueAtNode(this, this.#svgWrapperDiv, valueKey);
+            this.#valueKeyTovalueAtNodeMap.set(valueKey, valueAtNode);
             valueAtNode.onSelectedChanged = (valueAtNode, event)=>{
                 let selected = valueAtNode.selected;
                 if (event && !event.ctrlKey && !event.shiftKey){
@@ -260,25 +262,12 @@ export class ValueAtLine{
 
     getValueAtNodeBefore(time, includeCurrentTime=false){
         let valueKey = this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
-        for (let i=0; i<this.#valueAtNodes.length; i++){
-            if (this.#valueAtNodes[i].valueKey == valueKey){
-                return this.#valueAtNodes[i];
-            }
-        }
-        return null;
-        //return this.#valueAt.valueKeys[this.#valueAt.getBeforeValueKeyIndex(time, !includeCurrentTime)];
+        return this.#valueKeyTovalueAtNodeMap.get(valueKey);
     };
 
     getValueAtNodeAfter(time, includeCurrentTime=false){
         let valueKey = this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(time, !includeCurrentTime)];
-        for (let i=0; i<this.#valueAtNodes.length; i++){
-            if (this.#valueAtNodes[i].valueKey == valueKey){
-                return this.#valueAtNodes[i];
-            }
-        }
-
-        return null;
-        //return this.#valueAt.valueKeys[this.#valueAt.getAfterValueKeyIndex(time, !includeCurrentTime)];
+        return this.#valueKeyTovalueAtNodeMap.get(valueKey);
     };
 
     deselectAllValueAtNodes(){

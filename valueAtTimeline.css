@@ -184,7 +184,7 @@ input:focus {
     font-weight: 500;
     background-color: #ffffff;
     /*height: fit-content;*/
-    /*padding: 0px 9px;*/
+    padding: 0px 6px;
     border-radius: 8px;
     cursor: ew-resize;
     position: absolute;
