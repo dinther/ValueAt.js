@@ -27,33 +27,67 @@
             //var circle2 = new Circle(document.querySelector('#workarea'), 'circle2', 'circle', 10, 50, 127, 200, 50, 50);
 
             var va_radius1 = new LookupAtTime({object: circle1, property: 'radius', min: 0, max: 40, listType: 'Float32Array'});
-            va_radius1.addValueKey({time: 0, value: 10});
-            va_radius1.addValueKey({time: 100, value: 10, easing: Easings.easeInBack, magnitude: 1.70158});
+            let b = 0.46875;
+            let x = 0;
+            let s = 10;
+            let l = 12;
+            va_radius1.addValueKey({time: x, value: s}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
+            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
             va_radius1.init(0.1);
 
             var va_red1 = new LookupAtTime({object: circle1, property: 'r', min: 0, max: 255, listType: 'Uint8Array'});
             va_red1.addValueKey({time: 0, value: 0});
-            va_red1.addValueKey({time: 100, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 1, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 2, value: 0, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 3, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 4, value: 0, easing: Easings.easeInOutCubic});
             va_red1.init(0.1);
              
             var va_green1 = new LookupAtTime({object: circle1, property: 'g', min: 0, max: 255, listType: 'Uint8Array'});
             va_green1.addValueKey({time: 0, value: 255});
-            va_green1.addValueKey({time: 100, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 1, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 2, value: 255, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 3, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 4, value: 255, easing: Easings.easeInOutCubic});            
             va_green1.init(0.1);
 
             var va_blue1 = new LookupAtTime({object: circle1, property: 'b', min: 0, max: 255, listType: 'Uint8Array'});
             va_blue1.addValueKey({time: 0, value: 0});
-            va_blue1.addValueKey({time: 100, value: 0, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 2, value: 255, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 4, value: 0, easing: Easings.easeInOutCubic});
             va_blue1.init(0.1);            
 
             var va_pos_x1 = new LookupAtTime({object: circle1, property: 'x', min: 0, max: 100, listType: 'Float32Array'});
-            va_pos_x1.addValueKey({time: 0, value: 50});
-            va_pos_x1.addValueKey({time: 100, value: 50, easing: Easings.easeInOutCubic});
+            b = 0.46875;
+            x = 0;
+            va_pos_x1.addValueKey({time: x, value: 0}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 25, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 50, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 75, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 100, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 75, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 50, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 25, easing: Easings.easeInExpo}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 0, easing: Easings.easeInExpo});
             va_pos_x1.init(0.01);     
 
             var va_pos_y1 = new LookupAtTime({object: circle1, property: 'y', min: 0, max: 100, listType: 'Float32Array'});
             va_pos_y1.addValueKey({time: 0, value: 50});
-            va_pos_y1.addValueKey({time: 100, value: 50, easing: Easings.stepped, magnitude: 0.1});
+            va_pos_y1.addValueKey({time: 4, value: 50, easing: Easings.stepped, magnitude: 0.1});
             va_pos_y1.init(0.01);
 
             /*
@@ -106,35 +140,40 @@
             va_pos_y2.init(0.01);   
             */  
          
-            var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 100, 1);
+            var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 8* b, 1);
 
             var waveDisplay;
 
-            let resetBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏮'}, timeLine.footerDiv);
+            let resetBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏮'}, timeLine.footerDiv);
             resetBtn.addEventListener('click', (e)=>{
                 playStop = true;
                 start = undefined;
                 timeLine.setTimeFast(timeLine.dataRangeStart);
             });
 
-            let playBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'▶'}, timeLine.footerDiv);
+            let playBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'▶'}, timeLine.footerDiv);
             playBtn.addEventListener('click', (e)=>{
                 playStop = false;
                 start = undefined;
                 requestAnimationFrame(stepFrame);
             });
 
-            let stopBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏹'}, timeLine.footerDiv);
+            let stopBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏹'}, timeLine.footerDiv);
             stopBtn.addEventListener('click', (e)=>{
                 playStop = true;
             });
 
-            let toEndBtn = VA_Utils.createEl('button', {className: 'icon-button ', innerText:'⏭'}, timeLine.footerDiv);
+            let toEndBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏭'}, timeLine.footerDiv);
             toEndBtn.addEventListener('click', (e)=>{
                 playStop = true;
                 start = undefined;
                 timeLine.setTime(timeLine.dataRangeEnd);
             });
+
+            let loopBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⟳'}, timeLine.footerDiv);
+            loopBtn.addEventListener('click', (e)=>{
+                loop = !loop;
+            });            
 
             let circlegroup1 = timeLine.addNewValueAtGroup('Circle 1', true);
             circlegroup1.addValueAt(va_radius1, 'Radius', 1, '#f0f', true);
@@ -147,7 +186,7 @@
 
             let positionGroup1 = transformGroup1.addNewValueAtGroup('Position', true);
             positionGroup1.addValueAt(va_pos_x1, 'Pos X', 1);
-            positionGroup1.addValueAt(va_pos_y1, 'Pos y', 1);
+            positionGroup1.addValueAt(va_pos_y1, 'Pos Y', 1);
 
             /*
             let circlegroup2 = timeLine.addNewValueAtGroup('Circle 2', true);
@@ -177,6 +216,7 @@
             let start;
             let cursorStart;
             let playStop = false;
+            let loop = false;
             function stepFrame(timestamp) {
                 if (start === undefined) {
                     start = timestamp;
@@ -187,7 +227,13 @@
                 if (!playStop && elapsed <= timeLine.dataRangeEnd){
                     requestAnimationFrame(stepFrame);
                 } else {
-                    playStop = true;
+                    if (loop){
+                        start = undefined;
+                        timeLine.setTimeAccurate(0);
+                        requestAnimationFrame(stepFrame); 
+                    } else {
+                        playStop = true;
+                    }
                 }
             }
 
