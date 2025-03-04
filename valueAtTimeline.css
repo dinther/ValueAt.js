@@ -4,7 +4,7 @@
 
 :root {
     --header-height: 32px;
-    --scale-row-height: 75px;
+    --scale-row-height: 24px;
     --line-row-height: 28px;
     --line-maximized-height: 100px;
     --nodecursor: 'move';
@@ -16,11 +16,11 @@
     --dim-text-color: #aaaaaa;
     --cursor-text-color: #000000;
     --line-color: #606060;
-    --label-back-color: #212121;
+    --label-back-color: #1c1c1c;
     --header-back-color: #181818;
-    --group-header-back-color: #232323;
+    --group-header-back-color: #1c1c1c;
     --group-label-back-color: #181818;
-    --main-back-color: #1f1f1f;
+    --main-back-color: #181818;
     --graph-back-color: #313131;
     --scale-back-color: #615e5e;
     --cursor-color: #ff9900;
@@ -130,9 +130,8 @@ input:focus {
 }
 
 .valueAt-info-keyframe {
-    display: grid;
-    grid-template-columns: 60px 1fr;
-    grid-template-rows: 18px;
+    display: flex;
+
     align-items: baseline;
 }
 
@@ -141,15 +140,19 @@ input:focus {
     justify-content: space-between;
 }
 
-.valueAt-info input,select {
-    width: 100%;
+.valueAt-info-keyframe input,select {
+    width: 84px;
+    margin: 0 6px;
+}
+
+.valueAt-info-keyframe select {
+    width: 100px;
 }
 
 .valueAt-cursor-dragbox {
     height: 16px;
     width: 100%;
     pointer-events: all;
-    background-color: #6f6f6f;
 
 }
 
@@ -389,7 +392,7 @@ input:focus {
     opacity: 0;
 }
 
-.valueAt-hide-animation {
+.valueAt-freeze {
     opacity: 0.5;
 }
 
@@ -440,6 +443,11 @@ input:focus {
 
 .valueAt-line.valueAt-maximized{
     height: var(--line-maximized-height);
+}
+
+.valueAt-wave-line{
+    background-color: var(--scale-back-color);
+    height: calc(var(--line-row-height)* 2);
 }
 
 .valuesAt-svg {

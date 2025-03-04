@@ -15,7 +15,6 @@ export class ValueAtGroup{
     #parentValueAtGroup;
     #expanded;
     #groupIconsDiv;
-    #freezeChannel = false;
     #hideValueAnimationDiv;
     #valueAtGroups = [];
     #valueAtLines = [];
@@ -56,18 +55,13 @@ export class ValueAtGroup{
             this.#labelSpanDiv = VA_Utils.createEl('span', {innerText: this.#name}, this.#labelContent);
 
             this.#groupIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
-            this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel on/off', className: 'valueAt-expand-button'}, this.#groupIconsDiv);
+            //this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel group freeze', className: 'valueAt-expand-button'}, this.#groupIconsDiv);
 
 
             this.#labelContent.addEventListener('pointerdown', (e)=>{
                 if (e.button == 0){
                     this.#setExpanded(!this.#expanded, e.ctrlKey);
                     e.stopPropagation();
-                }
-            });
-            this.#hideValueAnimationDiv.addEventListener('pointerdown', (e)=>{
-                if (e.button == 0){
-                    this.setGroupFreeze(!this.#freezeChannel, e.ctrlKey);
                 }
             });
             this.#updateCaret();
@@ -80,22 +74,7 @@ export class ValueAtGroup{
             this.onSelectedChanged(this, valueAtUI);
         }
     }
-    setGroupFreeze(freeze, includeChildGroups=false){
-        this.#freezeChannel = freeze;
-        if (this.#freezeChannel){
-            this.#hideValueAnimationDiv.classList.add('valueAt-hide-animation');
-        } else {
-            this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
-        }
-        this.#valueAtLines.forEach((valueAtLine)=>{
-            valueAtLine.setChannelFreeze(freeze);
-        });
-        if (includeChildGroups){
-            this.#valueAtGroups.forEach((valueAtGroup)=>{
-                valueAtGroup.setGroupFreeze(freeze, includeChildGroups);
-            });
-        }
-    }
+
     #setExpanded(value, setState = false){
         if (value != this.#expanded || setState){
             if (value==true){
@@ -201,39 +180,34 @@ export class ValueAtGroup{
         });
     }
     setTimeAccurate(time){
-        if (!this.#freezeChannel){
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.setTimeAccurate(time);
-            });
-        }
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            valueAtLine.setTimeAccurate(time);
+        });
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             valueAtGroup.setTimeAccurate(time);
         });        
     }
 
     setTime(time){
-        if (!this.#freezeChannel){
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.setTime(time);
-            });
-        }
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            valueAtLine.setTime(time);
+        });
+
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             valueAtGroup.setTime(time);
         });        
     }
 
     setTimeFast(time){
-        if (!this.#freezeChannel){
-            this.#valueAtLines.forEach((valueAtLine)=>{
-                valueAtLine.setTimeFast(time);
-            });
-        }
+        this.#valueAtLines.forEach((valueAtLine)=>{
+            valueAtLine.setTimeFast(time);
+        });
         this.#valueAtGroups.forEach((valueAtGroup)=>{
             valueAtGroup.setTimeFast(time);
         });        
     }
 
-    addNewValueAtGroup(name, expanded=true){
+    addValueAtGroup(name, expanded=true){
         let valueAtGroup = new ValueAtGroup(this.#timeLine, name, this, expanded);
         this.#valueAtGroups.push(valueAtGroup);
         return valueAtGroup;
@@ -246,12 +220,13 @@ export class ValueAtGroup{
         if (this.#expanded == false){
             this.collapse();
         }
+        return valueAtLine;
     }
-    getRootName(){
+    getRootUserGroupName(){
         if (this.#parentValueAtGroup == this.#timeLine.rootValueAtGroup){
             return this.#name;
         } else {
-            return this.#parentValueAtGroup.getRootName();
+            return this.#parentValueAtGroup? this.#parentValueAtGroup.getRootUserGroupName() : '';
         }
     }
     getValueLines(checkInView = false, checkExpanded = false){

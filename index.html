@@ -20,14 +20,15 @@
             import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
             import {ValueAtTimeLine} from "./valueAtTimeline.js";
             import {WaveDisplay} from "./wavedisplay.js";
+            import {AudioObject} from "./audioObject.js";
 
             import {Circle} from "./circle.js"
 
             var circle1 = new Circle(document.querySelector('#workarea'), 'circle1', 'circle',10, 50, 127, 200, 50, 50);
-            //var circle2 = new Circle(document.querySelector('#workarea'), 'circle2', 'circle', 10, 50, 127, 200, 50, 50);
+            var audioObject = new AudioObject(null, null, 'song', 120);
 
             var va_radius1 = new LookupAtTime({object: circle1, property: 'radius', min: 0, max: 40, listType: 'Float32Array'});
-            let b = 0.46875;
+            let b = 0.4512; //0.46875;
             let x = 0;
             let s = 10;
             let l = 12;
@@ -51,28 +52,27 @@
 
             var va_red1 = new LookupAtTime({object: circle1, property: 'r', min: 0, max: 255, listType: 'Uint8Array'});
             va_red1.addValueKey({time: 0, value: 0});
-            va_red1.addValueKey({time: 1, value: 255, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 2, value: 0, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 3, value: 255, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 4, value: 0, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 2 * b, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 4 * b, value: 0, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 6 * b, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 8 * b, value: 0, easing: Easings.easeInOutCubic});
             va_red1.init(0.1);
              
             var va_green1 = new LookupAtTime({object: circle1, property: 'g', min: 0, max: 255, listType: 'Uint8Array'});
             va_green1.addValueKey({time: 0, value: 255});
-            va_green1.addValueKey({time: 1, value: 0, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 2, value: 255, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 3, value: 0, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 4, value: 255, easing: Easings.easeInOutCubic});            
+            va_green1.addValueKey({time: 2 * b, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 4 * b, value: 255, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 6 * b, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 8 * b, value: 255, easing: Easings.easeInOutCubic});            
             va_green1.init(0.1);
 
             var va_blue1 = new LookupAtTime({object: circle1, property: 'b', min: 0, max: 255, listType: 'Uint8Array'});
             va_blue1.addValueKey({time: 0, value: 0});
-            va_blue1.addValueKey({time: 2, value: 255, easing: Easings.easeInOutCubic});
-            va_blue1.addValueKey({time: 4, value: 0, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 4 * b, value: 255, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 8 * b, value: 0, easing: Easings.easeInOutCubic});
             va_blue1.init(0.1);            
 
             var va_pos_x1 = new LookupAtTime({object: circle1, property: 'x', min: 0, max: 100, listType: 'Float32Array'});
-            b = 0.46875;
             x = 0;
             va_pos_x1.addValueKey({time: x, value: 0}); x+= b;
             va_pos_x1.addValueKey({time: x, value: 25, easing: Easings.easeInExpo}); x+= b;
@@ -89,65 +89,12 @@
             va_pos_y1.addValueKey({time: 0, value: 50});
             va_pos_y1.addValueKey({time: 4, value: 50, easing: Easings.stepped, magnitude: 0.1});
             va_pos_y1.init(0.01);
-
-            /*
-            var va_radius2 = new LookupAtTime(circle2, 'radius');
-            va_radius2.addValueKey(0,3);
-            step = 0.25
-            let repeat = 40;
-            x = step;
-            for (let i=0; i<repeat; i++){
-                va_radius2.addValueKey(x, 20, Easings.easeOutCirc); x+= step;
-                va_radius2.addValueKey(x, 5, Easings.easeInCirc); x+= step;
-            }
-            va_radius2.addValueKey(30, 13, Easings.easeOutBounce,5);
-            va_radius2.addValueKey(50, 30, Easings.easeOutBounce,5);
-            va_radius2.addValueKey(60, 7, Easings.easeOutBounce,5);
-            va_radius2.addValueKey(80, 2, Easings.easeOutBounce,5);            
-            va_radius2.init(0.01);
-
-            var va_red2 = new LookupAtTime(circle2, 'r');
-            var va_green2 = new LookupAtTime(circle2, 'g');
-            var va_blue2 = new LookupAtTime(circle2, 'b');
-            //  Random generated value keys. They are automatically sorted by time on init.
-            for (let i = 0; i < 17; i++){
-                va_red2.addValueKey(Math.random()  *100, Math.random() * 255, Easings.easeOutBounce);
-                va_green2.addValueKey(Math.random() * 100, Math.random() * 255, Easings.easeOutBounce);
-                va_blue2.addValueKey(Math.random() * 100, Math.random() * 255, Easings.easeOutBounce);
-            }
-            va_red2.init(0.1);
-            va_green2.init(0.1);
-            va_blue2.init(0.1);
-            
-
-            var va_pos_x2 = new LookupAtTime(circle2, 'x');
-            va_pos_x2.addValueKey(0, 31, Easings.easeOutCubic, 0.5);
-            for (let i = 0; i < 17; i++){
-                va_pos_x2.addValueKey(5 + Math.random() * 30, Math.random() * 100, Easings.easeOutBounce);
-            }
-            va_pos_x2.addValueKey(40, 11, Easings.easeOutCubic, 0.5);
-            va_pos_x2.addValueKey(50, 20, Easings.easeInOutCubic);
-            va_pos_x2.addValueKey(65, 1, Easings.easeInOutCubic);
-            va_pos_x2.addValueKey(75, 15, Easings.easeInOutCubic);
-            va_pos_x2.addValueKey(100, 5, Easings.easeInCubic);
-            va_pos_x2.init(0.01);
-
-            var va_pos_y2 = new LookupAtTime(circle2, 'y');
-            //  Random generated value keys. They are automatically sorted by time on init.
-            for (let i = 0; i < 37; i++){
-                va_pos_y2.addValueKey(Math.random() * 100, Math.random() * 100, Easings.easeOutBounce);
-            }
-            va_pos_y2.init(0.01);   
-            */  
          
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 8* b, 1);
 
-            var waveDisplay;
-
             let resetBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏮'}, timeLine.footerDiv);
             resetBtn.addEventListener('click', (e)=>{
-                playStop = true;
-                start = undefined;
+                audioObject.audioElm.currentTime = 0;
                 timeLine.setTimeFast(timeLine.dataRangeStart);
             });
 
@@ -155,11 +102,20 @@
             playBtn.addEventListener('click', (e)=>{
                 playStop = false;
                 start = undefined;
+                audioObject.audioElm.play();
+                //audio1.play();
+                //source = audioContext.createBufferSource();
+                //source.buffer = audioBuffer;
+                //source.connect(audioContext.destination);
+                //source.start();
                 requestAnimationFrame(stepFrame);
             });
 
             let stopBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏹'}, timeLine.footerDiv);
             stopBtn.addEventListener('click', (e)=>{
+                //source.stop();
+                audioObject.audioElm.pause();
+                //audio1.pause();
                 playStop = true;
             });
 
@@ -175,65 +131,74 @@
                 loop = !loop;
             });            
 
-            let circlegroup1 = timeLine.addNewValueAtGroup('Circle 1', true);
+            let audioLine = timeLine.addValueAt(audioObject.valueAt, 'music.mp3', 1, '#f0f');
+            audioObject.loadAudioURL('./music.mp3').then(()=>{
+                audioObject.setParent(audioLine.svgWrapperDiv, true);
+                audioObject.waveDisplay.svg.style.position = 'absolute';
+                audioObject.waveDisplay.svg.style.height = '100%';
+                let elm = audioLine.svgWrapperDiv.lastChild;
+                audioLine.svgWrapperDiv.insertBefore(elm, audioLine.svgWrapperDiv.firtChild);
+                audioLine.svgWrapperDiv.parentElement.classList.add('valueAt-wave-line');// height = 'calc(var(--line-row-height) * 2)';
+                audioLine.onRender = (viewStart, viewRange)=>{
+                    audioObject.waveDisplay.zoom = audioObject.audioElm.duration / timeLine.viewRange;
+                    let index = (timeLine.viewStart + Math.floor(audioObject.audioElm.currentTime / timeLine.dataRangeEnd) * timeLine.dataRangeEnd) * audioObject.waveDisplay.options.sampleRate;
+                    audioObject.waveDisplay.setStartIndex(index);                    
+                }
+                timeLine.onTime = (time) =>{
+                    let index = (timeLine.viewStart + Math.floor(audioObject.audioElm.currentTime / timeLine.dataRangeEnd) * timeLine.dataRangeEnd) * audioObject.waveDisplay.options.sampleRate;
+                    audioObject.waveDisplay.setStartIndex(index);
+                }
+                audioLine.update();
+            });
+
+            let circlegroup1 = timeLine.addValueAtGroup('Circle 1', true);
             circlegroup1.addValueAt(va_radius1, 'Radius', 1, '#f0f', true);
-            let colorGroup1 = circlegroup1.addNewValueAtGroup('Color', true);
+            let colorGroup1 = circlegroup1.addValueAtGroup('Color', true);
             colorGroup1.addValueAt(va_red1, 'Red', 1, '#f00');
             colorGroup1.addValueAt(va_green1, 'Green', 1, '#0f0');
             colorGroup1.addValueAt(va_blue1, 'Blue', 1, '#00f');
 
-            let transformGroup1 = circlegroup1.addNewValueAtGroup('Transform', true);
+            let transformGroup1 = circlegroup1.addValueAtGroup('Transform', true);
 
-            let positionGroup1 = transformGroup1.addNewValueAtGroup('Position', true);
+            let positionGroup1 = transformGroup1.addValueAtGroup('Position', true);
             positionGroup1.addValueAt(va_pos_x1, 'Pos X', 1);
             positionGroup1.addValueAt(va_pos_y1, 'Pos Y', 1);
 
-            /*
-            let circlegroup2 = timeLine.addNewValueAtGroup('Circle 2', true);
-            circlegroup2.addValueAt(va_radius2, 'Radius', 1, '#f0f', true);
-            let colorGroup2 = circlegroup2.addNewValueAtGroup('Color', true);
-            colorGroup2.addValueAt(va_red2, 'Red', 1, '#f00');
-            colorGroup2.addValueAt(va_green2, 'Green', 1, '#0f0');
-            colorGroup2.addValueAt(va_blue2, 'Blue', 1, '#00f');
-
-            let transformGroup2 = circlegroup2.addNewValueAtGroup('Transform', true);
-
-            let positionGroup2 = transformGroup2.addNewValueAtGroup('Position', true);
-            positionGroup2.addValueAt(va_pos_x2, 'Pos X', 1);
-            positionGroup2.addValueAt(va_pos_y2, 'Pos y', 1);
-            */
             timeLine.init();
-
-            window.computeStepList = lookupAtExport.computeStepList;
-            window.typedArrayToFile = lookupAtExport.typedArrayToFile;
-            window.Easings = Easings;
-            window.valueAtTimeline = timeLine;
-            window.va_radius = va_radius1;
-            window.circle1 = circle1;
-            //window.circle2 = circle2;
-            window.va_pos_y1 = va_pos_y1;
-
-            let start;
-            let cursorStart;
-            let playStop = false;
-            let loop = false;
+            var waveDisplay;
+            var start;
+            var cursorStart;
+            var playStop = false;
+            var loop = true;
+            var audioBuffer;
+            var source;
+            
             function stepFrame(timestamp) {
                 if (start === undefined) {
                     start = timestamp;
                     cursorStart = timeLine.cursorTime; 
                 }
                 const elapsed = (timestamp - start) / 1000;
-                timeLine.setTimeFast(cursorStart + elapsed);
-                if (!playStop && elapsed <= timeLine.dataRangeEnd){
-                    requestAnimationFrame(stepFrame);
+                if (loop){
+                    timeLine.setTimeFast(audioObject.audioElm.currentTime % timeLine.dataRangeEnd);// cursorStart + elapsed);
                 } else {
-                    if (loop){
-                        start = undefined;
-                        timeLine.setTimeAccurate(0);
+                    timeLine.setTimeFast(audioObject.audioElm.currentTime);
+                }
+                
+                //let index = Math.floor(audioObject.audioElm.currentTime / timeLine.dataRangeEnd) * timeLine.dataRangeEnd * waveDisplay.options.sampleRate;
+
+                //waveDisplay.setStartIndex(index);
+                
+                if (!playStop){
+                    //if (elapsed <= timeLine.dataRangeEnd){
+                    //    requestAnimationFrame(stepFrame);
+                    //} else if (loop){
+                    //    start = undefined;
+                    //    timeLine.setTimeAccurate(0);
                         requestAnimationFrame(stepFrame); 
-                    } else {
-                        playStop = true;
-                    }
+                    //} else {
+                    //    playStop = true;
+                    //}
                 }
             }
 
@@ -241,20 +206,19 @@
             window.AudioContext = window.AudioContext || window.webkitAudioContext;
             const audioContext = new AudioContext();
 
-            var audioBuffer;
+
+            //var audio1 = new Audio();
+
 
             // Get the audio data
+            /*
             fetch('./music.mp3')
             .then(response => response.arrayBuffer())
-            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-            .then(audioBuf => {
+            .then(arrayBuffer => {
+                //audio1.src = URL.createObjectURL(new Blob([arrayBuffer]));  //  Does this use the same data?
+                return audioContext.decodeAudioData(arrayBuffer)
+            }).then(audioBuf => {
                 audioBuffer = audioBuf;
-                //let myNumberArray = arrayBuffer.getChannelData(0); //  We only want one channel
-
-                //console.log(myNumberArray);
-
-                //timeLine.setDataRange(0, Math.floor(audioBuffer.duration * 1000));
-
                 waveDisplay = new WaveDisplay({
                     data: audioBuffer.getChannelData(0),
                     parent: timeLine.scaleDiv,
@@ -265,9 +229,22 @@
                     scale: 1,
                     zoom: 2,
                 });
-
+                let duration = waveDisplay.options.parent.offsetWidth * waveDisplay.samplesPerPixel / waveDisplay.options.sampleRate * waveDisplay.zoom;
+                waveDisplay.zoom = duration / timeLine.viewRange;
                 window.waveDisplay = waveDisplay;
             });
+            */
+
+            window.computeStepList = lookupAtExport.computeStepList;
+            window.typedArrayToFile = lookupAtExport.typedArrayToFile;
+            window.Easings = Easings;
+            window.timeLine = timeLine;
+            window.va_radius = va_radius1;
+            window.circle1 = circle1;
+            window.va_pos_y1 = va_pos_y1;
+            window.waveDisplay = waveDisplay;
+            window.audioObject = audioObject;
+            window.audioContext = audioContext;
         </script>
     </body>
 </html>

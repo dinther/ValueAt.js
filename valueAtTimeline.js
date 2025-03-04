@@ -47,8 +47,6 @@ export class ValueAtTimeLine{
     #containerRect;
     #headerDiv;
     #scrollContainerDiv;
-    #stickyWrapperDiv;
-    #scaleWrapperDiv;
     #infoScaleDiv;
     #infoDiv;
     #infoKeyFrameDiv;
@@ -125,7 +123,7 @@ export class ValueAtTimeLine{
     #suppressedNodesSelectedList = [];
     #suppressedNodesDeSelectedList = [];
     #infoValueAtNode = null;
-
+    onTime = null;
     constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
         this.#parentDiv = parent;
         //  build scrolling UI container
@@ -133,12 +131,12 @@ export class ValueAtTimeLine{
 
         //  build stickyheader
         this.#headerDiv = VA_Utils.createEl('div', {className: 'valueAt-header'}, this.#containerDiv);
- 
+
         //  build wave display and scale container
         //this.scaleWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-scale-wrapper'}, this.#containerDiv);
         this.#infoScaleDiv = VA_Utils.createEl('div', {className: 'valueAt-info-scale'}, this.#containerDiv);
         this.#infoDiv = VA_Utils.createEl('div', {className: 'valueAt-info'}, this.#infoScaleDiv);
-        this.#infoKeyFrameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-keyframe'}, this.#infoDiv);
+        this.#infoKeyFrameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-keyframe'});
         this.#infoKeyFrameDiv.style.display = 'none';
         this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#infoScaleDiv);
         this.#cursorDragBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-cursor-dragbox'}, this.#scaleDiv);
@@ -182,16 +180,12 @@ export class ValueAtTimeLine{
         this.#cursorPreviousNodeBtn = VA_Utils.createEl('div', {innerText: '⏴', className: 'valueAt-cursor-button-left', title: 'Cursor to previous keyframe'}, this.#headerDiv);
         this.#cursorNextNodeBtn = VA_Utils.createEl('div', {innerText: '⏵', className: 'valueAt-cursor-button-right', title: 'Cursor to next keyframe'}, this.#headerDiv);
 
+        this.#headerDiv.appendChild(this.#infoKeyFrameDiv);
+
 
         //  ValueAtNode Info panel
-        this.#keyFrameObjectNameDiv = VA_Utils.createEl('input', {type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
-        let combined = VA_Utils.createEl('div', {className: 'valueAt-info-combined'}, this.#infoKeyFrameDiv);
-        this.#lineIconsDiv = VA_Utils.createEl('div', {className:'valueAt-line-icons'}, combined);
-        this.#previousKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏴', title: 'Cursor to previous keyframe', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        VA_Utils.createEl('div', {innerText: 'x', title: 'cursor to next keyframe.', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#nextKeyFrameDiv = VA_Utils.createEl('div', {innerText: '⏵', title: 'Cursor on keyframe indicator', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, combined);
-
+        this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
+        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {innerText: 'time'}, this.#infoKeyFrameDiv);
         this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {innerText: 'value'}, this.#infoKeyFrameDiv);
@@ -222,42 +216,6 @@ export class ValueAtTimeLine{
         this.#pixelsPerSegment = pixelsPerSegment;
 
         //  event handlers
-
-        this.#previousKeyFrameDiv.addEventListener('pointerdown', (e)=>{
-            if (this.#infoValueAtNode != null){
-                if (e.button==0){
-                    let beforeValueAtNode = this.#infoValueAtNode.valueAtLine.getValueAtNodeBefore(this.#cursorTime, false);
-                    if (beforeValueAtNode != null){
-                        this.setTime(beforeValueAtNode.valueKey.time);
-                        this.panTocursor();
-                        if (this.#infoValueAtNode.selected){
-                            if (this.#selectedNodeList.length < 2){
-                                this.deselectAllValueAtNodes();
-                                beforeValueAtNode.selected = true;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        this.#nextKeyFrameDiv.addEventListener('pointerdown', (e)=>{
-            if (this.#infoValueAtNode != null){
-                if (e.button==0){
-                    let afterValueAtNode = this.#infoValueAtNode.valueAtLine.getValueAtNodeAfter(this.#cursorTime, false);
-                    if(afterValueAtNode != null){
-                        this.setTime(afterValueAtNode.valueKey.time);
-                        this.panTocursor();
-                        if (this.#infoValueAtNode.selected){
-                            if (this.#selectedNodeList.length < 2){
-                                this.deselectAllValueAtNodes();
-                                afterValueAtNode.selected = true;
-                            }   
-                        }                     
-                    }
-                }
-            }
-        });
 
         this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
             if (e.offsetX > this.#labelWidth && !e.ctrlKey && !e.shiftKey){
@@ -560,7 +518,7 @@ export class ValueAtTimeLine{
         if (this.#selectedNodeList.length == 1){
             let valueAtNode = this.#selectedNodeList[0];
             this.#infoValueAtNode = valueAtNode;
-            this.#keyFrameObjectNameDiv.value = valueAtNode.valueAtLine.valueAtGroup.getRootName();
+            this.#keyFrameObjectNameDiv.value = valueAtNode.valueAtLine.valueAtGroup.getRootUserGroupName();
             this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName + ' (' + valueAtNode.valueAtLine.valueAtNodes.indexOf(valueAtNode) + ')';
             this.#keyFrameTimeInput.value = valueAtNode.valueKey.time;
             if (valueAtNode.valueAtLine.valueAt.options.min != null){
@@ -611,6 +569,12 @@ export class ValueAtTimeLine{
         this.#cursorDiv.style.display = x<0? 'none' : ''; 
         this.#cursorDiv.style.left =  'calc(var(--label-width) + ' + x + 'px)';
         this.#cursorLabelText.innerText = this.#cursorTime.toFixed(2);
+    }
+
+    #handleOnTime(){
+        if (typeof this.onTime == 'function'){
+            this.onTime(this.#cursorTime);
+        }
     }
 
     #handleScrollBar(e){
@@ -688,21 +652,33 @@ export class ValueAtTimeLine{
     }
 
     setTimeAccurate(time){
-        this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
-        this.#updateCursors();
-        this.#rootValueAtGroup.setTimeAccurate(this.#cursorTime );
+        let t = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        if (t != this.#cursorTime){
+            this.#cursorTime = t;
+            this.#updateCursors();
+            this.#rootValueAtGroup.setTimeAccurate(this.#cursorTime );
+            this.#handleOnTime();
+        }
     }
 
     setTime(time){
-        this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
-        this.#updateCursors();
-        this.#rootValueAtGroup.setTime(this.#cursorTime );
+        let t = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        if (t != this.#cursorTime){
+            this.#cursorTime = t;
+            this.#updateCursors();
+            this.#rootValueAtGroup.setTime(this.#cursorTime );
+            this.#handleOnTime();
+        }
     }
 
     setTimeFast(time){
-        this.#cursorTime = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
-        this.#updateCursors();
-        this.#rootValueAtGroup.setTimeFast(this.#cursorTime);
+        let t = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        if (t != this.#cursorTime){
+            this.#cursorTime = t;
+            this.#updateCursors();
+            this.#rootValueAtGroup.setTimeFast(this.#cursorTime);
+            this.#handleOnTime();
+        }
     }
 
     zoom(zoomFactor, zoomTarget=null){
@@ -753,11 +729,18 @@ export class ValueAtTimeLine{
 
     }
 
-    addNewValueAtGroup(name, expanded=true, parentGroup=null){
+    addValueAtGroup(name, expanded=true, parentGroup=null){
         if (parentGroup==null){
-            return this.#rootValueAtGroup.addNewValueAtGroup(name, expanded);
+            return this.#rootValueAtGroup.addValueAtGroup(name, expanded);
         } else {
-            return parentGroup.addNewValueAtGroup(name, expanded);
+            return parentGroup.addValueAtGroup(name, expanded);
+        }
+    }
+    addValueAt(valueAt, labelName, strokeWidth, strokeColor, parentGroup=null){
+        if (parentGroup==null){
+            return this.#rootValueAtGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
+        } else {
+            return parentGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
         }
     }    
     get timeUnitsPerPixel(){

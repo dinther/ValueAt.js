@@ -25,6 +25,7 @@ export class ValueAtLine{
     #firstValueAtNodeSelected= null;
     #inView = false;
     onSelectedChanged;
+    onRender = null;
     constructor(valueAt, timeLine, valueAtGroup, labelName, strokeWidth=1, strokeColor='#fff'){
         this.#valueAt = valueAt;
         this.#timeLine = timeLine;
@@ -43,7 +44,7 @@ export class ValueAtLine{
         span.style.left = this.#valueAtGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
         this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', title: 'Maximize this line graph', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel on/off', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
+        this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel freeze', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
                             
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
 
@@ -247,7 +248,7 @@ export class ValueAtLine{
 
                 this.#valueAtNodes.forEach((valueAtNode)=>{
                     let percent = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100;
-                    if (percent >= 0 && percent<= 100){
+                    if (percent >= 0 && percent<= 101){  //  101% to deal with slight floating point errors
                         valueAtNode.div.style.left = (valueAtNode.valueKey.time - this.#timeLine.viewStart) / (this.#timeLine.viewRange) * 100 + '%';
                         valueAtNode.div.style.bottom = ((this.#strokeWidth*0.5) + ((valueAtNode.valueKey.value - vb_min) / vb_range * usableHeight)) + 'px';
                         valueAtNode.div.style.display = '';                       
@@ -255,6 +256,9 @@ export class ValueAtLine{
                         valueAtNode.div.style.display = 'none';
                     }
                 });
+                if (typeof this.onRender == 'function'){
+                    this.onRender(this.#timeLine.viewStart, this.#timeLine.viewRange);
+                }
             }
             this.#inView = inView;
         }
@@ -268,9 +272,9 @@ export class ValueAtLine{
     setChannelFreeze(freeze){
         this.#freezeChannel = freeze;
         if (this.#freezeChannel){
-            this.#hideValueAnimationDiv.classList.add('valueAt-hide-animation');
+            this.#hideValueAnimationDiv.classList.add('valueAt-freeze');
         } else {
-            this.#hideValueAnimationDiv.classList.remove('valueAt-hide-animation');
+            this.#hideValueAnimationDiv.classList.remove('valueAt-freeze');
         }
     }
 

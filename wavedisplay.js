@@ -349,13 +349,27 @@ export class WaveDisplay{
         }
     }    
 
-    getIndex( clientX ) {
-        return this.#startIndex + this.#samplesPerPixel * clientX;
+    getSampleIndexFromOffsetX( offsetX ) {
+        return this.#startIndex + this.#samplesPerPixel * offsetX;
+    }
+
+    setStartIndex(value){
+        let range = this.#endIndex - this.#startIndex;  
+        let startIndex = this.#clampIndex( 0, value, this.#data.length - range );
+        if (startIndex != this.#startIndex){
+            this.#startIndex = startIndex;
+            this.#endIndex = this.#startIndex + range;
+            this.#drawValues( this.#startIndex , this.#endIndex );
+        }
     }
 
     onInit;
     onViewChange;
     onSlideEnd;
+
+    get options(){
+        return this.#options;
+    }
 
     get svg() {
         return this.#svg;
