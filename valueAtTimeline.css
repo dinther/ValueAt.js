@@ -160,8 +160,8 @@ input:focus {
 }
 
 .valueAt-info-label {
-    width: 35px;
     text-align: end;
+    margin-left: 4px;
 }
 
 .valueAt-info-combined {
@@ -170,8 +170,8 @@ input:focus {
 }
 
 .valueAt-info-keyframe input,select {
-    width: 84px;
-    margin: 0 6px;
+    width: 70px;
+    margin: 0 4px;
 }
 
 .valueAt-info-keyframe select {
@@ -231,10 +231,6 @@ input:focus {
 
 .valueAt-cursor-button-right:hover {
     background-color: gray;
-}
-
-.valueAt-cursor-text {
-
 }
 
 .valueAt-scroll-container {

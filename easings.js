@@ -6,9 +6,13 @@ export function linear( t ) {
     return t;
 }
 
-export function stepped( t , magnitude = 1) {
-    let steps = 1 / magnitude;
+export function stepped( t , p1 = 1) {
+    let steps = 1 / p1;
     return Math.round(t * steps) / steps;
+}
+
+export function sineCycle( t , p1 = 1) {
+    return (Math.cos(t * p1 * Math.PI * 2) + 1) / 2;
 }
 
 // Slight acceleration from zero to full speed
@@ -162,30 +166,30 @@ export function easeInOutCirc( t ) {
 }
 
 // Slow movement backwards then fast snap to finish
-export function easeInBack( t, magnitude = 1.70158 ) {
+export function easeInBack( t, p1 = 1.70158 ) {
 
-    return t * t * ( ( magnitude + 1 ) * t - magnitude );
+    return t * t * ( ( p1 + 1 ) * t - p1 );
 
 }
 
 // Fast snap to backwards point then slow resolve to finish
-export function easeOutBack( t, magnitude = 1.70158 ) {
+export function easeOutBack( t, p1 = 1.70158 ) {
 
     const scaledTime = ( t / 1 ) - 1;
     
     return (
-        scaledTime * scaledTime * ( ( magnitude + 1 ) * scaledTime + magnitude )
+        scaledTime * scaledTime * ( ( p1 + 1 ) * scaledTime + p1 )
     ) + 1;
 
 }
 
 // Slow movement backwards, fast snap to past finish, slow resolve to finish
-export function easeInOutBack( t, magnitude = 1.70158 ) {
+export function easeInOutBack( t, p1 = 1.70158 ) {
 
     const scaledTime = t * 2;
     const scaledTime2 = scaledTime - 2;
 
-    const s = magnitude * 1.525;
+    const s = p1 * 1.525;
 
     if( scaledTime < 1) {
 
@@ -201,7 +205,7 @@ export function easeInOutBack( t, magnitude = 1.70158 ) {
 
 }
 // Bounces slowly then quickly to finish
-export function easeInElastic( t, magnitude = 0.7 ) {
+export function easeInElastic( t, p1 = 0.7 ) {
 
     if( t === 0 || t === 1 ) {
         return t;
@@ -210,7 +214,7 @@ export function easeInElastic( t, magnitude = 0.7 ) {
     const scaledTime = t / 1;
     const scaledTime1 = scaledTime - 1;
 
-    const p = 1 - magnitude;
+    const p = 1 - p1;
     const s = p / ( 2 * Math.PI ) * Math.asin( 1 );
 
     return -(
@@ -221,13 +225,13 @@ export function easeInElastic( t, magnitude = 0.7 ) {
 }
 
 // Fast acceleration, bounces to zero
-export function easeOutElastic( t, magnitude = 0.7 ) {
+export function easeOutElastic( t, p1 = 0.7 ) {
     
     if( t === 0 || t === 1 ) {
         return t;
     }
     
-    const p = 1 - magnitude;
+    const p = 1 - p1;
     const scaledTime = t * 2;
 
     const s = p / ( 2 * Math.PI ) * Math.asin( 1 );
@@ -239,13 +243,13 @@ export function easeOutElastic( t, magnitude = 0.7 ) {
 }
 
 // Slow start and end, two bounces sandwich a fast motion
-export function easeInOutElastic( t, magnitude = 0.65 ) {
+export function easeInOutElastic( t, p1 = 0.65 ) {
 
     if( t === 0 || t === 1 ) {
         return t;
     }
 
-    const p = 1 - magnitude;
+    const p = 1 - p1;
     const scaledTime = t * 2;
     const scaledTime1 = scaledTime - 1;
     

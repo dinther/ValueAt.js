@@ -7,6 +7,7 @@ import * as Easings from "./easings.js";
 const EasingMap = new Map;
 EasingMap.set('linear', Easings.linear)
 EasingMap.set('stepped', Easings.stepped)
+EasingMap.set('sineCycle', Easings.sineCycle)
 EasingMap.set('easeInSine', Easings.easeInSine);
 EasingMap.set('easeOutSine', Easings.easeOutSine);
 EasingMap.set('easeInOutSine', Easings.easeOutSine);
@@ -91,6 +92,10 @@ export class ValueAtTimeLine{
     #keyFrameValueInput;
     #keyFrameTimeInput;
     #keyFrameEasingSelect;
+    #p1Div;
+    #keyFrameP1Input;
+    #p2Div;
+    #keyFrameP2Input;
 
     #valueAtDiv;
 
@@ -200,8 +205,17 @@ export class ValueAtTimeLine{
                 let name = EasingNames[this.#keyFrameEasingSelect.selectedIndex];
                 let easing = EasingMap.get(name);
                 this.#infoValueAtNode.valueKey.easing = easing;
+                this.#p1Div.style.display = this.#infoValueAtNode.valueKey.hasP1? '' : 'none';
+                this.#keyFrameP1Input.value = this.#infoValueAtNode.valueKey.p1;
+                this.#p2Div.style.display = this.#infoValueAtNode.valueKey.hasP2? '' : 'none';
+                this.#keyFrameP2Input.value = this.#infoValueAtNode.valueKey.p2;
             }
         });
+
+        this.#p1Div = VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'P1'}, this.#infoKeyFrameDiv);
+        this.#keyFrameP1Input = VA_Utils.createEl('input', {type: 'number', step: '0.05', value: 0}, this.#p1Div);
+        this.#p2Div = VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'P2'}, this.#infoKeyFrameDiv);
+        this.#keyFrameP2Input = VA_Utils.createEl('input', {type: 'number', step: '0.05', value: 0}, this.#p2Div);
 
 
         //  create root valueAt group
@@ -306,6 +320,18 @@ export class ValueAtTimeLine{
                 this.#infoValueAtNode.valueKey.value = parseFloat(this.#keyFrameValueInput.value);
             }
         });
+
+        this.#keyFrameP1Input.addEventListener('input', (e)=>{
+            if (this.#infoValueAtNode && this.#infoValueAtNode.valueKey.easing != null){
+                this.#infoValueAtNode.valueKey.p1 = parseFloat(this.#keyFrameP1Input.value);
+            }
+        });
+
+        this.#keyFrameP2Input.addEventListener('input', (e)=>{
+            if (this.#infoValueAtNode && this.#infoValueAtNode.valueKey.easing != null){
+                this.#infoValueAtNode.valueKey.value.p2 = parseFloat(this.#keyFrameP2Input.value);
+            }
+        });        
 
         this.#scrollbarContentDiv.addEventListener('pointerdown', (e)=>{
             if (e.button == 0){
@@ -530,6 +556,10 @@ export class ValueAtTimeLine{
             }            
             this.#updateInfoValue();
             this.#keyFrameEasingSelect.selectedIndex = valueAtNode.valueKey.easing? EasingNames.indexOf(valueAtNode.valueKey.easing.name) : 0;
+            this.#p1Div.style.display = valueAtNode.valueKey.hasP1? '' : 'none';
+            this.#keyFrameP1Input.value = valueAtNode.valueKey.p1;
+            this.#p2Div.style.display = valueAtNode.valueKey.hasP2? '' : 'none';
+            this.#keyFrameP2Input.value = valueAtNode.valueKey.p2;            
         }
         this.#infoKeyFrameDiv.style.display = (this.#selectedNodeList.length != 1)? 'none' : '';
     }

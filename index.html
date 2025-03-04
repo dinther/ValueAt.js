@@ -29,26 +29,16 @@
             var audioObject = new AudioObject(null, null, 'song', 120);
 
             var va_radius1 = new LookupAtTime({object: circle1, property: 'radius', min: 0, max: 20, listType: 'Float32Array'});
-            let b = 0.4512; //0.46875;
+            let b = 0.4512;
             let x = 0;
             let s = 10;
-            let l = 12;
-            va_radius1.addValueKey({time: x, value: s}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
-            va_radius1.addValueKey({time: x, value: s, easing: Easings.linear}); x+= b;
-            va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            let l = 13;
+            let r = 8;
+            for (let i=0; i< r; i++){
+                va_radius1.addValueKey({time: x, value: s}); x+= b;
+                va_radius1.addValueKey({time: x, value: l, easing: Easings.easeInSine});
+            }
+
             va_radius1.init(0.1);
 
             var va_red1 = new LookupAtTime({object: circle1, property: 'r', min: 0, max: 255, listType: 'Uint8Array'});
@@ -87,16 +77,18 @@
             va_pos_x1.init(0.01);     
 
             var va_pos_y1 = new LookupAtTime({object: circle1, property: 'y', min: 0, max: 100, listType: 'Float32Array'});
-            va_pos_y1.addValueKey({time: 0, value: 50});
-            va_pos_y1.addValueKey({time: 8 * b, value: 50});
+            va_pos_y1.addValueKey({time: 0, value: 45});
+            va_pos_y1.addValueKey({time: 2 * b, value: 55, easing:Easings.easeInOutElastic, p1: 0.95});
+            va_pos_y1.addValueKey({time: 4 * b, value: 45, easing:Easings.easeInOutElastic, p1: 0.95});
+            va_pos_y1.addValueKey({time: 6 * b, value: 55, easing:Easings.easeInOutElastic, p1: 0.95});
+            va_pos_y1.addValueKey({time: 8 * b, value: 45, easing:Easings.easeInOutElastic, p1: 0.91});
             va_pos_y1.init(0.01);
-         
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 8* b, 1);
 
             let resetBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
             resetBtn.innerHTML = Icons.getSVG('backToStart');
             resetBtn.addEventListener('click', (e)=>{
-                audioObject.audioElm.currentTime = 0;
+                audioObject.audioElm.currentTime = timeLine.dataRangeStart;
                 timeLine.setTimeFast(timeLine.dataRangeStart);
             });
 
@@ -137,8 +129,13 @@
             });
             audioObject.audioElm.addEventListener('pause', (e)=>{
                 playBtn.classList.remove('active');
-            });            
+            }); 
+            audioObject.audioElm.addEventListener('seeked', (e)=>{ 
+                let index = (timeLine.viewStart + Math.floor(audioObject.audioElm.currentTime / timeLine.dataRangeEnd) * timeLine.dataRangeEnd) * audioObject.waveDisplay.options.sampleRate;
+                audioObject.waveDisplay.setStartIndex(index);
+            });       
             audioObject.loadAudioURL('./music.mp3').then(()=>{
+                audioObject.audioElm.currentTime = timeLine.dataRangeStart;
                 audioObject.setParent(audioLine.svgWrapperDiv, true);
                 audioObject.waveDisplay.svg.style.position = 'absolute';
                 audioObject.waveDisplay.svg.style.height = '100%';

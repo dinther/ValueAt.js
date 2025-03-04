@@ -14,13 +14,15 @@
 
 
 export class ValueKey{
-    #options = {time: null, value: null, easing: null, magnitude: null}
+    #options = {time: null, value: null, easing: null}
     #valueAt;
     #onChange=null;
-
-    constructor(valueAt, options){ //time, value, easing=null, magnitude=null){
+    #hasP1;
+    #hasP2;
+    constructor(valueAt, options){
         this.#valueAt = valueAt;
         Object.assign(this.#options, options);
+        this.#findParams();
     }
 
 
@@ -30,7 +32,41 @@ export class ValueKey{
             this.#onChange(this, propName);
         }
     }
-
+    #findParams(){ //  Parses the Easing function string to check for p1 and p2 params and reads their possible default values.
+        if (this.#options.easing){
+            const str = this.#options.easing.toString().toLowerCase();
+            const regex = /\(([^)]+)\)/;
+            let m;
+            if ((m = regex.exec(str)) !== null) {
+                // The result can be accessed through the `m`-variable.
+                let values = m[1].replaceAll(' ','').split(',');
+                this.#hasP1 = false;
+                this.#hasP2 = false;
+                if (values.length > 1){
+                    values.forEach((value)=>{
+                        let vl = value.split('=');
+                        if (vl[0]=='p1') this.#hasP1 = true;
+                        if (vl[0]=='p2') this.#hasP2 = true;
+                        if (this.#options[vl[0]]==null && !isNaN(vl[1])){
+                            this.#options[vl[0]] = parseFloat(vl[1]);
+                        }
+                    })
+                }
+            }
+        }
+    }
+    get hasP1(){
+        if (this.easing){
+            return this.easing.toString().indexOf('p1') != -1;
+        }
+        return false;
+    }
+    get hasP2(){
+        if (this.easing){
+            return this.easing.toString().indexOf('p2') != -1;
+        }
+        return false;
+    }
     get valueAt(){
         return this.#valueAt;
     }
@@ -58,18 +94,28 @@ export class ValueKey{
     set easing(value){
         if (value != this.#options.easing){
             this.#options.easing = value;
+            this.#findParams();
             this.#handleChange('easing');
         }
     }
-    get magnitude(){
-        return this.#options.magnitude;
+    get p1(){
+        return this.#options.p1;
     }
-    set magnitude(value){
-        if (value != this.#options.magnitude){
-            this.#options.magnitude = value;
-            this.#handleChange('easing');
+    set p1(value){
+        if (this.#hasP1 && value != this.#options.p1){
+            this.#options.p1 = value;
+            this.#handleChange('p1');
         }
     }
+    get p2(){
+        return this.#options.p1;
+    }
+    set p2(value){
+        if (this.#hasP2 && value != this.#options.p1){
+            this.#options.p1 = value;
+            this.#handleChange('p1');
+        }
+    }    
     get onChange(){
         return this.#onChange;
     }
@@ -80,7 +126,7 @@ export class ValueKey{
 }
 
 export class ValueAtTime{
-    #options = {object: null, property: '', min: null, max: null};
+    #options = {object: null, property: '', min: null, max: null, clampLimits: false};
     #valueKeys=[];
     #minTime;
     #maxTime;
@@ -116,10 +162,12 @@ export class ValueAtTime{
     }
 
     clampValue(value){
-        return Math.max(this.#options.min, Math.min(this.#options.max,value));
+        if (this.#options.min != null) value = Math.max(this.#options.min, value);
+        if (this.#options.max != null) value = Math.min(this.#options.max, value);
+        return value;
     }
 
-    addValueKey(options){ //time, value, easing = null, magnitude=null){
+    addValueKey(options){ 
         let valueKey = new ValueKey(this, options);
         valueKey.onChange = this.#handleValueKeyChange.bind(this);
         this.#valueKeys.push(valueKey);
@@ -236,8 +284,9 @@ export class ValueAtTime{
         let deltaTime = (afterKey.time - beforeKey.time);
         if (deltaTime==0) return afterKey.value;
         let t = (time - beforeKey.time) / deltaTime;
-        t = afterKey.easing? afterKey.magnitude? afterKey.easing(t,afterKey.magnitude) : afterKey.easing(t): t;
-        return this.lerp(beforeKey.value, afterKey.value, t);
+        t = afterKey.easing? afterKey.easing(t,afterKey.p1,afterKey.p2) : t;
+        let value = this.lerp(beforeKey.value, afterKey.value, t);
+        return this.#options.clampLimits? this.clampValue(value) : value;
     }
 
     setTime(time){
@@ -291,8 +340,7 @@ export class LookupAtTime extends ValueAtTime{
             let value = this.getSourceValueAt((i * interval) + this.minTime);
             this.#minValue = Math.min(this.#minValue, value);
             this.#maxValue = Math.max(this.#maxValue, value);
-            //this.#valueList[i] = value;
-            value = this.clampValue(value);
+            //value = this.clampValue(value);
             this.#valueList[i] = value;
         }
         this.#valueRange = this.#maxValue - this.#minValue;
