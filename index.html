@@ -21,6 +21,7 @@
             import {ValueAtTimeLine} from "./valueAtTimeline.js";
             import {WaveDisplay} from "./wavedisplay.js";
             import {AudioObject} from "./audioObject.js";
+            import * as Icons from "./appIcons.js";
 
             import {Circle} from "./circle.js"
 
@@ -92,39 +93,39 @@
          
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 8* b, 1);
 
-            let resetBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏮'}, timeLine.footerDiv);
-            resetBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M860,-240 500,-480 860,-720Zm-400,0 -280,-187.94165V-240h-80v-480h80v179.96759L460,-720Zm-80,-150v-180l-136,90zm400,0v-180l-136,90z"/></svg>';
+            let resetBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
+            resetBtn.innerHTML = Icons.getSVG('backToStart');
             resetBtn.addEventListener('click', (e)=>{
                 audioObject.audioElm.currentTime = 0;
                 timeLine.setTimeFast(timeLine.dataRangeStart);
             });
 
             let playBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
-            playBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z"/></svg>';
-            playBtn.addEventListener('click', (e)=>{
+            playBtn.innerHTML = Icons.getSVG('play');
+                playBtn.addEventListener('click', (e)=>{
                 playStop = false;
                 start = undefined;
                 audioObject.audioElm.play();
                 requestAnimationFrame(stepFrame);
             });
 
-            let stopBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
-            stopBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"/></svg>';
-            stopBtn.addEventListener('click', (e)=>{
+            let pauseBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
+            pauseBtn.innerHTML = Icons.getSVG('pause');
+            pauseBtn.addEventListener('click', (e)=>{
                 audioObject.audioElm.pause();
                 playStop = true;
             });
 
-            let toEndBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⏭'}, timeLine.footerDiv);
-            toEndBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M100-240 460-480 100-720Zm400 0 280-187.9417V-240h80v-480h-80v179.9676L500-720Zm80-150v-180l136 90zm-400 0v-180l136 90z"/></svg>';
+            let toEndBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
+            toEndBtn.innerHTML = Icons.getSVG('forwardToEnd');
             toEndBtn.addEventListener('click', (e)=>{
                 playStop = true;
                 start = undefined;
                 timeLine.setTime(timeLine.dataRangeEnd);
             });
 
-            let loopBtn = VA_Utils.createEl('button', {className: 'icon-button', innerText:'⟳'}, timeLine.footerDiv);
-            loopBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M280-80 120-240l160-160 56 58-62 62h406v-160h80v240H274l62 62-56 58Zm-80-440v-240h486l-62-62 56-58 160 160-160 160-56-58 62-62H280v160h-80Z"/></svg>';
+            let loopBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
+            loopBtn.innerHTML = Icons.getSVG('loop');
             loopBtn.addEventListener('click', (e)=>{
                 loop = !loop;
                 loopBtn.classList.toggle('selected');
@@ -138,7 +139,7 @@
                 playBtn.classList.remove('active');
             });            
             audioObject.loadAudioURL('./music.mp3').then(()=>{
-                audioObject.setParent(audioLine.lineDiv, true);
+                audioObject.setParent(audioLine.svgWrapperDiv, true);
                 audioObject.waveDisplay.svg.style.position = 'absolute';
                 audioObject.waveDisplay.svg.style.height = '100%';
                 audioLine.svgWrapperDiv.parentElement.classList.add('valueAt-wave-line');

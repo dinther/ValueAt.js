@@ -15,7 +15,6 @@ export class ValueAtGroup{
     #parentValueAtGroup;
     #expanded;
     #groupIconsDiv;
-    #hideValueAnimationDiv;
     #valueAtGroups = [];
     #valueAtLines = [];
     #onChanged;
@@ -53,11 +52,7 @@ export class ValueAtGroup{
             this.#labelCaretDiv = VA_Utils.createEl('div', {className: 'valueAt-group-caret', innerText:'▶'}, this.#labelContent);
             this.#labelCaretDiv.style.marginLeft = this.#parentValueAtGroup.indent + 'px';
             this.#labelSpanDiv = VA_Utils.createEl('span', {innerText: this.#name}, this.#labelContent);
-
             this.#groupIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
-            //this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel group freeze', className: 'valueAt-expand-button'}, this.#groupIconsDiv);
-
-
             this.#labelContent.addEventListener('pointerdown', (e)=>{
                 if (e.button == 0){
                     this.#setExpanded(!this.#expanded, e.ctrlKey);

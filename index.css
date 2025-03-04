@@ -41,7 +41,18 @@ body {
   pointer-events: none;
 }
 .icon-button {
+    width: 26px;
+    height: 26px;
+    padding: 1px;
+    fill: var(--channel-label-back-color);
+}
 
+.icon-button.selected {
+  background-color: #ff8339;
+}
+
+.icon-button.active {
+  background-color: #3baa5f
 }
 
   ul div {

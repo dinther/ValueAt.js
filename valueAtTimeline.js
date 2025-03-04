@@ -86,8 +86,7 @@ export class ValueAtTimeLine{
 
     #keyFrameObjectNameDiv;
     #lineIconsDiv;
-    #previousKeyFrameDiv;
-    #nextKeyFrameDiv;
+
     #keyFramePropertyNameDiv;
     #keyFrameValueInput;
     #keyFrameTimeInput;

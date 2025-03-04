@@ -1,5 +1,6 @@
 import * as VA_Utils from "./valueAtUtils.js";
 import {ValueAtNode} from "./valueAtNode.js";
+import * as Icons from "./appIcons.js";
 
 export class ValueAtLine{
     #valueAt;
@@ -9,15 +10,17 @@ export class ValueAtLine{
     #labelDiv;
     #labelSpan;
     #lineIconsDiv;
-    #hideValueAnimationDiv;
-    #labelExpandDiv;
+    #loopDiv;
+    #freezeDiv;
+    #expandDiv;
     #lineDiv;
     #svgWrapperDiv;
     #svg;
     #path;
     #strokeColor;
     #strokeWidth;
-    #freezeChannel = false;
+    #freeze = false;
+    #loop = false;
     #valueAtNodes = [];
     #pointerTime = 0;
     #lineHeight = 0;
@@ -43,9 +46,12 @@ export class ValueAtLine{
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
-        this.#labelExpandDiv = VA_Utils.createEl('div', {innerText: '⛶', title: 'Maximize this line graph', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-        this.#hideValueAnimationDiv = VA_Utils.createEl('div', {innerText: '👁', title: 'Toggle channel freeze', className: 'valueAt-expand-button'}, this.#lineIconsDiv);
-                            
+        this.#loopDiv = VA_Utils.createEl('div', {title: 'Toggle loop', className: 'valueAt-line-icon valueAt-disabled'}, this.#lineIconsDiv);
+        this.#loopDiv.innerHTML = Icons.getSVG('loop');
+        this.#expandDiv = VA_Utils.createEl('div', {title: 'Maximize this line graph', className: 'valueAt-line-icon  valueAt-disabled'}, this.#lineIconsDiv);
+        this.#expandDiv.innerHTML = Icons.getSVG('fullscreen');
+        this.#freezeDiv = VA_Utils.createEl('div', {title: 'Toggle freeze', className: 'valueAt-line-icon'}, this.#lineIconsDiv);
+        this.#freezeDiv.innerHTML = Icons.getSVG('visible');
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
 
         this.#svgWrapperDiv.addEventListener('pointerdown', (e)=>{
@@ -74,17 +80,24 @@ export class ValueAtLine{
         this.#svgWrapperDiv.appendChild(this.#svg);
        
         valueAtGroup.expandDiv.appendChild(this.#lineDiv);
-        
-        this.#hideValueAnimationDiv.addEventListener('pointerdown', (e)=>{
+
+        this.#loopDiv.addEventListener('pointerdown', (e)=>{
             if (e.button == 0){
-                this.setChannelFreeze(!this.#freezeChannel);
+                this.setLoop(!this.#loop);
+                e.stopPropagation();
+            }
+        });
+
+        this.#freezeDiv.addEventListener('pointerdown', (e)=>{
+            if (e.button == 0){
+                this.setFreeze(!this.#freeze);
                 e.stopPropagation();
             }
         });
 
         this.#lineIconsDiv.addEventListener("contextmenu", e => e.preventDefault());
 
-        this.#labelExpandDiv.addEventListener('pointerdown', (e)=>{
+        this.#expandDiv.addEventListener('pointerdown', (e)=>{
             if (e.button==0){
                 if (!e.ctrlKey && !e.shiftKey){
                     this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
@@ -269,12 +282,21 @@ export class ValueAtLine{
         }
     }
 
-    setChannelFreeze(freeze){
-        this.#freezeChannel = freeze;
-        if (this.#freezeChannel){
-            this.#hideValueAnimationDiv.classList.add('valueAt-freeze');
+    setLoop(value){
+        this.#loop = value;
+        if (this.#loop){
+            this.#loopDiv.classList.remove('valueAt-disabled');
         } else {
-            this.#hideValueAnimationDiv.classList.remove('valueAt-freeze');
+            this.#loopDiv.classList.add('valueAt-disabled');
+        }
+    }
+
+    setFreeze(freeze){
+        this.#freeze = freeze;
+        if (this.#freeze){
+            this.#freezeDiv.classList.remove('valueAt-disabled');
+        } else {
+            this.#freezeDiv.classList.add('valueAt-disabled');
         }
     }
 
@@ -296,18 +318,18 @@ export class ValueAtLine{
     }
 
     setTimeAccurate(time){
-        if (!this.#freezeChannel){
+        if (!this.#freeze){
             this.#valueAt.setValueAccurate(time);
         }
     }
     
     setTime(time){
-        if (!this.#freezeChannel){
+        if (!this.#freeze){
             this.#valueAt.setValueAt(time);
         }
     }
     setTimeFast(time){
-        if (!this.#freezeChannel){
+        if (!this.#freeze){
             this.#valueAt.setValueFast(time);
         }
     }
