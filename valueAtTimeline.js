@@ -184,13 +184,13 @@ export class ValueAtTimeLine{
 
 
         //  ValueAtNode Info panel
-        this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
-        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {innerText: 'property'}, this.#infoKeyFrameDiv);
-        VA_Utils.createEl('div', {innerText: 'time'}, this.#infoKeyFrameDiv);
+        this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-name', type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
+        this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-prop', innerText: 'property'}, this.#infoKeyFrameDiv);
+        VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'time'}, this.#infoKeyFrameDiv);
         this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
-        VA_Utils.createEl('div', {innerText: 'value'}, this.#infoKeyFrameDiv);
+        VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'value'}, this.#infoKeyFrameDiv);
         this.#keyFrameValueInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
-        VA_Utils.createEl('div', {innerText: 'easing'}, this.#infoKeyFrameDiv);
+        VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'easing'}, this.#infoKeyFrameDiv);
         this.#keyFrameEasingSelect = VA_Utils.createEl('select', {}, this.#infoKeyFrameDiv);
         EasingMap.entries().forEach((easing)=>{
             VA_Utils.createEl('option', {value: easing[1], innerText: easing[0]}, this.#keyFrameEasingSelect);
@@ -447,7 +447,8 @@ export class ValueAtTimeLine{
                 let f = distanceMoved / this.#cursorDragBoxRect.width;
                 let timeMoved = this.#viewStart + this.#viewRange * f;
                 this.#selectedNodeList.forEach((valueAtNode)=>{
-                    valueAtNode.valueKey.time += timeMoved;
+                    valueAtNode.valueKey.time = VA_Utils.clamp(this.dataRangeStart, valueAtNode.valueKey.time + timeMoved, this.dataRangeEnd);
+                    this.#updateInfoTime();
                 });
             }
             if (e.altKey){  //  updown for value
@@ -455,6 +456,7 @@ export class ValueAtTimeLine{
                 let f = (e.pageY - rect.top) / rect.height;
                 let range = this.#infoValueAtNode.valueAtLine.valueAt.options.max - this.#infoValueAtNode.valueAtLine.valueAt.options.min;
                 this.#infoValueAtNode.valueKey.value = range - (range * f);
+                this.#updateInfoValue();
             }
             e.stopPropagation();
         }
@@ -518,21 +520,27 @@ export class ValueAtTimeLine{
         if (this.#selectedNodeList.length == 1){
             let valueAtNode = this.#selectedNodeList[0];
             this.#infoValueAtNode = valueAtNode;
-            this.#keyFrameObjectNameDiv.value = valueAtNode.valueAtLine.valueAtGroup.getRootUserGroupName();
+            this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueAtLine.valueAtGroup.getRootUserGroupName();
             this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName + ' (' + valueAtNode.valueAtLine.valueAtNodes.indexOf(valueAtNode) + ')';
-            this.#keyFrameTimeInput.value = valueAtNode.valueKey.time;
+            this.#updateInfoTime();
             if (valueAtNode.valueAtLine.valueAt.options.min != null){
                 this.#keyFrameValueInput.min = valueAtNode.valueAtLine.valueAt.options.min;
             }
             if (valueAtNode.valueAtLine.valueAt.options.max != null){
                 this.#keyFrameValueInput.max = valueAtNode.valueAtLine.valueAt.options.max;
             }            
-            this.#keyFrameValueInput.value = valueAtNode.valueKey.value;
+            this.#updateInfoValue();
             this.#keyFrameEasingSelect.selectedIndex = valueAtNode.valueKey.easing? EasingNames.indexOf(valueAtNode.valueKey.easing.name) : 0;
         }
         this.#infoKeyFrameDiv.style.display = (this.#selectedNodeList.length != 1)? 'none' : '';
     }
-
+    #updateInfoTime(){
+            this.#keyFrameTimeInput.value = this.#infoValueAtNode.valueKey.time.toFixed(3);
+    }
+    
+    #updateInfoValue(){
+            this.#keyFrameValueInput.value = this.#infoValueAtNode.valueKey.value.toFixed(3);
+    }
     #handleWindowSize(){
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
         this.#scrollbarWidth = this.#containerDiv.offsetWidth - this.#lineWrapDiv.offsetWidth;

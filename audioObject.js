@@ -17,7 +17,6 @@ export class AudioObject{
         this.#timeLine = timeLine;
         this.#valueAt =  new LookupAtTime({object: this, property: 'bpm', min:0, max:500, listType: 'Float32Array'});
         this.#valueAt.addValueKey({time:0, value: 0});
-        
         this.#valueAt.init(1);
         this.#name = name;
         this.#bpm = bpm;

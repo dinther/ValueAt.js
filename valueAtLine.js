@@ -38,8 +38,8 @@ export class ValueAtLine{
         if (valueAtGroup.expandDiv.classList.contains('valueAt-collapse')){
             collapseClass = ' valueAt-collapse';
         }
-        this.#lineDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_graph', className: 'valueAt-line' + collapseClass});
-        this.#labelDiv = VA_Utils.createEl('div', {id: this.#valueAt.name + '_lbl', className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
+        this.#lineDiv = VA_Utils.createEl('div', { className: 'valueAt-line' + collapseClass});
+        this.#labelDiv = VA_Utils.createEl('div', { className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#labelName}, this.#labelDiv);
         span.style.left = this.#valueAtGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);

@@ -16,9 +16,10 @@
     --dim-text-color: #aaaaaa;
     --cursor-text-color: #000000;
     --line-color: #606060;
-    --label-back-color: #1c1c1c;
     --header-back-color: #181818;
-    --group-header-back-color: #1c1c1c;
+    --channel-back-color: #282828;
+    --channel-label-back-color: #1f1f1f;
+    --group-back-color: #1c1c1c;
     --group-label-back-color: #181818;
     --main-back-color: #181818;
     --graph-back-color: #313131;
@@ -34,10 +35,19 @@
 input,select{
     background-color: var(--main-back-color);
     color: var(--main-text-color);
-    border: none;
+    border: 1px solid #323232;
     border-radius: 0;
     font-size: 1em;
     padding: 2px 0px;
+
+}
+
+input:hover {
+    background-color: var(--channel-back-color);
+    color: var(--main-text-color);
+    border: none;
+    border-radius: 0;
+    outline: none;
 }
 
 input:focus {
@@ -135,6 +145,25 @@ input:focus {
     align-items: baseline;
 }
 
+.valueAt-info-keyframe div {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.valueAt-info-name{
+    width: 50px;
+}
+
+.valueAt-info-prop{
+    width: 50px;
+}
+
+.valueAt-info-label {
+    width: 35px;
+    text-align: end;
+}
+
 .valueAt-info-combined {
     display: flex;
     justify-content: space-between;
@@ -229,9 +258,23 @@ input:focus {
 }
 
 .valueAt-footer {
-    height: 24px;
+    height: 28px;
     width: 100%;
     background-color: var(--header-back-color);
+}
+
+.valueAt-footer button {
+    height: 100%;
+}
+
+.icon-button.selected {
+    background-color: #ff8339;
+    height: 100%;
+}
+
+.icon-button.active {
+    background-color: #007626;
+    height: 100%;
 }
 
 .valueAt-group{
@@ -239,13 +282,14 @@ input:focus {
 }
 
 .valueAt-group-header{
-    background-color: var(--group-header-back-color);
+    background-color: var(--group-back-color);
     border-bottom: 1px solid var(--line-color);
 }
 
 .valueAt-group-label {
     color: var(--dim-text-color);
     background-color: var(--group-label-back-color);
+    border-right: 1px solid var(--line-color);
     position: relative;
     padding: 2px 0px;
     width: var(--label-width);
@@ -290,25 +334,28 @@ input:focus {
     opacity: var(--grouped-lines-opacity);
 }
 
-.valueAt-flex-hor{
+.valueAt-flex-hor {
     display: flex;
     align-items: center;
     gap: 4px;
     width: 100%;
 }
 
-.valueAt-line{
+.valueAt-line {
     display: flex;
     align-items: center;
     position: relative;
     height: var(--line-row-height);
     width: 100%;
+    border-bottom: 1px solid var(--line-color);
+    background-color: var(--channel-back-color);
     /*z-index: 0;*/
 }
 
 .valueAt-line.valueAt-collapse {
     position: absolute;
     overflow: hidden;
+    background-color: var(--group-back-color);
 }
 
 .valueAt-scroll-bar {       
@@ -366,13 +413,12 @@ input:focus {
 
 .valueAt-line-label{
     text-wrap-mode: nowrap;
-    z-index: 25;
+    z-index: 1;
     width: var(--label-width);
     color: var(--dim-text-color);
     height: 100%;
-    /*border-top: 1px solid var(--line-color);*/
-    border-bottom: 1px solid var(--line-color);
-    background-color: var(--label-back-color);
+    border-right: 1px solid var(--line-color);
+    background-color: var(--channel-label-back-color);   
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -438,7 +484,7 @@ input:focus {
     height: 100%;
     flex: 1;
     /*border-top: 1px solid var(--line-color);*/
-    border-bottom: 1px solid var(--line-color);
+    /*border-bottom: 1px solid var(--line-color);*/
 }
 
 .valueAt-line.valueAt-maximized{
@@ -462,13 +508,18 @@ input:focus {
 .valueAt-node {
     position: absolute;
     border-radius: 50%;
-    border: 1px solid #000000;
-    background-color: #ffff8368;
+    border: 1px solid #000000b8;
+    background-color: #ffff833b;
     aspect-ratio: 1 / 1;
     height: var(--nodesize);
     cursor: var(--nodecursor);
     transform: translate(-50%,50%);
     z-index: 24;
+}
+
+.valueAt-node:hover {
+    border: 1px solid #ffff00;
+    background-color: #ff000064;
 }
 
 .valueAt-node-active {
