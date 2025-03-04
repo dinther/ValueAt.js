@@ -4,7 +4,7 @@
 
 :root {
     --header-height: 32px;
-    --scale-row-height: 24px;
+    --scale-row-height: 20px;
     --line-row-height: 28px;
     --line-maximized-height: 100px;
     --nodecursor: 'move';
@@ -120,7 +120,6 @@ input:focus {
 }
 
 .valueAt-info-scale {
-    height: var(--scale-row-height);
     display: flex;
     padding-right: var(--sb-size);
 }
@@ -179,9 +178,10 @@ input:focus {
 }
 
 .valueAt-cursor-dragbox {
-    height: 16px;
+    height: var(--scale-row-height);
     width: 100%;
     pointer-events: all;
+    border-bottom: 1px solid var(--channel-back-color);
 
 }
 
