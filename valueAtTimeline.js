@@ -5,9 +5,10 @@ import * as Easings from "./easings.js";
 
 //['linear','stepped','easeInSine','easeOutSine','easeInOutSine','easeInQuad','easeOutQuad','easeInOutQuad','easeInCubic','easeOutCubic','easeInOutCubic','easeInQuart','easeOutQuart','easeInOutQuart','easeInQuint','easeOutQuint','easeInOutQuint','easeInExpo','easeOutExpo','easeInOutExpo','easeInCirc','easeOutCirc','easeInOutCirc','easeInBack','easeOutBack','easeInOutBack','easeInElastic','easeOutElastic','easeInOutElastic','easeOutBounce','easeInBounce','easeInOutBounce'];
 const EasingMap = new Map;
-EasingMap.set('linear', Easings.linear)
-EasingMap.set('stepped', Easings.stepped)
-EasingMap.set('sineCycle', Easings.sineCycle)
+EasingMap.set('linear', Easings.linear);
+EasingMap.set('stepped', Easings.stepped);
+EasingMap.set('sineCycle', Easings.sineCycle);
+EasingMap.set('random', Easings.random);
 EasingMap.set('easeInSine', Easings.easeInSine);
 EasingMap.set('easeOutSine', Easings.easeOutSine);
 EasingMap.set('easeInOutSine', Easings.easeOutSine);
@@ -35,6 +36,9 @@ EasingMap.set('easeInOutBack', Easings.easeInOutBack);
 EasingMap.set('easeInElastic', Easings.easeInElastic);
 EasingMap.set('easeOutElastic', Easings.easeOutElastic);
 EasingMap.set('easeInOutElastic', Easings.easeInOutElastic);
+EasingMap.set('easeInBungie', Easings.easeInBungie);
+EasingMap.set('easeOutBungie', Easings.easeOutBungie);
+EasingMap.set('easeInOutBungie', Easings.easeInOutBungie);
 EasingMap.set('easeOutBounce', Easings.easeOutBounce);
 EasingMap.set('easeInBounce', Easings.easeInBounce);
 EasingMap.set('easeInOutBounce', Easings.easeInOutBounce);
@@ -329,7 +333,7 @@ export class ValueAtTimeLine{
 
         this.#keyFrameP2Input.addEventListener('input', (e)=>{
             if (this.#infoValueAtNode && this.#infoValueAtNode.valueKey.easing != null){
-                this.#infoValueAtNode.valueKey.value.p2 = parseFloat(this.#keyFrameP2Input.value);
+                this.#infoValueAtNode.valueKey.p2 = parseFloat(this.#keyFrameP2Input.value);
             }
         });        
 

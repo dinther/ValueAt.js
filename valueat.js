@@ -108,12 +108,12 @@ export class ValueKey{
         }
     }
     get p2(){
-        return this.#options.p1;
+        return this.#options.p2;
     }
     set p2(value){
-        if (this.#hasP2 && value != this.#options.p1){
-            this.#options.p1 = value;
-            this.#handleChange('p1');
+        if (this.#hasP2 && value != this.#options.p2){
+            this.#options.p2 = value;
+            this.#handleChange('p2');
         }
     }    
     get onChange(){
@@ -279,13 +279,12 @@ export class ValueAtTime{
 
     getSourceValueAt(time){
         let beforeKey = this.#valueKeys[this.getBeforeValueKeyIndex(time)];
-        let afterKey = this.#valueKeys[this.getAfterValueKeyIndex(time)];
-        
+        let afterKey = this.#valueKeys[this.getAfterValueKeyIndex(time)]; 
+        let deltaValue = (afterKey.value - beforeKey.value);
         let deltaTime = (afterKey.time - beforeKey.time);
-        if (deltaTime==0) return afterKey.value;
-        let t = (time - beforeKey.time) / deltaTime;
-        t = afterKey.easing? afterKey.easing(t,afterKey.p1,afterKey.p2) : t;
-        let value = this.lerp(beforeKey.value, afterKey.value, t);
+        if (deltaValue==0) return afterKey.value;
+        let t = (time-beforeKey.time) / deltaTime;
+        let value = (afterKey.easing != null)? beforeKey.value + (afterKey.easing(t,afterKey.p1,afterKey.p2) * deltaValue) : this.lerp(beforeKey.value, afterKey.value, t);
         return this.#options.clampLimits? this.clampValue(value) : value;
     }
 

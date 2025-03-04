@@ -1,3 +1,4 @@
+
 // Based on https://gist.github.com/gre/1650294
 // https://github.com/AndrewRayCode/easing-utils
 
@@ -13,6 +14,17 @@ export function stepped( t , p1 = 1) {
 
 export function sineCycle( t , p1 = 1) {
     return (Math.cos(t * p1 * Math.PI * 2) + 1) / 2;
+}
+
+export function random( t , p1 = 0.1, p2=0) {
+    switch(p2){
+        case 0: return (((Math.random(t) * p1) - (p1 * 0.5)) % 1)*t;
+        case 1: return (((Math.random(t) * p1) - (p1 * 0.5)) % 1)*t;
+        case -1: {
+            let t1 = 1 - t;
+            return (((Math.random(t1) * p1) - (p1 * 0.5)) % 1)*t1;
+        }
+    }
 }
 
 // Slight acceleration from zero to full speed
@@ -205,7 +217,7 @@ export function easeInOutBack( t, p1 = 1.70158 ) {
 
 }
 // Bounces slowly then quickly to finish
-export function easeInElastic( t, p1 = 0.7 ) {
+export function easeInElastic( t, p1 = 0.7) {
 
     if( t === 0 || t === 1 ) {
         return t;
@@ -242,8 +254,40 @@ export function easeOutElastic( t, p1 = 0.7 ) {
 
 }
 
+export function easeInBungie(t, p1=1, p2=1) {
+    if ( t < 0.4 ){
+        return t;
+    } else {
+        let t1 = Math.abs(1 - t);
+        if ( t1 < 0.4 ){
+            return (Math.sin(Math.PI + Math.PI * 8 * t1 * t1 * p1 / 0.4) * p2 * Math.pow( 0.4 - t1, 2 )) + t;
+        } else {
+            return t;
+        }
+    }
+}
+
+export function easeOutBungie(t, p1=1, p2=1) {
+    if ( t < 0.4 ){
+        return ( Math.sin( Math.PI * 8 * t * t * p1 / 0.4 ) * p2 * Math.pow( 0.4 - t, 2 ) ) + t;
+    } else return t;
+}
+
+export function easeInOutBungie(t, p1=1, p2=1) {
+    if ( t < 0.4 ){
+        return ( Math.sin( Math.PI * 8 * t * t * p1 / 0.4 ) * p2 * Math.pow( 0.4 - t, 2 ) ) + t;
+    } else {
+        let t1 = Math.abs(1 - t);
+        if ( t1 < 0.4 ){
+            return (Math.sin(Math.PI + Math.PI * 8 * t1 * t1 * p1 / 0.4) * p2 * Math.pow( 0.4 - t1, 2 )) + t;
+        } else {
+            return t;
+        }
+    }
+}
+
 // Slow start and end, two bounces sandwich a fast motion
-export function easeInOutElastic( t, p1 = 0.65 ) {
+export function easeInOutElastic( t, p1=0.65, p2=1) {
 
     if( t === 0 || t === 1 ) {
         return t;
@@ -257,14 +301,14 @@ export function easeInOutElastic( t, p1 = 0.65 ) {
 
     if( scaledTime < 1 ) {
         return -0.5 * (
-            Math.pow( 2, 10 * scaledTime1 ) *
+            Math.pow( 2, 10 * scaledTime1 ) * p2 *
             Math.sin( ( scaledTime1 - s ) * ( 2 * Math.PI ) / p )
         );
     }
 
     return (
-        Math.pow( 2, -10 * scaledTime1 ) *
-        Math.sin( ( scaledTime1 - s ) * ( 2 * Math.PI ) / p ) * 0.5
+        Math.pow( 2, -10 * scaledTime1 ) * p2 *
+        Math.sin( Math.PI + ( scaledTime1 - s ) * ( 2 * Math.PI ) / p ) * 0.5
     ) + 1;
 
 }

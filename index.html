@@ -65,23 +65,23 @@
 
             var va_pos_x1 = new LookupAtTime({object: circle1, property: 'x', min: 0, max: 100, listType: 'Float32Array'});
             x = 0;
+            let p1 = 16;
+            let p2 = 2;
+            let e = Easings.easeInExpo;
             va_pos_x1.addValueKey({time: x, value: 0}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 25, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 50, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 75, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 100, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 75, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 50, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 25, easing: Easings.easeInExpo}); x+= b;
-            va_pos_x1.addValueKey({time: x, value: 0, easing: Easings.easeInExpo});
+            va_pos_x1.addValueKey({time: x, value: 25, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 50, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 75, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 100, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 75, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 50, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 25, easing: e, p1: p1, p2: p2}); x+= b;
+            va_pos_x1.addValueKey({time: x, value: 0, easing: e, p1: p1, p2: p2});
             va_pos_x1.init(0.01);     
 
             var va_pos_y1 = new LookupAtTime({object: circle1, property: 'y', min: 0, max: 100, listType: 'Float32Array'});
-            va_pos_y1.addValueKey({time: 0, value: 45});
-            va_pos_y1.addValueKey({time: 2 * b, value: 55, easing:Easings.easeInOutElastic, p1: 0.95});
-            va_pos_y1.addValueKey({time: 4 * b, value: 45, easing:Easings.easeInOutElastic, p1: 0.95});
-            va_pos_y1.addValueKey({time: 6 * b, value: 55, easing:Easings.easeInOutElastic, p1: 0.95});
-            va_pos_y1.addValueKey({time: 8 * b, value: 45, easing:Easings.easeInOutElastic, p1: 0.91});
+            va_pos_y1.addValueKey({time: 50, value: 0});
+            va_pos_y1.addValueKey({time: 8 * b, value: 50});
             va_pos_y1.init(0.01);
             var timeLine = new ValueAtTimeLine(document.querySelector('#timeline'), 0, 8* b, 1);
 
@@ -199,7 +199,7 @@
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
             window.Easings = Easings;
             window.timeLine = timeLine;
-            window.va_radius = va_radius1;
+            window.va_red1 = va_red1;
             window.circle1 = circle1;
             window.va_pos_y1 = va_pos_y1;
             window.waveDisplay = waveDisplay;
