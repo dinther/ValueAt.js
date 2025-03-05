@@ -11,6 +11,7 @@ export class WaveDisplay{
         onSlideEnd: null,
     }
     #parent;
+    #wrapper;
     #svg;
     #data;
     #lastPeaks;
@@ -48,15 +49,17 @@ export class WaveDisplay{
         if ( typeof( this.#options.onSlideEnd ) == 'function' ){
             this.onSlideEnd = this.#options.onSlideEnd;
         }
-
-        this.#svg = this.#createSVG( this.#options.parent );
+        this.#wrapper = document.createElement( 'div' );
+        this.#wrapper.classList.add('wave-wrapper');
+        this.#parent.appendChild(this.#wrapper);
+        this.#svg = this.#createSVG( this.#wrapper);
         this.#scrollbar = document.createElement( 'div' );
         this.#scrollbar.classList.add( 'scrollbar' );
         this.#scrollbar.appendChild( document.createElement( 'div' ) );
 
-        this.#parent.appendChild( this.#scrollbar );
+        this.#wrapper.appendChild( this.#scrollbar );
 
-        this.#parent.addEventListener( 'pointerdown', e =>{        
+        this.#wrapper.addEventListener( 'pointerdown', e =>{        
             if ( e.ctrlKey ){
                 //  create a copy of the event but with a new pointerID
                 let ctrlPointer = new PointerEvent( 'pointerdown', {pointerId: -1, type: e.pointerType, clientX: e.clientX, clientY:e.clientY} );
@@ -64,14 +67,14 @@ export class WaveDisplay{
             } else {
                 this.#addEvent( e );
                 this.#scrolling = e.target == this.#scrollbar;
-                this.#parent.setPointerCapture( e.pointerId );
+                this.#wrapper.setPointerCapture( e.pointerId );
             }
             this.#setScrollSpeed( 0 );
             this.#lastMoveX = e.clientX;
         });  
 
-        this.#parent.addEventListener( 'pointerup', e =>{
-            this.#parent.releasePointerCapture( e.pointerId );
+        this.#wrapper.addEventListener( 'pointerup', e =>{
+            this.#wrapper.releasePointerCapture( e.pointerId );
             if ( this.#zoomPinchMode || e.timeStamp -  this.#lastMoveTime > 20 ){
                 this.#setScrollSpeed( 0 );
                 this.#lastMoveTime = null;
@@ -90,19 +93,19 @@ export class WaveDisplay{
             this.#pinchZoomFinished( e );
         });
 
-        this.#parent.addEventListener( 'pointercancel',e=>{
+        this.#wrapper.addEventListener( 'pointercancel',e=>{
             this.#pinchZoomFinished( e );
         });
 
-        this.#parent.addEventListener( 'pointerout',e=>{
+        this.#wrapper.addEventListener( 'pointerout',e=>{
             //this.#pinchZoomFinished( e );
         });
 
-        this.#parent.addEventListener( 'pointerleave',e=>{
+        this.#wrapper.addEventListener( 'pointerleave',e=>{
             this.#pinchZoomFinished( e );
         });
         
-        this.#parent.addEventListener( 'pointermove',e=>{
+        this.#wrapper.addEventListener( 'pointermove',e=>{
             if ( e.buttons==0 || this.#lastMoveX == null ){
                 return;
             }
@@ -158,7 +161,7 @@ export class WaveDisplay{
             }
         });
 
-        this.#parent.addEventListener( 'wheel', this.#handleWheel.bind( this ), { passive: false } );
+        this.#wrapper.addEventListener( 'wheel', this.#handleWheel.bind( this ), { passive: false } );
 
         window.addEventListener( "resize", ( event ) => {
             this.#drawValues( this.#startIndex, this.#endIndex );
@@ -260,12 +263,12 @@ export class WaveDisplay{
 
     #createSVG(){
         const svg  = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
-        svg.classList.add( 'values-svg' );
+        svg.classList.add( 'wave-values-svg' );
         const path = document.createElementNS( 'http://www.w3.org/2000/svg', 'path' );
         path.setAttribute( 'd', 'M0 0L100 0 100 32 0 32 0 0' );
         svg.setAttribute( 'preserveAspectRatio', 'none' );
         svg.appendChild( path );
-        this.#parent.appendChild( svg );
+        this.#wrapper.appendChild( svg );
         return svg;
     }
 

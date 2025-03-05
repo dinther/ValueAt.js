@@ -20,6 +20,7 @@ body {
 #timeline {
   font-family: Arial, Helvetica, sans-serif;
   width: 100dvw;
+  max-height: 80dvh;
   height: 440px;
   overflow: hidden;
   background-color: var(--main-back-color);

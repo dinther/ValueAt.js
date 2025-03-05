@@ -10,7 +10,7 @@
     --nodecursor: 'move';
     --nodesize: 12px;
     --nodeselectedsize: 14px;
-    --label-width: 180px;
+    --label-width: 170px;
     --grouped-lines-opacity: 0.6;
     --main-text-color: #cccccc;
     --dim-text-color: #aaaaaa;
@@ -108,6 +108,7 @@ input:focus {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    touch-action: none;
 }
 
 .valueAt-header {
@@ -339,11 +340,6 @@ input:focus {
     background-color: var(--group-back-color);
 }
 
-.valueAt-scroll-bar {       
-    overflow-y: scroll;
-    background-color: #28292e;
-}
-
 .valueAt-list {
     display: flex;
     flex-direction: column;
@@ -465,8 +461,7 @@ input:focus {
     position: relative;
     height: 100%;
     flex: 1;
-    /*border-top: 1px solid var(--line-color);*/
-    /*border-bottom: 1px solid var(--line-color);*/
+    touch-action: none;
 }
 
 .valueAt-line.valueAt-maximized{

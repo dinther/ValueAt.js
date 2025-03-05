@@ -333,6 +333,9 @@ export class ValueAtLine{
             this.#valueAt.setValueFast(time);
         }
     }
+    get svg(){
+        return this.#svg;
+    }
     get valueAtGroup(){
         return this.#valueAtGroup;
     }
