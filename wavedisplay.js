@@ -356,12 +356,13 @@ export class WaveDisplay{
         return this.#startIndex + this.#samplesPerPixel * offsetX;
     }
 
-    setStartIndex(value){
-        let range = this.#endIndex - this.#startIndex;  
-        let startIndex = this.#clampIndex( 0, value, this.#data.length - range );
-        if (startIndex != this.#startIndex){
+    setView(startIndex, endIndex){
+        let range = endIndex - startIndex;
+        startIndex = this.#clampIndex( 0, startIndex, this.#data.length - range );
+        endIndex = this.#clampIndex( startIndex + 1, endIndex, this.#data.length);
+        if (startIndex != this.#startIndex || endIndex != this.#endIndex){
             this.#startIndex = startIndex;
-            this.#endIndex = this.#startIndex + range;
+            this.#endIndex = endIndex;
             this.#drawValues( this.#startIndex , this.#endIndex );
         }
     }

@@ -45,7 +45,6 @@ input,select{
 input:hover {
     background-color: var(--channel-back-color);
     color: var(--main-text-color);
-    border: none;
     border-radius: 0;
     outline: none;
 }
@@ -53,7 +52,6 @@ input:hover {
 input:focus {
     background-color: var(--scale-back-color);
     color: var(--main-text-color);
-    border: none;
     border-radius: 0;
     outline: none;
 }
@@ -134,6 +132,15 @@ input:focus {
     flex-direction: column;
 }
 
+.valueAt-input-label{
+    display: flex;
+    align-items: center;
+}
+
+.valueAt-input-label input{
+    margin-left: 4px;
+}
+
 .valueAt-info {
     width: var(--label-width);
     border-right: 1px solid var(--line-color);
@@ -157,11 +164,6 @@ input:focus {
 
 .valueAt-info-prop{
     width: 50px;
-}
-
-.valueAt-info-label {
-    text-align: end;
-    margin-left: 4px;
 }
 
 .valueAt-info-combined {
@@ -291,6 +293,12 @@ input:focus {
     margin-right: 2px;
 }
 
+.valueAt-group-label-span svg{
+    fill: var(--dim-text-color);
+    width: 16px;
+    height: 16px;
+}
+
 .caret-down {
     -ms-transform: rotate(90deg); /* IE 9 */
     -webkit-transform: rotate(90deg); /* Safari */
@@ -300,6 +308,8 @@ input:focus {
 .valueAt-group-label-span {
     cursor: pointer;
 }
+
+
 
 .valueAt-expand {
     position: relative;
@@ -376,16 +386,17 @@ input:focus {
     background: linear-gradient(90deg, rgba(176,176,176,1) 0%, rgba(130,130,130,1) 21%, rgba(122,122,122,1) 84%, rgba(59,58,58,1) 100%);
 }
 
-.inlinelabelcontrolpair{
+.labeled-input{
     display: flex;
-    gap: 5px;
     text-wrap-mode: nowrap;
-    margin-right: 10px;
     align-items: center;
+    justify-content: space-between;
+    width: var(--label-width);
+    padding: 0 4px 0 0;
 }
 
-.inlinelabelcontrolpair input{
-    width: 100px;
+.labeled-input input{
+    width: 80px;
 }
 
 .valueAt-line-label{
@@ -421,9 +432,9 @@ input:focus {
 
 .valueAt-line-icons {
     display: flex;
-    /*position: absolute;*/
-    /*top: 0px;*/
-    /*right: 0px;*/
+    position: absolute;
+    top: 0px;
+    right: 0px;
     color: var(--dim-text-color);
     margin-right: 4px;
     font-size: 1.0em;

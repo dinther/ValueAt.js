@@ -10,16 +10,14 @@ export class AudioObject{
     #audioContext;
     #audioBuffer;
     #waveDisplay;
-    #bpm;
     #valueAt;
-    constructor(parent, timeLine, name, bpm){
+    constructor(parent, timeLine, name){
         this.#parent = parent;
         this.#timeLine = timeLine;
         this.#valueAt =  new LookupAtTime({object: this, property: 'bpm', min:0, max:500, listType: 'Float32Array'});
         this.#valueAt.addValueKey({time:0, value: 0});
         this.#valueAt.init(1);
         this.#name = name;
-        this.#bpm = bpm;
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         this.#audioContext = new AudioContext();
         this.#audioElm = new Audio();
@@ -33,7 +31,7 @@ export class AudioObject{
         }).then(audioBuf => {
             this.#audioBuffer = audioBuf;
             if (this.#parent != null){
-                this.#constructWaveDisplay();
+                return this.#constructWaveDisplay();
             }
         });
     }
@@ -70,11 +68,5 @@ export class AudioObject{
     }
     set name(value){
         this.#name = value;
-    }
-    get bpm(){
-        return this.#bpm;
-    }
-    set bpm(value){
-        this.#bpm = value;
     }
 }

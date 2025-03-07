@@ -1,6 +1,6 @@
 import * as VA_Utils from "./valueAtUtils.js";
-import {ValueAtGroup} from "./valueAtGroup.js";
-import {ValueAtLine} from "./valueAtLine.js";
+import {ChannelGroup} from "./channelGroup.js";
+import {ValueChannel} from "./valueChannel.js";
 import * as Easings from "./easings.js";
 
 //['linear','stepped','easeInSine','easeOutSine','easeInOutSine','easeInQuad','easeOutQuad','easeInOutQuad','easeInCubic','easeOutCubic','easeInOutCubic','easeInQuart','easeOutQuart','easeInOutQuart','easeInQuint','easeOutQuint','easeInOutQuint','easeInExpo','easeOutExpo','easeInOutExpo','easeInCirc','easeOutCirc','easeInOutCirc','easeInBack','easeOutBack','easeInOutBack','easeInElastic','easeOutElastic','easeInOutElastic','easeOutBounce','easeInBounce','easeInOutBounce'];
@@ -45,7 +45,7 @@ EasingMap.set('easeInOutBounce', Easings.easeInOutBounce);
 
 const EasingNames = Array.from(EasingMap.keys());
 
-export class ValueAtTimeLine{
+export class TimelineManager{
 
     #parentDiv;
     #containerDiv;
@@ -53,7 +53,7 @@ export class ValueAtTimeLine{
     #headerDiv;
     #scrollContainerDiv;
     #infoScaleDiv;
-    #infoDiv;
+    #scaleInfoDiv;
     #infoKeyFrameDiv;
     #scaleDiv;
     #cursorDragBoxDiv;
@@ -67,13 +67,9 @@ export class ValueAtTimeLine{
 
     #selectBoxDiv;
     
-    #dataRangeStartGroupDiv;
-    #dataRangeStartLabel;
-    #dataRangeStartInput;
-
-    #dataRangeEndGroupDiv;
-    #dataRangeEndLabel;
-    #dataRangeEndInput;
+    #durationGroupDiv;
+    #durationLabel;
+    #durationInput;
 
     #scrollGroupDiv;
     #scrollLabel;  
@@ -103,12 +99,9 @@ export class ValueAtTimeLine{
 
     #valueAtDiv;
 
-    #dataRangeStart;
-    #dataRangeEnd;
-    #dataRange;
+    #duration;
 
     #viewStart;
-    #viewEnd;
     #viewRange;
 
     #cursorTime = 0;
@@ -116,7 +109,7 @@ export class ValueAtTimeLine{
     
     #boxSelectStartPoint = null;
     #valueAtNodeDragStartPoint = null;
-    #rootValueAtGroup;
+    #rootChannelGroup;
     #selectedNodeList = [];
     
     #scrollbarContentDiv;
@@ -132,8 +125,9 @@ export class ValueAtTimeLine{
     #suppressedNodesDeSelectedList = [];
     #infoValueAtNode = null;
     onTime = null;
-    constructor(parent, dataRangeStart, dataRangeEnd, pixelsPerSegment=2){
+    constructor(parent, duration, pixelsPerSegment=2){
         this.#parentDiv = parent;
+        this.#root = document.querySelector(':root');
         //  build scrolling UI container
         this.#containerDiv = VA_Utils.createEl('div', {className: 'valueAt-container'});  //  attach the whole branch to parent at the end
 
@@ -143,7 +137,8 @@ export class ValueAtTimeLine{
         //  build wave display and scale container
         //this.scaleWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-scale-wrapper'}, this.#containerDiv);
         this.#infoScaleDiv = VA_Utils.createEl('div', {className: 'valueAt-info-scale'}, this.#containerDiv);
-        this.#infoDiv = VA_Utils.createEl('div', {className: 'valueAt-info'}, this.#infoScaleDiv);
+        this.#scaleInfoDiv = VA_Utils.createEl('div', {className: 'valueAt-info'}, this.#infoScaleDiv);
+
         this.#infoKeyFrameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-keyframe'});
         this.#infoKeyFrameDiv.style.display = 'none';
         this.#scaleDiv = VA_Utils.createEl('div', {className: 'valueAt-scale'}, this.#infoScaleDiv);
@@ -172,18 +167,13 @@ export class ValueAtTimeLine{
         this.#remainingDiv = VA_Utils.createEl('div',{className:'valueAt-remaining'}, this.#containerDiv);
         this.#footerDiv = VA_Utils.createEl('div',{className:'valueAt-footer'}, this.#containerDiv);
 
-        this.#dataRangeStartGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
-        this.#dataRangeStartGroupDiv.style.display='none';
-        this.#dataRangeStartLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeStartInput', innerText: 'Start time'}, this.#dataRangeStartGroupDiv);
-        this.#dataRangeStartInput = VA_Utils.createEl('input', {id: 'dataRangeStartInput', type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#dataRangeStartGroupDiv);
+        let durationGroupDiv = VA_Utils.createEl('div', {className: 'labeled-input'}, this.#headerDiv);
+        this.#durationLabel = VA_Utils.createEl('label', {className: 'valueAt-input-label', for: 'durationInput', innerText: 'Duration'}, durationGroupDiv);
+        this.#durationInput = VA_Utils.createEl('input', {id: 'durationInput', type: 'number', step: '1', value: duration.toFixed(0)}, durationGroupDiv);
 
-        this.#dataRangeEndGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
-        this.#dataRangeEndLabel = VA_Utils.createEl('label', {className: 'valueAt-drop-blurb', for: 'dataRangeEndInput', innerText: 'Duration'}, this.#dataRangeEndGroupDiv);
-        this.#dataRangeEndInput = VA_Utils.createEl('input', {id: 'dataRangeEndInput', type: 'number', step: '1', value: dataRangeEnd.toFixed(0)}, this.#dataRangeEndGroupDiv);
-
-        this.#zoomGroupDiv = VA_Utils.createEl('div', {className: 'inlinelabelcontrolpair'}, this.#headerDiv);
-        this.#zoomLabel = VA_Utils.createEl('label', {for: 'zoominput', innerText: 'Zoom'}, this.#zoomGroupDiv);
-        this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0', max:'0.999', step: '0.001', value: '0'}, this.#zoomGroupDiv);
+        let zoomGroupDiv = VA_Utils.createEl('div', {className: 'labeled-input'}, this.#headerDiv);
+        this.#zoomLabel = VA_Utils.createEl('label', {className: 'valueAt-input-label', for: 'zoominput', innerText: 'Zoom'}, zoomGroupDiv);
+        this.#zoomSlider = VA_Utils.createEl('input', {id: 'zoominput', type: 'range', min: '0', max:'0.999', step: '0.001', value: '0'}, zoomGroupDiv);
 
         this.#cursorPreviousNodeBtn = VA_Utils.createEl('div', {innerText: '⏴', className: 'valueAt-cursor-button-left', title: 'Cursor to previous keyframe'}, this.#headerDiv);
         this.#cursorNextNodeBtn = VA_Utils.createEl('div', {innerText: '⏵', className: 'valueAt-cursor-button-right', title: 'Cursor to next keyframe'}, this.#headerDiv);
@@ -195,9 +185,9 @@ export class ValueAtTimeLine{
         this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-name', type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
         this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-prop', innerText: 'property'}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'time'}, this.#infoKeyFrameDiv);
-        this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
+        this.#keyFrameTimeInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: 0}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'value'}, this.#infoKeyFrameDiv);
-        this.#keyFrameValueInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: dataRangeStart.toFixed(0)}, this.#infoKeyFrameDiv);
+        this.#keyFrameValueInput = VA_Utils.createEl('input', {type: 'number', step: '1', value: 0}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'easing'}, this.#infoKeyFrameDiv);
         this.#keyFrameEasingSelect = VA_Utils.createEl('select', {}, this.#infoKeyFrameDiv);
         EasingMap.entries().forEach((easing)=>{
@@ -223,7 +213,7 @@ export class ValueAtTimeLine{
 
 
         //  create root valueAt group
-        this.#rootValueAtGroup = new ValueAtGroup(this, '', null, true);
+        this.#rootChannelGroup = new ChannelGroup(this, null, '', true);
 
         //  build select box
         this.#selectBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-select-box', style: 'display: none'}, this.#containerDiv);
@@ -284,25 +274,14 @@ export class ValueAtTimeLine{
             this.#handleCursorToNextKeyFrame(e);
         });
 
-        this.#dataRangeStartInput.addEventListener('change', (e)=>{
-            this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
-            this.setView(this.#viewStart, this.#viewRange, true, true);
-            //this.update();
-        });
-
-        this.#dataRangeEndInput.addEventListener('change', (e)=>{
-            this.setDataRange(parseFloat(this.#dataRangeStartInput.value), parseFloat(this.#dataRangeEndInput.value));
-            this.setView(this.#viewStart, this.#viewRange, true, true);
-            //this.update();
+        this.#durationInput.addEventListener('input', (e)=>{
+            if (!isNaN(parseInt(this.#durationInput.value))){
+                this.#duration = this.#durationInput.value;
+                this.setView(this.#viewStart, this.#viewRange, true, true);
+                //this.update();
+            }
         });
    
-        this.#root = document.querySelector(':root');
-        this.#labelWidth = parseFloat(this.getCSSVariable('--label-width').replace('px',''));
-        this.#viewStart = dataRangeStart;
-        this.#viewEnd = dataRangeEnd;
-        this.#updateTimePerPixel(this.#viewEnd - this.#viewStart);
-        this.setDataRange(dataRangeStart, dataRangeEnd);
-
         this.#zoomSlider.addEventListener('input', (e)=>{
             this.#handleZoomSlider(e);
         });
@@ -341,7 +320,7 @@ export class ValueAtTimeLine{
             if (e.button == 0){
                 this.#scrollBarDragoffset = e.offsetX;
             }
-            //this.setView(this.#dataRangeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#dataRange), this.#viewRange);
+            //this.setView(this.#totalTimeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#totalTime), this.#viewRange);
         });
 
         this.#cursorDragBoxDiv.addEventListener('pointerdown', (e)=>{
@@ -360,15 +339,15 @@ export class ValueAtTimeLine{
                 let linesToUpdate =[];
                 this.#selectedNodeList.forEach((valueAtNode)=>{
                     //  delete valueKey from valueAt
-                    valueAtNode.valueAtLine.valueAt.deleteValueKey(valueAtNode.valueKey);
-                    if (linesToUpdate.indexOf(valueAtNode.valueAtLine) == -1){
-                        linesToUpdate.push(valueAtNode.valueAtLine);
+                    valueAtNode.valueChannel.valueAt.deleteValueKey(valueAtNode.valueKey);
+                    if (linesToUpdate.indexOf(valueAtNode.valueChannel) == -1){
+                        linesToUpdate.push(valueAtNode.valueChannel);
                     }
                     valueAtNode.removeFromDOM();
                 });
-                linesToUpdate.forEach((valueAtLine)=>{
-                    valueAtLine.valueAt.update();
-                    valueAtLine.update();
+                linesToUpdate.forEach((valueChannel)=>{
+                    valueChannel.valueAt.update();
+                    valueChannel.update();
                 });
             }
         });
@@ -418,6 +397,11 @@ export class ValueAtTimeLine{
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
         });
+        this.#handleWindowSize();
+        this.#root = document.querySelector(':root');
+        this.#labelWidth = parseFloat(this.getCSSVariable('--label-width').replace('px',''));
+        this.#duration = duration;
+        this.setView(0, this.#duration);
     }
 
     init(){
@@ -474,16 +458,16 @@ export class ValueAtTimeLine{
             if (e.shiftKey){  // sideways for time
                 let distanceMoved = e.movementX;
                 let f = distanceMoved / this.#cursorDragBoxRect.width;
-                let timeMoved = this.#viewStart + this.#viewRange * f;
+                let beatsMoved = this.#viewStart + this.#viewRange * f;
                 this.#selectedNodeList.forEach((valueAtNode)=>{
-                    valueAtNode.valueKey.time = VA_Utils.clamp(this.dataRangeStart, valueAtNode.valueKey.time + timeMoved, this.dataRangeEnd);
+                    valueAtNode.valueKey.time = VA_Utils.clamp(0, valueAtNode.valueKey.time + beatsMoved, this.#duration);
                     this.#updateInfoTime();
                 });
             }
             if (e.altKey){  //  updown for value
                 let rect = this.#infoValueAtNode.parentDiv.getBoundingClientRect();
                 let f = (e.pageY - rect.top) / rect.height;
-                let range = this.#infoValueAtNode.valueAtLine.valueAt.options.max - this.#infoValueAtNode.valueAtLine.valueAt.options.min;
+                let range = this.#infoValueAtNode.valueChannel.valueAt.options.max - this.#infoValueAtNode.valueChannel.valueAt.options.min;
                 this.#infoValueAtNode.valueKey.value = range - (range * f);
                 this.#updateInfoValue();
             }
@@ -503,9 +487,9 @@ export class ValueAtTimeLine{
         if (e.button==0){
             let time = null
             let priorValueAtNode = null;
-            let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
-            valueAtLines.forEach((valueAtLine)=>{
-                let valueAtNode = valueAtLine.getValueAtNodeBefore(this.#cursorTime, false);
+            let valueChannels = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
+            valueChannels.forEach((valueChannel)=>{
+                let valueAtNode = valueChannel.getValueAtNodeBefore(this.#cursorTime, false);
                 if (valueAtNode != null && valueAtNode != priorValueAtNode){
                     priorValueAtNode = priorValueAtNode==null? valueAtNode : (valueAtNode.valueKey.time > priorValueAtNode.valueKey.time)? valueAtNode : priorValueAtNode;
                     if (this.#infoValueAtNode != null && this.#infoValueAtNode.selected){
@@ -526,9 +510,9 @@ export class ValueAtTimeLine{
         if (e.button==0){
             let time = null
             let nextValueAtNode = null;
-            let valueAtLines = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
-            valueAtLines.forEach((valueAtLine)=>{
-                let valueAtNode = valueAtLine.getValueAtNodeAfter(this.#cursorTime, false);
+            let valueChannels = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
+            valueChannels.forEach((valueChannel)=>{
+                let valueAtNode = valueChannel.getValueAtNodeAfter(this.#cursorTime, false);
                 if (valueAtNode != null && valueAtNode != nextValueAtNode){
                     nextValueAtNode = nextValueAtNode==null? valueAtNode : (valueAtNode.valueKey.time < nextValueAtNode.valueKey.time)? valueAtNode : nextValueAtNode;
                     if (this.#infoValueAtNode != null && this.#infoValueAtNode.selected){
@@ -549,14 +533,14 @@ export class ValueAtTimeLine{
         if (this.#selectedNodeList.length == 1){
             let valueAtNode = this.#selectedNodeList[0];
             this.#infoValueAtNode = valueAtNode;
-            this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueAtLine.valueAtGroup.getRootUserGroupName();
-            this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueAtLine.labelName + ' (' + valueAtNode.valueAtLine.valueAtNodes.indexOf(valueAtNode) + ')';
+            this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueChannel.channelGroup.getRootUserGroupName();
+            this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueChannel.labelName + ' (' + valueAtNode.valueChannel.valueAtNodes.indexOf(valueAtNode) + ')';
             this.#updateInfoTime();
-            if (valueAtNode.valueAtLine.valueAt.options.min != null){
-                this.#keyFrameValueInput.min = valueAtNode.valueAtLine.valueAt.options.min;
+            if (valueAtNode.valueChannel.valueAt.options.min != null){
+                this.#keyFrameValueInput.min = valueAtNode.valueChannel.valueAt.options.min;
             }
-            if (valueAtNode.valueAtLine.valueAt.options.max != null){
-                this.#keyFrameValueInput.max = valueAtNode.valueAtLine.valueAt.options.max;
+            if (valueAtNode.valueChannel.valueAt.options.max != null){
+                this.#keyFrameValueInput.max = valueAtNode.valueChannel.valueAt.options.max;
             }            
             this.#updateInfoValue();
             this.#keyFrameEasingSelect.selectedIndex = valueAtNode.valueKey.easing? EasingNames.indexOf(valueAtNode.valueKey.easing.name) : 0;
@@ -581,7 +565,7 @@ export class ValueAtTimeLine{
         this.#containerRect = this.#containerDiv.getBoundingClientRect();
         this.#cursorDragBoxRect = this.#cursorDragBoxDiv.getBoundingClientRect(); 
         this.#scrollbarRect = this.#scrollbarDiv.getBoundingClientRect();
-        this.#timePerScrollPixel = this.#cursorDragBoxRect.width / this.#dataRange;
+        this.#timePerScrollPixel = this.#cursorDragBoxRect.width / this.#duration;
         this.#updateTimePerPixel(this.#viewRange);
         this.update();
     }
@@ -589,7 +573,7 @@ export class ValueAtTimeLine{
     #handleZoomSlider(e){
         let zoomTarget = this.#viewStart;  //  left align by default
         //let zoomTarget = this.#viewStart + (this.#viewRange * 0.5);  //  center by default
-        if (this.#cursorTime > this.#viewStart && this.#cursorTime < this.#viewEnd){  //  center around cursor if on-screen
+        if (this.#timeInView(this.#cursorTime)){  //  center around cursor if on-screen
             zoomTarget = this.#cursorTime;
         }
         this.zoom(1 - this.#zoomSlider.value, zoomTarget);
@@ -620,26 +604,14 @@ export class ValueAtTimeLine{
 
     #handleScrollBar(e){
         if (this.#scrollBarDragoffset != null){
-            //let timePerScrollPixel = this.#dataRange / this.#scrollbarRect.width;
+            //let timePerScrollPixel = this.#totalTime / this.#scrollbarRect.width;
             let x = e.pageX - this.#scrollbarRect.left - this.#scrollBarDragoffset;
-            let viewStart = x * (this.#dataRange / this.#scrollbarRect.width);
+            let viewStart = x * (this.#duration / this.#scrollbarRect.width);
             this.setView(viewStart, this.#viewRange);
         }
     }
-
-    setDataRange(startTime, endTime){
-        this.#dataRangeStart = Math.min(startTime, endTime);
-        this.#dataRangeEnd = Math.max(startTime + 1, endTime);
-        this.#dataRange = this.#dataRangeEnd - this.#dataRangeStart;
-
-        this.#dataRangeStartInput.value = this.#dataRangeStart;
-        this.#dataRangeEndInput.value = this.#dataRangeEnd;
-
-        //  ensure view is inside the dataRange
-        this.#viewStart = VA_Utils.clamp(this.#dataRangeStart, this.#viewStart, this.#dataRangeEnd);
-        this.#viewEnd = VA_Utils.clamp(this.#dataRangeStart, this.#viewEnd, this.#dataRangeEnd);
-        this.#viewRange = this.#viewEnd - this.#viewStart;
-        this.update();
+    #timeInView(time){
+        return !(time < this.#viewStart || time > this.#viewStart + this.#viewRange);
     }
 
     getCSSVariable(name){
@@ -653,11 +625,11 @@ export class ValueAtTimeLine{
 
     update(){
         this.#updateCursors();
-        this.#rootValueAtGroup.update();
+        this.#rootChannelGroup.update();
 
         //  temp stats
         /*
-        let lines = this.#rootValueAtGroup.getAllValueAtLines();
+        let lines = this.#rootChannelGroup.getAllValueAtLines();
         let inViewCount = 0;
         lines.forEach((line)=>{
             inViewCount += line.inView? 1 : 0;
@@ -686,38 +658,38 @@ export class ValueAtTimeLine{
     }
 
     panTocursor(){
-        if(this.#cursorTime < this.#viewStart || this.#cursorTime > this.#viewEnd){
+        if (!this.#timeInView(this.#cursorTime)){
             //  attempt to scroll so the cursor is at 30 of the width
-            this.setView(Math.max(this.#dataRangeStart, this.#cursorTime - this.#viewRange * 0.3));
+            this.setView(Math.max(0, this.#cursorTime - this.#viewRange * 0.3));
         }
     }
 
     setTimeAccurate(time){
-        let t = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        let t = VA_Utils.clamp(0, time, this.#duration);
         if (t != this.#cursorTime){
             this.#cursorTime = t;
             this.#updateCursors();
-            this.#rootValueAtGroup.setTimeAccurate(this.#cursorTime );
+            this.#rootChannelGroup.setTimeAccurate(this.#cursorTime );
             this.#handleOnTime();
         }
     }
 
     setTime(time){
-        let t = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        let t = VA_Utils.clamp(0, time, this.#duration);
         if (t != this.#cursorTime){
             this.#cursorTime = t;
             this.#updateCursors();
-            this.#rootValueAtGroup.setTime(this.#cursorTime );
+            this.#rootChannelGroup.setTime(this.#cursorTime );
             this.#handleOnTime();
         }
     }
 
     setTimeFast(time){
-        let t = VA_Utils.clamp(this.#dataRangeStart, time, this.#dataRangeEnd);
+        let t = VA_Utils.clamp(0, time, this.#duration);
         if (t != this.#cursorTime){
             this.#cursorTime = t;
             this.#updateCursors();
-            this.#rootValueAtGroup.setTimeFast(this.#cursorTime);
+            this.#rootChannelGroup.setTimeFast(this.#cursorTime);
             this.#handleOnTime();
         }
     }
@@ -727,7 +699,7 @@ export class ValueAtTimeLine{
             zoomTarget = this.#viewStart + (this.#viewRange * 0.5);
         }
         this.#zoomFactor = Math.max(Math.min(1, zoomFactor), 0.001);
-        let viewRange = this.#dataRange * this.#zoomFactor;
+        let viewRange = this.#duration * this.#zoomFactor;
         this.#updateTimePerPixel(viewRange);
         let factor = (zoomTarget - this.#viewStart) / this.#viewRange;
         let viewStart = zoomTarget - (viewRange * factor);
@@ -737,18 +709,16 @@ export class ValueAtTimeLine{
     setView(viewStart, viewRange=null, force = false ){
         viewRange = viewRange==null? this.#viewRange : Math.abs(viewRange);
         if (force || viewStart != this.#viewStart || viewRange != this.#viewRange){
-            this.#viewStart = VA_Utils.clamp(this.#dataRangeStart, viewStart, this.#dataRangeEnd - viewRange);
+            this.#viewStart = VA_Utils.clamp(0, viewStart, this.#duration - viewRange);
             this.#viewRange = viewRange;
-            this.#viewEnd = this.#viewStart + this.#viewRange; //VA_Utils.clamp(this.#dataRangeStart, this.#viewEnd, this.#dataRangeEnd);
-
             this.#updateTimePerPixel(this.#viewRange);
 
-            //this.#zoomSlider.value = 1 - (this.#viewRange / this.#dataRange);
-            let widthPercent = ((this.#viewRange / this.#dataRange) * 100);
+            //this.#zoomSlider.value = 1 - (this.#viewRange / this.#totalTime);
+            let widthPercent = ((this.#viewRange / this.#duration) * 100);
             //let widthPercent = this.#zoomFactor * 100;
             this.#scrollbarContentDiv.style.width = widthPercent + '%';
 
-            let scrollLeft = this.#viewStart / (this.#dataRange / this.#scrollbarRect.width);
+            let scrollLeft = this.#viewStart / (this.#duration / this.#scrollbarRect.width);
             this.#scrollbarContentDiv.style.left = scrollLeft + 'px';
 
             if (this.#scrollbarContentDiv.offsetLeft == 0 && widthPercent==100){
@@ -770,20 +740,30 @@ export class ValueAtTimeLine{
 
     }
 
-    addValueAtGroup(name, expanded=true, parentGroup=null){
+    addChannelGroup1(name, expanded=true, parentGroup=null){
         if (parentGroup==null){
-            return this.#rootValueAtGroup.addValueAtGroup(name, expanded);
+            return this.#rootChannelGroup.addChannelGroup(name, expanded);
         } else {
-            return parentGroup.addValueAtGroup(name, expanded);
+            return parentGroup.addChannelGroup(name, expanded);
         }
     }
-    addValueAt(valueAt, labelName, strokeWidth, strokeColor, parentGroup=null){
+
+    addChannel1(channel, parentGroup=null){
         if (parentGroup==null){
-            return this.#rootValueAtGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
+            return this.#rootChannelGroup.addChannel(channel);
+        } else {
+            return parentGroup.addChannel(channel);
+        }        
+    }
+
+    addValueAt1(valueAt, labelName, strokeWidth, strokeColor, parentGroup=null){
+        if (parentGroup==null){
+            return this.#rootChannelGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
         } else {
             return parentGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
         }
     }    
+
     get timeUnitsPerPixel(){
         return this.#timeUnitsPerPixel;
     }
@@ -808,6 +788,9 @@ export class ValueAtTimeLine{
     get scaleDiv(){
         return this.#scaleDiv;
     }
+    get cursorDragBoxDiv(){
+        return this.#cursorDragBoxDiv;
+    }
     get scrollContainerDiv(){
         return this.#scrollContainerDiv;
     }
@@ -817,6 +800,12 @@ export class ValueAtTimeLine{
     get headerDiv(){
         return this.#headerDiv;
     }    
+    get durationLabel(){
+        return this.#durationLabel;
+    }
+    get scaleInfoDiv(){
+        return this.#scaleInfoDiv;
+    }
     get valueAtDiv(){
         return this.#valueAtDiv;
     }
@@ -833,38 +822,17 @@ export class ValueAtTimeLine{
         this.#pixelsPerSegment = value;
         this.update();
     }
-    get dataRangeStart(){
-        return this.#dataRangeStart;
+    get duration(){
+        return this.#duration;
     };
-    get dataRangeEnd(){
-        return this.#dataRangeEnd;
-    };
-    get dataRange(){
-        return this.#dataRange;
-    };
-
     get viewStart(){
         return this.#viewStart;
     }
-    set viewStart(value){
-        this.#viewStart = value;
-        this.#viewRange = this.#viewEnd - this.#viewStart;
-        this.update();
-    }
-    get viewEnd(){
-        return this.#viewEnd;
-    }
-    set viewEnd(value){
-        this.#viewEnd = value;
-        this.#viewRange = this.#viewEnd - this.#viewStart;
-        this.update();
-    }
-
     get viewRange(){
         return this.#viewRange;
     }
-    get rootValueAtGroup(){
-        return this.#rootValueAtGroup;
+    get rootChannelGroup(){
+        return this.#rootChannelGroup;
     }
     get onZoom(){
         return this.#onZoom;
@@ -876,12 +844,12 @@ export class ValueAtTimeLine{
     }
 
     getAllValueAtLines(checkInView = false, checkExpanded = false){  //  params are selection criteria
-        let valueAtLines = this.#rootValueAtGroup.getAllValueAtLines(checkInView, checkExpanded);
-        return valueAtLines;
+        let valueChannels = this.#rootChannelGroup.getAllValueAtLines(checkInView, checkExpanded);
+        return valueChannels;
     }
     
     getAllValueAtNodes(checkInView = false, checkExpanded = false){
-        let valueAtNodes = this.#rootValueAtGroup.getAllValueAtNodes(checkInView, checkExpanded);
+        let valueAtNodes = this.#rootChannelGroup.getAllValueAtNodes(checkInView, checkExpanded);
         return valueAtNodes;
     }
 }

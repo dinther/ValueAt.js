@@ -1,7 +1,7 @@
 import * as VA_Utils from "./valueAtUtils.js";
 
-export class ValueAtNode{
-    #valueAtLine;
+export class ValueNode{
+    #valueChannel;
     #parentDiv;
     #div;
     #valueKey;
@@ -9,8 +9,8 @@ export class ValueAtNode{
     //#active = false;
     onSelectedChanged;
     //onActiveChanged;
-    constructor(valueAtLine, parentDiv, valueKey){
-        this.#valueAtLine = valueAtLine;
+    constructor(valueChannel, parentDiv, valueKey){
+        this.#valueChannel = valueChannel;
         this.#parentDiv = parentDiv;
         this.#valueKey = valueKey;
         this.#div = VA_Utils.createEl('div',{className: 'valueAt-node'}, parentDiv);
@@ -32,7 +32,7 @@ export class ValueAtNode{
         this.#div.addEventListener('pointerdown', (e)=>{
             if (e.button == 0){
                 if (!this.#selected && !e.ctrlKey && !e.shiftKey){
-                    this.#valueAtLine.deselectAllValueAtNodes();
+                    this.#valueChannel.deselectAllValueNodes();
                 }
                 if (this.#selected && (e.ctrlKey || e.shiftKey)){
 
@@ -66,8 +66,8 @@ export class ValueAtNode{
         }
     }
         */
-    get valueAtLine(){
-        return this.#valueAtLine;
+    get valueChannel(){
+        return this.#valueChannel;
     }
     get parentDiv(){
         return this.#parentDiv;

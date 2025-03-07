@@ -130,8 +130,8 @@ export class ValueAtTime{
     #valueKeys=[];
     #minTime;
     #maxTime;
-    #minValueKey;
-    #maxValueKey;
+    #minValue;
+    #maxValue;
     #onValueKeyChange;
     #onChange;
 
@@ -155,6 +155,16 @@ export class ValueAtTime{
         if (typeof  this.#onChange === 'function'){
             this.#onChange(this, valueKey, propName);
         }
+    }
+    #setMinMaxValuesFromValueKeys(){
+        if (this.#valueKeys.length > 0){
+            this.#minValue = this.#valueKeys[0].value;
+            this.#maxValue = this.#valueKeys[0].value;
+        }
+        this.#valueKeys.forEach((valueKey)=>{
+            this.#minValue = Math.min(this.#minValue, valueKey.value);
+            this.#maxValue = Math.max(this.#maxValue, valueKey.value);
+        });
     }
 
     clampTime(time){
@@ -183,16 +193,7 @@ export class ValueAtTime{
     }
 
     update(valueKey, propName){
-        for(let i=0; i<this.#valueKeys.length; i++){
-            let value = this.#valueKeys[i].value;
-            if (i==0){
-                this.#minValueKey = value;
-                this.#maxValueKey = value;
-            } else {
-                this.#minValueKey = Math.min(this.#minValueKey, value);
-                this.#maxValueKey = Math.max(this.#maxValueKey, value);
-            }
-        }
+        this.#setMinMaxValuesFromValueKeys();
         this.#sortKeyTimes();
         this.#minTime = this.#valueKeys.length==0? 0 : this.#valueKeys[0].time;
         this.#maxTime = this.#valueKeys.length==0? 0 : this.#valueKeys[this.#valueKeys.length-1].time;
@@ -282,6 +283,7 @@ export class ValueAtTime{
         let afterKey = this.#valueKeys[this.getAfterValueKeyIndex(time)]; 
         let deltaValue = (afterKey.value - beforeKey.value);
         let deltaTime = (afterKey.time - beforeKey.time);
+        if (deltaTime==0) return beforeKey.value;
         if (deltaValue==0) return afterKey.value;
         let t = (time-beforeKey.time) / deltaTime;
         let value = (afterKey.easing != null)? beforeKey.value + (afterKey.easing(t,afterKey.p1,afterKey.p2) * deltaValue) : this.lerp(beforeKey.value, afterKey.value, t);
@@ -306,11 +308,20 @@ export class ValueAtTime{
     get maxTime(){
         return this.#maxTime;
     }
-    get minValueKey(){
-        return this.#minValueKey;
+    get minValue(){
+        return this.#minValue;
     }
-    get maxValueKey(){
-        return this.#maxValueKey;
+    set minValue(value){
+        this.#minValue = value;
+    }
+    get maxValue(){
+        return this.#maxValue;
+    }
+    set maxValue(value){
+        this.#maxValue = value;
+    }
+    get valueRange(){
+        return this.#maxValue - this.#minValue;
     }
     get onChange(){
         return this.#onChange;
@@ -324,9 +335,6 @@ export class ValueAtTime{
 export class LookupAtTime extends ValueAtTime{ 
     #valueList;
     #interval;
-    #minValue;
-    #maxValue;    
-    #valueRange;
     #options = {object:null, property:'', min:null, max:null, listType:null};
     constructor(options){
         super(options);
@@ -334,26 +342,12 @@ export class LookupAtTime extends ValueAtTime{
     }
 
     #populateValueList(interval){
-        this.#setMinMaxValuesFromValueKeys();
         for(let i=0; i<this.#valueList.length; i++){
             let value = this.getSourceValueAt((i * interval) + this.minTime);
-            this.#minValue = Math.min(this.#minValue, value);
-            this.#maxValue = Math.max(this.#maxValue, value);
-            //value = this.clampValue(value);
+            this.minValue = Math.min(this.minValue, value);
+            this.maxValue = Math.max(this.maxValue, value);
             this.#valueList[i] = value;
         }
-        this.#valueRange = this.#maxValue - this.#minValue;
-    }
-
-    #setMinMaxValuesFromValueKeys(){
-        if (this.valueKeys.length > 0){
-            this.#minValue = this.valueKeys[0].value;
-            this.#maxValue = this.valueKeys[0].value;
-        }
-        this.valueKeys.forEach((valueKey)=>{
-            this.#minValue = Math.min(this.#minValue, valueKey.value);
-            this.#maxValue = Math.max(this.#maxValue, valueKey.value);
-        });
     }
 
     #getIndexBefore(time){
@@ -383,7 +377,7 @@ export class LookupAtTime extends ValueAtTime{
     }
 
     #clampListValue(value, listType){
-        value = (value - this.minValue) / this.#valueRange;
+        value = (value - this.minValue) / this.valueRange;
         switch(listType){
             case 'Float64Array': return Math.max(-9223372036854775808, Math.min(9223372036854775807, 9223372036854775807 * ((value * 2) -1)));
             case 'Float32Array': return Math.max(-2147483648, Math.min(2147483647, 2147483647 * ((value * 2) - 1)));
@@ -467,17 +461,6 @@ export class LookupAtTime extends ValueAtTime{
 
     get interval(){
         return this.#interval;
-    }
-
-    get minValue(){
-        return this.#minValue;
-    }
-
-    get maxValue(){
-        return this.#maxValue;
-    }
-    get valueRange(){
-        return this.#valueRange;
     }
 
     get valueList(){
