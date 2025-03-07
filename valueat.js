@@ -459,6 +459,29 @@ export class LookupAtTime extends ValueAtTime{
         return values;
     }
 
+    stringify(){
+        //{object: null, property: '', min: null, max: null, clampLimits: false};
+        let data = {
+            clampLimits: this.#options.clampLimits,
+            valueKeys: []
+        };
+        if (this.#options.object != null){
+            data.objectClass = this.#options.object.constructor.name;
+            if (this.#options.object.name) data.objectName = this.#options.object.name;
+        }
+        if (this.#options.min != null) data.min = this.#options.min;
+        if (this.#options.max != null) data.max = this.#options.max;
+
+        this.valueKeys.forEach((valueKey)=>{
+            let key = {time: valueKey.time, value: valueKey.value};
+            if (valueKey.easing != null) key.easing = valueKey.easing.name;
+            if (valueKey.p1 != null) key.p1 = valueKey.p1;
+            if (valueKey.p2 != null) key.p1 = valueKey.p2;
+            data.valueKeys.push(key);
+        });
+        return JSON.stringify(data);
+    }
+
     get interval(){
         return this.#interval;
     }

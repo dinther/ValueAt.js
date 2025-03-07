@@ -24,6 +24,7 @@ export function random( t , p1 = 0.1, p2=0) {
             let t1 = 1 - t;
             return (((Math.random(t1) * p1) - (p1 * 0.5)) % 1)*t1;
         }
+        default: return (((Math.random(t) * p1) - (p1 * 0.5)) % 1)*t;
     }
 }
 

@@ -108,7 +108,7 @@ export class TimelineManager{
     #root;
     
     #boxSelectStartPoint = null;
-    #valueAtNodeDragStartPoint = null;
+    #valueNodeDragStartPoint = null;
     #rootChannelGroup;
     #selectedNodeList = [];
     
@@ -123,7 +123,7 @@ export class TimelineManager{
     #scrollBarDragoffset = null;
     #suppressedNodesSelectedList = [];
     #suppressedNodesDeSelectedList = [];
-    #infoValueAtNode = null;
+    #infoValueNode = null;
     onTime = null;
     constructor(parent, duration, pixelsPerSegment=2){
         this.#parentDiv = parent;
@@ -181,7 +181,7 @@ export class TimelineManager{
         this.#headerDiv.appendChild(this.#infoKeyFrameDiv);
 
 
-        //  ValueAtNode Info panel
+        //  ValueNode Info panel
         this.#keyFrameObjectNameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-name', type: 'text', value: 'object'}, this.#infoKeyFrameDiv);
         this.#keyFramePropertyNameDiv = VA_Utils.createEl('div', {className: 'valueAt-info-prop', innerText: 'property'}, this.#infoKeyFrameDiv);
         VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'time'}, this.#infoKeyFrameDiv);
@@ -195,14 +195,14 @@ export class TimelineManager{
         })
 
         this.#keyFrameEasingSelect.addEventListener('input', (e)=>{
-            if (this.#infoValueAtNode != null){
+            if (this.#infoValueNode != null){
                 let name = EasingNames[this.#keyFrameEasingSelect.selectedIndex];
                 let easing = EasingMap.get(name);
-                this.#infoValueAtNode.valueKey.easing = easing;
-                this.#p1Div.style.display = this.#infoValueAtNode.valueKey.hasP1? '' : 'none';
-                this.#keyFrameP1Input.value = this.#infoValueAtNode.valueKey.p1;
-                this.#p2Div.style.display = this.#infoValueAtNode.valueKey.hasP2? '' : 'none';
-                this.#keyFrameP2Input.value = this.#infoValueAtNode.valueKey.p2;
+                this.#infoValueNode.valueKey.easing = easing;
+                this.#p1Div.style.display = this.#infoValueNode.valueKey.hasP1? '' : 'none';
+                this.#keyFrameP1Input.value = this.#infoValueNode.valueKey.p1;
+                this.#p2Div.style.display = this.#infoValueNode.valueKey.hasP2? '' : 'none';
+                this.#keyFrameP2Input.value = this.#infoValueNode.valueKey.p2;
             }
         });
 
@@ -226,7 +226,7 @@ export class TimelineManager{
 
         this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
             if (e.offsetX > this.#labelWidth && !e.ctrlKey && !e.shiftKey){
-                this.deselectAllValueAtNodes();
+                this.deselectAllValueNodes();
             }
         });
 
@@ -293,26 +293,26 @@ export class TimelineManager{
         });
 
         this.#keyFrameTimeInput.addEventListener('input', (e)=>{
-            if (this.#infoValueAtNode){
-                this.#infoValueAtNode.valueKey.time = parseFloat(this.#keyFrameTimeInput.value);
+            if (this.#infoValueNode){
+                this.#infoValueNode.valueKey.time = parseFloat(this.#keyFrameTimeInput.value);
             }
         });
 
         this.#keyFrameValueInput.addEventListener('input', (e)=>{
-            if (this.#infoValueAtNode){
-                this.#infoValueAtNode.valueKey.value = parseFloat(this.#keyFrameValueInput.value);
+            if (this.#infoValueNode){
+                this.#infoValueNode.valueKey.value = parseFloat(this.#keyFrameValueInput.value);
             }
         });
 
         this.#keyFrameP1Input.addEventListener('input', (e)=>{
-            if (this.#infoValueAtNode && this.#infoValueAtNode.valueKey.easing != null){
-                this.#infoValueAtNode.valueKey.p1 = parseFloat(this.#keyFrameP1Input.value);
+            if (this.#infoValueNode && this.#infoValueNode.valueKey.easing != null){
+                this.#infoValueNode.valueKey.p1 = parseFloat(this.#keyFrameP1Input.value);
             }
         });
 
         this.#keyFrameP2Input.addEventListener('input', (e)=>{
-            if (this.#infoValueAtNode && this.#infoValueAtNode.valueKey.easing != null){
-                this.#infoValueAtNode.valueKey.p2 = parseFloat(this.#keyFrameP2Input.value);
+            if (this.#infoValueNode && this.#infoValueNode.valueKey.easing != null){
+                this.#infoValueNode.valueKey.p2 = parseFloat(this.#keyFrameP2Input.value);
             }
         });        
 
@@ -337,13 +337,13 @@ export class TimelineManager{
             this.#handleNodeCursor(e);
             if (e.key == 'Delete' & e.ctrlKey){ //  delete selected nodes
                 let linesToUpdate =[];
-                this.#selectedNodeList.forEach((valueAtNode)=>{
+                this.#selectedNodeList.forEach((valueNode)=>{
                     //  delete valueKey from valueAt
-                    valueAtNode.valueChannel.valueAt.deleteValueKey(valueAtNode.valueKey);
-                    if (linesToUpdate.indexOf(valueAtNode.valueChannel) == -1){
-                        linesToUpdate.push(valueAtNode.valueChannel);
+                    valueNode.valueChannel.valueAt.deleteValueKey(valueNode.valueKey);
+                    if (linesToUpdate.indexOf(valueNode.valueChannel) == -1){
+                        linesToUpdate.push(valueNode.valueChannel);
                     }
-                    valueAtNode.removeFromDOM();
+                    valueNode.removeFromDOM();
                 });
                 linesToUpdate.forEach((valueChannel)=>{
                     valueChannel.valueAt.update();
@@ -357,16 +357,16 @@ export class TimelineManager{
                     this.#boxSelectStartPoint = {left: e.pageX - this.#containerRect.left, top: e.pageY - this.#containerRect.top};
                 }
                 if (e.target.classList.contains('valueAt-node')){
-                    this.#valueAtNodeDragStartPoint = {left: e.pageX, top: e.pageY};
+                    this.#valueNodeDragStartPoint = {left: e.pageX, top: e.pageY};
 
-                    console.log('nodedrag', this.#valueAtNodeDragStartPoint);
+                    console.log('nodedrag', this.#valueNodeDragStartPoint);
                     e.stopPropagation();
                 }
             }
         });
         document.addEventListener('pointermove', (e)=>{
             if (e.buttons == 1 ){
-                if (this.#valueAtNodeDragStartPoint==null && this.#boxSelectStartPoint != null && (e.ctrlKey || e.shiftKey)){
+                if (this.#valueNodeDragStartPoint==null && this.#boxSelectStartPoint != null && (e.ctrlKey || e.shiftKey)){
                     let x = Math.min(this.#boxSelectStartPoint.left, this.#boxSelectStartPoint.left, e.pageX - this.#containerRect.left);
                     let y = Math.min(this.#boxSelectStartPoint.top, this.#boxSelectStartPoint.top, e.pageY - this.#containerRect.top);
                     this.#selectBoxDiv.style.display = '';
@@ -376,7 +376,7 @@ export class TimelineManager{
                     this.#selectBoxDiv.style.height = Math.abs(e.pageY - this.#containerRect.top - this.#boxSelectStartPoint.top) + 'px';
                     console.log('select', this.#selectBoxDiv.offsetWidth);
                 } else {
-                    this.#handleValueAtNodeDrag(e);
+                    this.#handleValueNodeDrag(e);
                     this.#handleCursorDrag(e);
                     this.#handleScrollBar(e);
                 }
@@ -392,7 +392,7 @@ export class TimelineManager{
             }
             this.#cursorDragging = false;
             this.#scrollBarDragoffset = null;
-            this.#valueAtNodeDragStartPoint = null;
+            this.#valueNodeDragStartPoint = null;
         });   
         window.addEventListener('resize', (e)=>{
             this.#handleWindowSize();
@@ -412,19 +412,19 @@ export class TimelineManager{
     }
 
     selectValueNodes(DOMRect, deselect=false){
-        let valueAtNodes = this.getAllValueAtNodes(false, true);
+        let valueNodes = this.getAllValueNodes(false, true);
         let selectedNodes = [];
-        valueAtNodes.forEach((valueAtNode)=>{
-            let rect = valueAtNode.div.getBoundingClientRect();
+        valueNodes.forEach((valueNode)=>{
+            let rect = valueNode.div.getBoundingClientRect();
             if (rect.left >= DOMRect.left && rect.left <= DOMRect.right && rect.top >= DOMRect.top && rect.top <= DOMRect.bottom){
-                valueAtNode.selected = !deselect;
-                selectedNodes.push(valueAtNode);
+                valueNode.selected = !deselect;
+                selectedNodes.push(valueNode);
             }
         });
         if (deselect){
-            this.removeValueAtNodesFromSelectedList(selectedNodes);
+            this.removeValueNodesFromSelectedList(selectedNodes);
         } else {
-            this.addValueAtNodesToSelectedList(selectedNodes);
+            this.addValueNodesToSelectedList(selectedNodes);
         }
         return this.#selectedNodeList;
     }
@@ -453,22 +453,22 @@ export class TimelineManager{
         }
     }
 
-    #handleValueAtNodeDrag(e){
-        if (this.#valueAtNodeDragStartPoint!=null && this.#infoValueAtNode != null){
+    #handleValueNodeDrag(e){
+        if (this.#valueNodeDragStartPoint!=null && this.#infoValueNode != null){
             if (e.shiftKey){  // sideways for time
                 let distanceMoved = e.movementX;
                 let f = distanceMoved / this.#cursorDragBoxRect.width;
                 let beatsMoved = this.#viewStart + this.#viewRange * f;
-                this.#selectedNodeList.forEach((valueAtNode)=>{
-                    valueAtNode.valueKey.time = VA_Utils.clamp(0, valueAtNode.valueKey.time + beatsMoved, this.#duration);
+                this.#selectedNodeList.forEach((valueNode)=>{
+                    valueNode.valueKey.time = VA_Utils.clamp(0, valueNode.valueKey.time + beatsMoved, this.#duration);
                     this.#updateInfoTime();
                 });
             }
             if (e.altKey){  //  updown for value
-                let rect = this.#infoValueAtNode.parentDiv.getBoundingClientRect();
+                let rect = this.#infoValueNode.parentDiv.getBoundingClientRect();
                 let f = (e.pageY - rect.top) / rect.height;
-                let range = this.#infoValueAtNode.valueChannel.valueAt.options.max - this.#infoValueAtNode.valueChannel.valueAt.options.min;
-                this.#infoValueAtNode.valueKey.value = range - (range * f);
+                let range = this.#infoValueNode.valueChannel.valueAt.options.max - this.#infoValueNode.valueChannel.valueAt.options.min;
+                this.#infoValueNode.valueKey.value = range - (range * f);
                 this.#updateInfoValue();
             }
             e.stopPropagation();
@@ -486,22 +486,22 @@ export class TimelineManager{
     #handleCursorToPreviousKeyFrame(e){
         if (e.button==0){
             let time = null
-            let priorValueAtNode = null;
+            let priorValueNode = null;
             let valueChannels = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
             valueChannels.forEach((valueChannel)=>{
-                let valueAtNode = valueChannel.getValueAtNodeBefore(this.#cursorTime, false);
-                if (valueAtNode != null && valueAtNode != priorValueAtNode){
-                    priorValueAtNode = priorValueAtNode==null? valueAtNode : (valueAtNode.valueKey.time > priorValueAtNode.valueKey.time)? valueAtNode : priorValueAtNode;
-                    if (this.#infoValueAtNode != null && this.#infoValueAtNode.selected){
+                let valueNode = valueChannel.getValueNodeBefore(this.#cursorTime, false);
+                if (valueNode != null && valueNode != priorValueNode){
+                    priorValueNode = priorValueNode==null? valueNode : (valueNode.valueKey.time > priorValueNode.valueKey.time)? valueNode : priorValueNode;
+                    if (this.#infoValueNode != null && this.#infoValueNode.selected){
                         if (this.#selectedNodeList.length < 2){
-                            this.deselectAllValueAtNodes();
-                            priorValueAtNode.selected = true;
+                            this.deselectAllValueNodes();
+                            priorValueNode.selected = true;
                         }   
                     }
                 }
             });
-            if (priorValueAtNode != null){
-                this.setTime(priorValueAtNode.valueKey.time);
+            if (priorValueNode != null){
+                this.setTime(priorValueNode.valueKey.time);
             }
         }
     }
@@ -509,54 +509,54 @@ export class TimelineManager{
     #handleCursorToNextKeyFrame(e){
         if (e.button==0){
             let time = null
-            let nextValueAtNode = null;
+            let nextValueNode = null;
             let valueChannels = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
             valueChannels.forEach((valueChannel)=>{
-                let valueAtNode = valueChannel.getValueAtNodeAfter(this.#cursorTime, false);
-                if (valueAtNode != null && valueAtNode != nextValueAtNode){
-                    nextValueAtNode = nextValueAtNode==null? valueAtNode : (valueAtNode.valueKey.time < nextValueAtNode.valueKey.time)? valueAtNode : nextValueAtNode;
-                    if (this.#infoValueAtNode != null && this.#infoValueAtNode.selected){
+                let valueNode = valueChannel.getValueNodeAfter(this.#cursorTime, false);
+                if (valueNode != null && valueNode != nextValueNode){
+                    nextValueNode = nextValueNode==null? valueNode : (valueNode.valueKey.time < nextValueNode.valueKey.time)? valueNode : nextValueNode;
+                    if (this.#infoValueNode != null && this.#infoValueNode.selected){
                         if (this.#selectedNodeList.length < 2){
-                            this.deselectAllValueAtNodes();
-                            nextValueAtNode.selected = true;
+                            this.deselectAllValueNodes();
+                            nextValueNode.selected = true;
                         }   
                     }
                 }
             });
-            if (nextValueAtNode != null){
-                this.setTime(nextValueAtNode.valueKey.time);
+            if (nextValueNode != null){
+                this.setTime(nextValueNode.valueKey.time);
             }
         }
     }
 
-    #handleValueAtNodeSelectedChanged(){
+    #handleValueNodeSelectedChanged(){
         if (this.#selectedNodeList.length == 1){
-            let valueAtNode = this.#selectedNodeList[0];
-            this.#infoValueAtNode = valueAtNode;
-            this.#keyFrameObjectNameDiv.innerText = valueAtNode.valueChannel.channelGroup.getRootUserGroupName();
-            this.#keyFramePropertyNameDiv.innerText = valueAtNode.valueChannel.labelName + ' (' + valueAtNode.valueChannel.valueAtNodes.indexOf(valueAtNode) + ')';
+            let valueNode = this.#selectedNodeList[0];
+            this.#infoValueNode = valueNode;
+            this.#keyFrameObjectNameDiv.innerText = valueNode.valueChannel.channelGroup.getRootUserGroupName();
+            this.#keyFramePropertyNameDiv.innerText = valueNode.valueChannel.labelName + ' (' + valueNode.valueChannel.valueNodes.indexOf(valueNode) + ')';
             this.#updateInfoTime();
-            if (valueAtNode.valueChannel.valueAt.options.min != null){
-                this.#keyFrameValueInput.min = valueAtNode.valueChannel.valueAt.options.min;
+            if (valueNode.valueChannel.valueAt.options.min != null){
+                this.#keyFrameValueInput.min = valueNode.valueChannel.valueAt.options.min;
             }
-            if (valueAtNode.valueChannel.valueAt.options.max != null){
-                this.#keyFrameValueInput.max = valueAtNode.valueChannel.valueAt.options.max;
+            if (valueNode.valueChannel.valueAt.options.max != null){
+                this.#keyFrameValueInput.max = valueNode.valueChannel.valueAt.options.max;
             }            
             this.#updateInfoValue();
-            this.#keyFrameEasingSelect.selectedIndex = valueAtNode.valueKey.easing? EasingNames.indexOf(valueAtNode.valueKey.easing.name) : 0;
-            this.#p1Div.style.display = valueAtNode.valueKey.hasP1? '' : 'none';
-            this.#keyFrameP1Input.value = valueAtNode.valueKey.p1;
-            this.#p2Div.style.display = valueAtNode.valueKey.hasP2? '' : 'none';
-            this.#keyFrameP2Input.value = valueAtNode.valueKey.p2;            
+            this.#keyFrameEasingSelect.selectedIndex = valueNode.valueKey.easing? EasingNames.indexOf(valueNode.valueKey.easing.name) : 0;
+            this.#p1Div.style.display = valueNode.valueKey.hasP1? '' : 'none';
+            this.#keyFrameP1Input.value = valueNode.valueKey.p1;
+            this.#p2Div.style.display = valueNode.valueKey.hasP2? '' : 'none';
+            this.#keyFrameP2Input.value = valueNode.valueKey.p2;            
         }
         this.#infoKeyFrameDiv.style.display = (this.#selectedNodeList.length != 1)? 'none' : '';
     }
     #updateInfoTime(){
-            this.#keyFrameTimeInput.value = this.#infoValueAtNode.valueKey.time.toFixed(3);
+            this.#keyFrameTimeInput.value = this.#infoValueNode.valueKey.time.toFixed(3);
     }
     
     #updateInfoValue(){
-            this.#keyFrameValueInput.value = this.#infoValueAtNode.valueKey.value.toFixed(3);
+            this.#keyFrameValueInput.value = this.#infoValueNode.valueKey.value.toFixed(3);
     }
     #handleWindowSize(){
         this.setCSSVariable('--line-maximized-height', (this.#scrollContainerDiv.offsetHeight - 32) + 'px');
@@ -638,23 +638,23 @@ export class TimelineManager{
         */
     }
 
-    addValueAtNodesToSelectedList(valueAtNodes){
-        valueAtNodes.forEach((valueAtNode)=>{
-            if (valueAtNode.selected){
-                if (this.#selectedNodeList.indexOf(valueAtNode) == -1){
-                    this.#selectedNodeList.push(valueAtNode);
+    addValueNodesToSelectedList(valueNodes){
+        valueNodes.forEach((valueNode)=>{
+            if (valueNode.selected){
+                if (this.#selectedNodeList.indexOf(valueNode) == -1){
+                    this.#selectedNodeList.push(valueNode);
                 }
             }
         });
-        this.#handleValueAtNodeSelectedChanged();
+        this.#handleValueNodeSelectedChanged();
     }
 
-    removeValueAtNodesFromSelectedList(valueAtNodes){
-        valueAtNodes.forEach((valueAtNode)=>{
-            valueAtNode.selected = false;
-            this.#selectedNodeList.splice(this.#selectedNodeList.indexOf(valueAtNode),1);
+    removeValueNodesFromSelectedList(valueNodes){
+        valueNodes.forEach((valueNode)=>{
+            valueNode.selected = false;
+            this.#selectedNodeList.splice(this.#selectedNodeList.indexOf(valueNode),1);
         });
-        this.#handleValueAtNodeSelectedChanged();
+        this.#handleValueNodeSelectedChanged();
     }
 
     panTocursor(){
@@ -730,13 +730,13 @@ export class TimelineManager{
         }
     }
 
-    deselectAllValueAtNodes(){
-        let valueAtNodes = this.getAllValueAtNodes(false,true);
-        valueAtNodes.forEach((valueAtNode)=>{
-            valueAtNode.selected = false;
+    deselectAllValueNodes(){
+        let valueNodes = this.getAllValueNodes(false,true);
+        valueNodes.forEach((valueNode)=>{
+            valueNode.selected = false;
         });
         this.#selectedNodeList = [];
-        this.#handleValueAtNodeSelectedChanged();
+        this.#handleValueNodeSelectedChanged();
 
     }
 
@@ -770,7 +770,7 @@ export class TimelineManager{
     get pixelsPerTimeUnit(){
         return this.#pixelsPerTimeUnit;
     }
-    get selectedValueAtNodes(){
+    get selectedValueNodes(){
         return this.#selectedNodeList;
     }
     get cursorTime(){
@@ -848,9 +848,9 @@ export class TimelineManager{
         return valueChannels;
     }
     
-    getAllValueAtNodes(checkInView = false, checkExpanded = false){
-        let valueAtNodes = this.#rootChannelGroup.getAllValueAtNodes(checkInView, checkExpanded);
-        return valueAtNodes;
+    getAllValueNodes(checkInView = false, checkExpanded = false){
+        let valueNodes = this.#rootChannelGroup.getAllValueNodes(checkInView, checkExpanded);
+        return valueNodes;
     }
 }
 

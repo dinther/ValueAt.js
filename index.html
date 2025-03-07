@@ -27,18 +27,31 @@
 
             import {Circle} from "./circle.js"
 
-            var circle1 = new Circle(document.querySelector('#workarea'), '', 'circle',10, 50, 127, 200, 50, 50);
-            var audioObject = new AudioObject(null, null, 'song', 120);
-
-            var va_radius1 = new LookupAtTime({object: circle1, property: 'radius', min: 0, max: 20, listType: 'Float32Array'});
             var bpm = 133; //132.97872340425533
             var timePerBeat = 60 / bpm;
+            var waveDisplay;
+            var start;
+            var cursorStart;
+            var samplesPerBeat;
+            var offset = 0.143;
+            var playStop = false;
+            var loop = false;
+            var audioBuffer;
+            var source;
+            var generators = [];
+
+            var circle1 = new Circle(document.querySelector('#workarea'), '', 'circle',10, 50, 127, 200, 50, 50);
+            generators.push(circle1);
+            
+            var va_radius1 = new LookupAtTime({object: circle1, property: 'radius', min: 0, max: 20, listType: 'Float32Array'});
+
+
+
             va_radius1.addValueKey({time: 0, value: 10});
-            for (let i=1; i < 9; i++){
+            for (let i=1; i < 17; i++){
                 va_radius1.addValueKey({time: i, value: 13});
                 va_radius1.addValueKey({time: i+0.001, value: 10, easing: Easings.easeInSine});
             }
-
             va_radius1.init(0.1);
 
             var va_red1 = new LookupAtTime({object: circle1, property: 'r', min: 0, max: 255, listType: 'Uint8Array'});
@@ -47,6 +60,10 @@
             va_red1.addValueKey({time: 4, value: 0, easing: Easings.easeInOutCubic});
             va_red1.addValueKey({time: 6, value: 255, easing: Easings.easeInOutCubic});
             va_red1.addValueKey({time: 8, value: 0, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 10, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 12, value: 0, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 14, value: 255, easing: Easings.easeInOutCubic});
+            va_red1.addValueKey({time: 16, value: 0, easing: Easings.easeInOutCubic});   
             va_red1.init(0.1);
              
             var va_green1 = new LookupAtTime({object: circle1, property: 'g', min: 0, max: 255, listType: 'Uint8Array'});
@@ -55,12 +72,18 @@
             va_green1.addValueKey({time: 4, value: 255, easing: Easings.easeInOutCubic});
             va_green1.addValueKey({time: 6, value: 0, easing: Easings.easeInOutCubic});
             va_green1.addValueKey({time: 8, value: 255, easing: Easings.easeInOutCubic});            
+            va_green1.addValueKey({time: 10, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 12, value: 255, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 14, value: 0, easing: Easings.easeInOutCubic});
+            va_green1.addValueKey({time: 16, value: 255, easing: Easings.easeInOutCubic});    
             va_green1.init(0.1);
 
             var va_blue1 = new LookupAtTime({object: circle1, property: 'b', min: 0, max: 255, listType: 'Uint8Array'});
             va_blue1.addValueKey({time: 0, value: 0});
             va_blue1.addValueKey({time: 4, value: 255, easing: Easings.easeInOutCubic});
             va_blue1.addValueKey({time: 8, value: 0, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 12, value: 255, easing: Easings.easeInOutCubic});
+            va_blue1.addValueKey({time: 16, value: 0, easing: Easings.easeInOutCubic});            
             va_blue1.init(0.1);            
 
             var va_pos_x1 = new LookupAtTime({object: circle1, property: 'x', min: 0, max: 100, listType: 'Float32Array'});
@@ -68,7 +91,10 @@
             let p2 = 2;
             let e = Easings.easeInExpo;
             va_pos_x1.addValueKey({time: 0, value: 0});
-            va_pos_x1.addValueKey({time: 1, value: 25, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 0.20, value: 15, easing: Easings.easeOutSine, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 0.45, value: 12.5, easing: Easings.easeInSine, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 0.70, value: 10, easing: Easings.easeOutSine, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 1, value: 25, easing: Easings.easeInSine, p1: 2, p2: p2});
             va_pos_x1.addValueKey({time: 2, value: 50, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 3, value: 75, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 4, value: 100, easing: e, p1: p1, p2: p2});
@@ -76,15 +102,24 @@
             va_pos_x1.addValueKey({time: 6, value: 50, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 7, value: 25, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 8, value: 0, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 8.45, value: 12.5, easing: Easings.stepped, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 9, value: 25, easing: Easings.stepped, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 10, value: 50, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 11, value: 75, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 12, value: 100, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 13, value: 75, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 14, value: 50, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 15, value: 25, easing: e, p1: p1, p2: p2});
+            va_pos_x1.addValueKey({time: 16, value: 0, easing: e, p1: p1, p2: p2});            
             va_pos_x1.init(0.01);     
 
             var va_pos_y1 = new LookupAtTime({object: circle1, property: 'y', min: 0, max: 100, listType: 'Float32Array'});
             va_pos_y1.addValueKey({time: 0, value: 50});
-            va_pos_y1.addValueKey({time: 8, value: 50});
+            va_pos_y1.addValueKey({time: 16, value: 50});
             va_pos_y1.init(0.01);
 
 
-            var timeLine = new TimelineManager(document.querySelector('#timeline'), 8, 2);
+            var timeLine = new TimelineManager(document.querySelector('#timeline'), 16, 2);
             timeLine.durationLabel.innerText = 'Length in beats';
             
             let bpmpair = VA_Utils.createEl('div', {className: 'labeled-input'}, timeLine.scaleInfoDiv);
@@ -106,7 +141,7 @@
             resetBtn.addEventListener('click', (e)=>{
                 audioObject.audioElm.currentTime = 0;
                 timeLine.setTimeFast(0);
-                setWaveDisplayStartTime();
+                setWaveDisplay(timeLine.viewStart, timeLine.viewRange)
             });
 
             let playBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
@@ -140,6 +175,7 @@
                 loopBtn.classList.toggle('selected');
             });            
 
+            var audioObject = new AudioObject(null, null, 'song', 120);
             let audioLine = new ValueChannel(timeLine, timeLine.rootChannelGroup, {valueAt: audioObject.valueAt, name: 'music.mp3', strokeColor: '#f0f'});
             audioLine.labelDiv.style.flexDirection = 'column';
             audioLine.labelDiv.style.justifyContent = 'start';
@@ -147,7 +183,8 @@
 
             let offsetPair = VA_Utils.createEl('div', {className: 'labeled-input'}, audioLine.labelDiv);
             VA_Utils.createEl('label', {for: 'offsetInput', innerText: 'Offset (ms)'}, offsetPair);
-            var offsetInput = VA_Utils.createEl('input', {id: 'offsetInput', type: 'number', min: 0, step: '1', value: 0}, offsetPair);
+            
+            var offsetInput = VA_Utils.createEl('input', {id: 'offsetInput', type: 'number', min: 0, step: '1', value: 143}, offsetPair);
             offsetInput.addEventListener('input', (e)=>{
                 if (!isNaN(parseInt(offsetInput.value))){
                     offset = parseInt(offsetInput.value) / 1000;
@@ -158,14 +195,19 @@
             audioObject.audioElm.addEventListener('play', (e)=>{
                 playBtn.classList.add('active');
             });
+            
             audioObject.audioElm.addEventListener('pause', (e)=>{
                 playBtn.classList.remove('active');
             }); 
+
+            /*
             audioObject.audioElm.addEventListener('seeked', (e)=>{ 
                 let beat = audioObject.audioElm.currentTime / timePerBeat;
-                let index = (timeLine.viewStart + Math.floor(beat / timeLine.duration) * timeLine.duration) * audioObject.waveDisplay.options.sampleRate;
-                //audioObject.waveDisplay.setStartIndex(index);
-            });       
+                let index = timeLine.viewStart + Math.floor(beat / timeLine.duration) * timeLine.duration;
+                console.log('dfg');
+            });
+            */
+
             audioObject.loadAudioURL('./music.mp3').then((waveDisplay)=>{
                 audioObject.audioElm.currentTime = 0;
                 audioObject.setParent(audioLine.svgWrapperDiv, true);
@@ -174,27 +216,21 @@
                 audioObject.waveDisplay.svg.style.height = '100%';
                 audioLine.svgWrapperDiv.parentElement.classList.add('valueAt-wave-line');
                 audioLine.onRender = (viewStart, viewRange)=>{
-                    setWaveDisplay(viewStart, viewRange);
-                    //let currentBeat = (audioObject.audioElm.currentTime + offset) / timePerBeat;
-                    //let beatDuration = (audioObject.audioElm.duration - offset) / timePerBeat;
-                    //audioObject.waveDisplay.zoom = beatDuration / timeLine.viewRange;
-                    //let index = (timeLine.viewStart + Math.floor(currentBeat / timeLine.duration) * timeLine.duration) * samplesPerBeat;
-                    //audioObject.waveDisplay.setStartIndex(index);                    
+                    setWaveDisplay(viewStart, viewRange);                  
                 }
                 timeLine.onTime = (time) =>{
                     setWaveDisplay(timeLine.viewStart, timeLine.viewRange);
                 }
-                audioLine.update();
+                setWaveDisplay(timeLine.viewStart, timeLine.viewRange);
             });
 
             function setWaveDisplay(startBeat, beatRange){
                 let currentBeat = audioObject.audioElm.currentTime / timePerBeat;
                 let startIndex = (offset * audioObject.waveDisplay.options.sampleRate) + (startBeat+ Math.floor(currentBeat / timeLine.duration) * timeLine.duration) * samplesPerBeat;
                 audioObject.waveDisplay.setView(startIndex, startIndex + (beatRange * timePerBeat * audioObject.waveDisplay.options.sampleRate));
-                //audioObject.waveDisplay.setStartIndex(index + (offset * audioObject.waveDisplay.options.sampleRate));
             }
 
-            let circlegroup1 = new ChannelGroup(timeLine, timeLine.rootGroup, {name: 'Circle 1', expanded: true}); //timeLine.addchannelGroup('Circle 1', true);
+            let circlegroup1 = new ChannelGroup(timeLine, timeLine.rootGroup, {name: 'Circle 1', expanded: true});
             let radiusChannel = new ValueChannel(timeLine, circlegroup1, {valueAt: va_radius1, name: 'Radius', strokeWidth: 1, strokeColor: '#f0f'});
             let colorGroup1 = new ChannelGroup(timeLine, circlegroup1, {name: 'Color', expanded: true});
             let redChannel = new ValueChannel(timeLine, colorGroup1, {valueAt: va_red1, name: 'Red', strokeWidth: 1, strokeColor: '#f00'});
@@ -206,15 +242,6 @@
             let yChannel1 = new ValueChannel(timeLine, positionGroup1, {valueAt: va_pos_y1, name: 'Pos Y'});
 
             timeLine.init();
-            var waveDisplay;
-            var start;
-            var cursorStart;
-            var samplesPerBeat;
-            var offset = 0;
-            var playStop = false;
-            var loop = false;
-            var audioBuffer;
-            var source;
             
             function stepFrame(timestamp) {
                 if (start === undefined) {

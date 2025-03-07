@@ -22,10 +22,11 @@ export class ChannelGroup{
         if (typeof timeLine != 'object' || timeLine.constructor.name !== 'TimelineManager'){
             throw new Error('A object of type TimeLineManager is required for parameter timeLine');
         }
-        if (this.#parentChannelGroup == null){
-            this.#parentChannelGroup = timeLine.rootChannelGroup;
+        if (parentChannelGroup == null){
+            parentChannelGroup = timeLine.rootChannelGroup;
         }
-        if (this.#parentChannelGroup != null){
+        if (parentChannelGroup != null){
+            this.#parentChannelGroup = parentChannelGroup;
             this.#parentChannelGroup.channelGroups.push(this);
         }
         let labelCollapseClass = '';
@@ -259,16 +260,16 @@ export class ChannelGroup{
         return valueChannelsList;
     }
 
-    getAllValueAtNodes(checkInView = false, checkExpanded = false){
-        let valueAtNodes = [];
+    getAllValueNodes(checkInView = false, checkExpanded = false){
+        let valueNodes = [];
         let valueChannels = this.getvalueChannels(checkInView, checkExpanded);
         valueChannels.forEach((valueChannel)=>{
-            valueAtNodes = valueAtNodes.concat(valueChannel.valueAtNodes);
+            valueNodes = valueNodes.concat(valueChannel.valueNodes);
         });
         this.#channelGroups.forEach((channelGroup)=>{
-            valueAtNodes = valueAtNodes.concat(channelGroup.getAllValueAtNodes(checkInView, checkExpanded));
+            valueNodes = valueNodes.concat(channelGroup.getAllValueNodes(checkInView, checkExpanded));
         });
-        return valueAtNodes;
+        return valueNodes;
     }
 
     get name(){
