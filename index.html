@@ -50,7 +50,7 @@
 
 
             va_radius1.addValueKey({time: 0, value: 10});
-            for (let i=1; i < 17; i++){
+            for (let i=1; i < 9; i++){
                 va_radius1.addValueKey({time: i, value: 13});
                 va_radius1.addValueKey({time: i+0.001, value: 10, easing: Easings.easeInSine});
             }
@@ -61,11 +61,7 @@
             va_red1.addValueKey({time: 2, value: 255, easing: Easings.easeInOutCubic});
             va_red1.addValueKey({time: 4, value: 0, easing: Easings.easeInOutCubic});
             va_red1.addValueKey({time: 6, value: 255, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 8, value: 0, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 10, value: 255, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 12, value: 0, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 14, value: 255, easing: Easings.easeInOutCubic});
-            va_red1.addValueKey({time: 16, value: 0, easing: Easings.easeInOutCubic});   
+            va_red1.addValueKey({time: 8, value: 0, easing: Easings.easeInOutCubic});  
             va_red1.init(0.1);
              
             var va_green1 = new LookupAtTime({object: circle1, property: 'g', min: 0, max: 255, listType: 'Uint8Array'});
@@ -73,19 +69,13 @@
             va_green1.addValueKey({time: 2, value: 0, easing: Easings.easeInOutCubic});
             va_green1.addValueKey({time: 4, value: 255, easing: Easings.easeInOutCubic});
             va_green1.addValueKey({time: 6, value: 0, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 8, value: 255, easing: Easings.easeInOutCubic});            
-            va_green1.addValueKey({time: 10, value: 0, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 12, value: 255, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 14, value: 0, easing: Easings.easeInOutCubic});
-            va_green1.addValueKey({time: 16, value: 255, easing: Easings.easeInOutCubic});    
+            va_green1.addValueKey({time: 8, value: 255, easing: Easings.easeInOutCubic});              
             va_green1.init(0.1);
 
             var va_blue1 = new LookupAtTime({object: circle1, property: 'b', min: 0, max: 255, listType: 'Uint8Array'});
             va_blue1.addValueKey({time: 0, value: 0});
             va_blue1.addValueKey({time: 4, value: 255, easing: Easings.easeInOutCubic});
-            va_blue1.addValueKey({time: 8, value: 0, easing: Easings.easeInOutCubic});
-            va_blue1.addValueKey({time: 12, value: 255, easing: Easings.easeInOutCubic});
-            va_blue1.addValueKey({time: 16, value: 0, easing: Easings.easeInOutCubic});            
+            va_blue1.addValueKey({time: 8, value: 0, easing: Easings.easeInOutCubic});         
             va_blue1.init(0.1);            
 
             var va_pos_x1 = new LookupAtTime({object: circle1, property: 'x', min: 0, max: 100, listType: 'Float32Array'});
@@ -93,35 +83,24 @@
             let p2 = 2;
             let e = Easings.easeInExpo;
             va_pos_x1.addValueKey({time: 0, value: 0});
-            va_pos_x1.addValueKey({time: 0.20, value: 15, easing: Easings.easeOutSine, p1: 2, p2: p2});
-            va_pos_x1.addValueKey({time: 0.45, value: 12.5, easing: Easings.easeInSine, p1: 2, p2: p2});
-            va_pos_x1.addValueKey({time: 0.70, value: 10, easing: Easings.easeOutSine, p1: 2, p2: p2});
-            va_pos_x1.addValueKey({time: 1, value: 21, easing: Easings.easeInSine, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 0.45, value: 12.5, easing: Easings.stepped, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 1, value: 25, easing: Easings.stepped, p1: 2, p2: p2});
             va_pos_x1.addValueKey({time: 2, value: 50, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 3, value: 75, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 4, value: 100, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 5, value: 75, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 6, value: 50, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 7, value: 25, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 8, value: 0, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 8.45, value: 12.5, easing: Easings.stepped, p1: 2, p2: p2});
-            va_pos_x1.addValueKey({time: 9, value: 25, easing: Easings.stepped, p1: 2, p2: p2});
-            va_pos_x1.addValueKey({time: 10, value: 50, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 11, value: 75, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 12, value: 100, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 13, value: 75, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 14, value: 50, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 15, value: 25, easing: e, p1: p1, p2: p2});
-            va_pos_x1.addValueKey({time: 16, value: 0, easing: e, p1: p1, p2: p2});            
+            va_pos_x1.addValueKey({time: 8, value: 0, easing: e, p1: p1, p2: p2});            
             va_pos_x1.init(0.01);     
 
             var va_pos_y1 = new LookupAtTime({object: circle1, property: 'y', min: 0, max: 100, listType: 'Float32Array'});
             va_pos_y1.addValueKey({time: 0, value: 50});
-            va_pos_y1.addValueKey({time: 16, value: 50});
+            va_pos_y1.addValueKey({time: 8, value: 50});
             va_pos_y1.init(0.01);
 
 
-            var timeLine = new TimelineManager(document.querySelector('#timeline'), 16);
+            var timeLine = new TimelineManager(document.querySelector('#timeline'), {duration: 8, zoomSpeed: 0.02});
             timeLine.durationLabel.innerText = 'Length in beats';
             let bpmpair = VA_Utils.createEl('div', {className: 'labeled-input'}, timeLine.scaleInfoDiv);
             VA_Utils.createEl('label', {className: 'valueAt-info-label', for: 'bpmInput', innerText: 'BPM'}, bpmpair);

@@ -9,7 +9,7 @@
     --line-maximized-height: 100px;
     --nodecursor: 'move';
     --nodesize: 12px;
-    --nodeselectedsize: 14px;
+    --nodeselectedsize: 13px;
     --label-width: 170px;
     --grouped-lines-opacity: 0.6;
     --main-text-color: #cccccc;
@@ -324,6 +324,7 @@ input:focus {
 
 .valueAt-expand.valueAt-grouped-lines {
     opacity: var(--grouped-lines-opacity);
+    pointer-events: none;
 }
 
 .valueAt-flex-hor {
@@ -341,6 +342,7 @@ input:focus {
     flex: 1;
     border-bottom: 1px solid var(--line-color);
     background-color: var(--channel-back-color);
+    width: 100%;
     /*z-index: 0;*/
 }
 
@@ -422,7 +424,6 @@ input:focus {
 }
 
 .valueAt-line-label.valueAt-collapse{
-    /*display: none;*/
     opacity: 0;
 }
 
@@ -518,15 +519,13 @@ input:focus {
 }
 
 .valueAt-node:hover {
-    border: 1px solid #ffff00;
-    background-color: #ff000064;
+    border: 1px solid #fff;
+    background-color: #ffff0064;
 }
 
-.valueAt-node-active {
-    height: var(--nodeselectedsize);
+.valueAt-node-selected:hover {
     border: 1px solid #ffff00;
     background-color: #ff000064;
-    -webkit-tap-highlight-color: transparent;
 }
 
 .valueAt-node-selected {

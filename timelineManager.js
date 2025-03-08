@@ -46,7 +46,7 @@ EasingMap.set('easeInOutBounce', Easings.easeInOutBounce);
 const EasingNames = Array.from(EasingMap.keys());
 
 export class TimelineManager{
-
+    #options = {duration: 1, zoomSpeed: 0.02};
     #parentDiv;
     #containerDiv;
     #containerRect;
@@ -99,8 +99,6 @@ export class TimelineManager{
 
     #valueAtDiv;
 
-    #duration;
-
     #viewStart;
     #viewRange;
 
@@ -123,7 +121,8 @@ export class TimelineManager{
     #suppressedNodesDeSelectedList = [];
     #infoValueNode = null;
     onTime = null;
-    constructor(parent, duration){
+    constructor(parent, options){
+        Object.assign(this.#options, options);
         this.#parentDiv = parent;
         this.#root = document.querySelector(':root');
         //  build scrolling UI container
@@ -167,7 +166,7 @@ export class TimelineManager{
 
         let durationGroupDiv = VA_Utils.createEl('div', {className: 'labeled-input'}, this.#headerDiv);
         this.#durationLabel = VA_Utils.createEl('label', {className: 'valueAt-input-label', for: 'durationInput', innerText: 'Duration'}, durationGroupDiv);
-        this.#durationInput = VA_Utils.createEl('input', {id: 'durationInput', type: 'number', step: '1', value: duration.toFixed(0)}, durationGroupDiv);
+        this.#durationInput = VA_Utils.createEl('input', {id: 'durationInput', type: 'number', step: '1', value: this.#options.duration.toFixed(0)}, durationGroupDiv);
 
         let zoomGroupDiv = VA_Utils.createEl('div', {className: 'labeled-input'}, this.#headerDiv);
         this.#zoomLabel = VA_Utils.createEl('label', {className: 'valueAt-input-label', for: 'zoominput', innerText: 'Zoom'}, zoomGroupDiv);
@@ -230,24 +229,8 @@ export class TimelineManager{
             this.update();
         });
 
-        this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
-            if (e.button==0){
-
-            }
-            //this.update();
-        });
-
         this.#scrollContainerDiv.addEventListener('wheel', (e)=>{
             this.#handleWheel(e);
-            if (e.ctrlKey && e.offsetX > this.#labelWidth){
-                let x = (e.offsetX - this.#labelWidth) / this.#cursorDragBoxDiv.offsetWidth;
-                let target = this.#viewStart + (x * this.viewRange);
-                let zoomFactor = this.#zoomFactor;
-                zoomFactor += (e.deltaY * 0.01) * 0.1;
-                this.zoom(zoomFactor, target);
-                e.preventDefault();
-                e.stopPropagation();
-            }
         });
 
         this.#cursorDiv.addEventListener('pointerdown', (e)=>{
@@ -272,7 +255,7 @@ export class TimelineManager{
 
         this.#durationInput.addEventListener('input', (e)=>{
             if (!isNaN(parseInt(this.#durationInput.value))){
-                this.#duration = this.#durationInput.value;
+                this.#options.duration = this.#durationInput.value;
                 this.setView(this.#viewStart, this.#viewRange, true, true);
                 //this.update();
             }
@@ -396,8 +379,7 @@ export class TimelineManager{
         this.#handleWindowSize();
         this.#root = document.querySelector(':root');
         this.#labelWidth = parseFloat(this.getCSSVariable('--label-width').replace('px',''));
-        this.#duration = duration;
-        this.setView(0, this.#duration);
+        this.setView(0, this.#options.duration);
         this.setTime(this.#cursorTime);
     }
 
@@ -439,14 +421,16 @@ export class TimelineManager{
     }
 
     #handleWheel(e){
-        if (e.ctrlKey && e.offsetX > this.#labelWidth){
+        if (e.ctrlKey){
             let x = e.pageX - this.#cursorDragBoxRect.left;
-            let target = this.#viewStart + (x * this.#timeUnitsPerPixel);
-            let zoomFactor = this.#zoomFactor;
-            zoomFactor += (e.deltaY * 0.01) * 0.01;
-            this.zoom(zoomFactor, target);
-            e.preventDefault();
-            e.stopPropagation();
+            if (e.clientX > this.#labelWidth){
+                let f = x / this.#cursorDragBoxRect.width;
+                let targetTime = this.#viewStart + (x * this.#timeUnitsPerPixel);
+                let zoomFactor = this.#zoomFactor + ((e.deltaY / 120) * this.#options.zoomSpeed);
+                this.zoom(zoomFactor, targetTime);
+                e.preventDefault();
+                e.stopPropagation();
+            }
         }
     }
 
@@ -457,7 +441,7 @@ export class TimelineManager{
                 let f = distanceMoved / this.#cursorDragBoxRect.width;
                 let beatsMoved = this.#viewStart + this.#viewRange * f;
                 this.#selectedNodeList.forEach((valueNode)=>{
-                    valueNode.valueKey.time = VA_Utils.clamp(0, valueNode.valueKey.time + beatsMoved, this.#duration);
+                    valueNode.valueKey.time = VA_Utils.clamp(0, valueNode.valueKey.time + beatsMoved, this.#options.duration);
                     this.#updateInfoTime();
                 });
             }
@@ -562,7 +546,7 @@ export class TimelineManager{
         this.#containerRect = this.#containerDiv.getBoundingClientRect();
         this.#cursorDragBoxRect = this.#cursorDragBoxDiv.getBoundingClientRect(); 
         this.#scrollbarRect = this.#scrollbarDiv.getBoundingClientRect();
-        this.#timePerScrollPixel = this.#cursorDragBoxRect.width / this.#duration;
+        this.#timePerScrollPixel = this.#cursorDragBoxRect.width / this.#options.duration;
         this.#updateTimePerPixel(this.#viewRange);
         this.update();
     }
@@ -603,7 +587,7 @@ export class TimelineManager{
         if (this.#scrollBarDragoffset != null){
             //let timePerScrollPixel = this.#totalTime / this.#scrollbarRect.width;
             let x = e.pageX - this.#scrollbarRect.left - this.#scrollBarDragoffset;
-            let viewStart = x * (this.#duration / this.#scrollbarRect.width);
+            let viewStart = x * (this.#options.duration / this.#scrollbarRect.width);
             this.setView(viewStart, this.#viewRange);
         }
     }
@@ -662,7 +646,7 @@ export class TimelineManager{
     }
 
     setTimeAccurate(time){
-        let t = VA_Utils.clamp(0, time, this.#duration);
+        let t = VA_Utils.clamp(0, time, this.#options.duration);
         if (t != this.#cursorTime){
             this.#cursorTime = t;
             this.#updateCursors();
@@ -672,7 +656,7 @@ export class TimelineManager{
     }
 
     setTime(time){
-        let t = VA_Utils.clamp(0, time, this.#duration);
+        let t = VA_Utils.clamp(0, time, this.#options.duration);
         if (t != this.#cursorTime){
             this.#cursorTime = t;
             this.#updateCursors();
@@ -682,7 +666,7 @@ export class TimelineManager{
     }
 
     setTimeFast(time){
-        let t = VA_Utils.clamp(0, time, this.#duration);
+        let t = VA_Utils.clamp(0, time, this.#options.duration);
         if (t != this.#cursorTime){
             this.#cursorTime = t;
             this.#updateCursors();
@@ -692,13 +676,15 @@ export class TimelineManager{
     }
 
     zoom(zoomFactor, zoomTarget=null){
+        //zoomTarget = 6.001;
         if (zoomTarget == null){
             zoomTarget = this.#viewStart + (this.#viewRange * 0.5);
         }
-        this.#zoomFactor = Math.max(Math.min(1, zoomFactor), 0.001);
-        let viewRange = this.#duration * this.#zoomFactor;
-        this.#updateTimePerPixel(viewRange);
+        this.#zoomFactor = VA_Utils.clamp(0.001, zoomFactor, 1);
+        let viewRange = this.#options.duration * this.#zoomFactor;
+        //let x = zoomTarget * this.#pixelsPerTimeUnit;
         let factor = (zoomTarget - this.#viewStart) / this.#viewRange;
+        this.#updateTimePerPixel(viewRange);
         let viewStart = zoomTarget - (viewRange * factor);
         this.setView(viewStart, viewRange, true);
     }
@@ -706,16 +692,16 @@ export class TimelineManager{
     setView(viewStart, viewRange=null, force = false ){
         viewRange = viewRange==null? this.#viewRange : Math.abs(viewRange);
         if (force || viewStart != this.#viewStart || viewRange != this.#viewRange){
-            this.#viewStart = VA_Utils.clamp(0, viewStart, this.#duration - viewRange);
+            this.#viewStart = VA_Utils.clamp(0, viewStart, this.#options.duration - viewRange);
             this.#viewRange = viewRange;
             this.#updateTimePerPixel(this.#viewRange);
 
-            //this.#zoomSlider.value = 1 - (this.#viewRange / this.#totalTime);
-            let widthPercent = ((this.#viewRange / this.#duration) * 100);
+            this.#zoomSlider.value = 1 - this.#zoomFactor;
+            let widthPercent = ((this.#viewRange / this.#options.duration) * 100);
             //let widthPercent = this.#zoomFactor * 100;
             this.#scrollbarContentDiv.style.width = widthPercent + '%';
 
-            let scrollLeft = this.#viewStart / (this.#duration / this.#scrollbarRect.width);
+            let scrollLeft = this.#viewStart / (this.#options.duration / this.#scrollbarRect.width);
             this.#scrollbarContentDiv.style.left = scrollLeft + 'px';
 
             if (this.#scrollbarContentDiv.offsetLeft == 0 && widthPercent==100){
@@ -813,7 +799,7 @@ export class TimelineManager{
         return this.#footerDiv;
     }   
     get duration(){
-        return this.#duration;
+        return this.#options.duration;
     };
     get viewStart(){
         return this.#viewStart;
