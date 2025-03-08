@@ -329,12 +329,13 @@ export class WaveDisplay{
         let v = Math.max( Math.abs( this.#maxValue ), Math.abs( this.#minValue ));
         let path = 'M0 0L';
         for ( let i = 0; i < peaks.length; i++ ){
+            console.log(peaks[i].toFixed(0))
             let value = peaks[i] / v * 256 * this.#scale;
             let x = i * pixelStep;
             if ( i%2==0 ){
-                path += x.toFixed( 2 ) + ' ' + ( value ).toFixed( 0 ) + ' ';
+                path += x.toFixed( 0 ) + ' ' + ( value ).toFixed( 0 ) + ' ';
             } else {
-                path += x.toFixed( 2 ) + ' ' + ( -value ).toFixed( 0 ) + ' ';
+                path += x.toFixed( 0 ) + ' ' + ( -value ).toFixed( 0 ) + ' ';
             }
         }
         

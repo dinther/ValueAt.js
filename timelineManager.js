@@ -111,9 +111,7 @@ export class TimelineManager{
     #valueNodeDragStartPoint = null;
     #rootChannelGroup;
     #selectedNodeList = [];
-    
     #scrollbarContentDiv;
-    #pixelsPerSegment = 2;
     #labelWidth = null;
     #scrollbarWidth = null;
     #timeUnitsPerPixel;
@@ -125,7 +123,7 @@ export class TimelineManager{
     #suppressedNodesDeSelectedList = [];
     #infoValueNode = null;
     onTime = null;
-    constructor(parent, duration, pixelsPerSegment=2){
+    constructor(parent, duration){
         this.#parentDiv = parent;
         this.#root = document.querySelector(':root');
         //  build scrolling UI container
@@ -220,8 +218,6 @@ export class TimelineManager{
 
         this.#parentDiv.appendChild(this.#containerDiv);
 
-        this.#pixelsPerSegment = pixelsPerSegment;
-
         //  event handlers
 
         this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
@@ -238,7 +234,7 @@ export class TimelineManager{
             if (e.button==0){
 
             }
-            this.update();
+            //this.update();
         });
 
         this.#scrollContainerDiv.addEventListener('wheel', (e)=>{
@@ -402,14 +398,15 @@ export class TimelineManager{
         this.#labelWidth = parseFloat(this.getCSSVariable('--label-width').replace('px',''));
         this.#duration = duration;
         this.setView(0, this.#duration);
+        this.setTime(this.#cursorTime);
     }
 
-    init(){
-        this.#handleWindowSize();
-        this.setView(this.#viewStart, this.viewRange, true);
-        this.setTime(this.#cursorTime);
-        this.update();
-    }
+    //init(){
+        //this.#handleWindowSize();
+        //this.setView(this.#viewStart, this.viewRange);//, true);
+        //this.setTime(this.#cursorTime);
+        //this.update();
+    //}
 
     selectValueNodes(DOMRect, deselect=false){
         let valueNodes = this.getAllValueNodes(false, true);
@@ -815,13 +812,6 @@ export class TimelineManager{
     get footerDiv(){
         return this.#footerDiv;
     }   
-    get pixelsPerSegment(){
-        return this.#pixelsPerSegment;
-    }
-    set pixelsPerSegment(value){
-        this.#pixelsPerSegment = value;
-        this.update();
-    }
     get duration(){
         return this.#duration;
     };

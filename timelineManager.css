@@ -338,7 +338,7 @@ input:focus {
     align-items: center;
     position: relative;
     height: var(--line-row-height);
-    width: 100%;
+    flex: 1;
     border-bottom: 1px solid var(--line-color);
     background-color: var(--channel-back-color);
     /*z-index: 0;*/
@@ -456,6 +456,8 @@ input:focus {
     margin: 1px;
     justify-content: center;
     background-color: transparent;
+    padding: 0;
+    border: none;
 }
 
 .valueAt-line-icon:hover {
@@ -482,6 +484,16 @@ input:focus {
 .valueAt-wave-line{
     background-color: var(--scale-back-color);
     height: calc(var(--line-row-height)* 2);
+}
+
+.valueAt-wave-line svg {
+    flex: 1;
+    width: 100%;
+    fill: none;
+    stroke: white;
+    stroke-width: 1.2px;
+    pointer-events: none;
+    height: 100%;
 }
 
 .valuesAt-svg {

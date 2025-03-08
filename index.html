@@ -20,9 +20,11 @@
             //import {drawValueAtOnSVG, createValueAtUILine} from "./valueui.js";
             import {TimelineManager} from "./timelineManager.js";
             import {ChannelGroup} from "./channelGroup.js";
+            import {Channel} from "./channel.js";
             import {ValueChannel} from "./valueChannel.js";
-            import {WaveDisplay} from "./wavedisplay.js";
-            import {AudioObject} from "./audioObject.js";
+            import {AudioChannel} from "./audioChannel.js";
+            //import {WaveDisplay} from "./wavedisplay.js";
+            //import {AudioObject} from "./audioObject.js";
             import * as Icons from "./appIcons.js";
 
             import {Circle} from "./circle.js"
@@ -35,7 +37,7 @@
             var samplesPerBeat;
             var offset = 0.143;
             var playStop = false;
-            var loop = false;
+            var loop = true;
             var audioBuffer;
             var source;
             var generators = [];
@@ -94,7 +96,7 @@
             va_pos_x1.addValueKey({time: 0.20, value: 15, easing: Easings.easeOutSine, p1: 2, p2: p2});
             va_pos_x1.addValueKey({time: 0.45, value: 12.5, easing: Easings.easeInSine, p1: 2, p2: p2});
             va_pos_x1.addValueKey({time: 0.70, value: 10, easing: Easings.easeOutSine, p1: 2, p2: p2});
-            va_pos_x1.addValueKey({time: 1, value: 25, easing: Easings.easeInSine, p1: 2, p2: p2});
+            va_pos_x1.addValueKey({time: 1, value: 21, easing: Easings.easeInSine, p1: 2, p2: p2});
             va_pos_x1.addValueKey({time: 2, value: 50, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 3, value: 75, easing: e, p1: p1, p2: p2});
             va_pos_x1.addValueKey({time: 4, value: 100, easing: e, p1: p1, p2: p2});
@@ -119,9 +121,8 @@
             va_pos_y1.init(0.01);
 
 
-            var timeLine = new TimelineManager(document.querySelector('#timeline'), 16, 2);
+            var timeLine = new TimelineManager(document.querySelector('#timeline'), 16);
             timeLine.durationLabel.innerText = 'Length in beats';
-            
             let bpmpair = VA_Utils.createEl('div', {className: 'labeled-input'}, timeLine.scaleInfoDiv);
             VA_Utils.createEl('label', {className: 'valueAt-info-label', for: 'bpmInput', innerText: 'BPM'}, bpmpair);
             var bpmInput = VA_Utils.createEl('input', {id: 'bpmInput', type: 'number', step: '0.1', value: (60 / timePerBeat).toFixed(1)}, bpmpair);
@@ -139,7 +140,7 @@
             let resetBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
             resetBtn.innerHTML = Icons.getSVG('backToStart');
             resetBtn.addEventListener('click', (e)=>{
-                audioObject.audioElm.currentTime = 0;
+                audioChannel.audio.currentTime = 0;
                 timeLine.setTimeFast(0);
                 setWaveDisplay(timeLine.viewStart, timeLine.viewRange)
             });
@@ -149,14 +150,14 @@
                 playBtn.addEventListener('click', (e)=>{
                 playStop = false;
                 start = undefined;
-                audioObject.audioElm.play();
+                audioChannel.audio.play();
                 requestAnimationFrame(stepFrame);
             });
 
             let pauseBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
             pauseBtn.innerHTML = Icons.getSVG('pause');
             pauseBtn.addEventListener('click', (e)=>{
-                audioObject.audioElm.pause();
+                audioChannel.audio.pause();
                 playStop = true;
             });
 
@@ -168,69 +169,30 @@
                 timeLine.setTime(timeLine.duration);
             });
 
-            let loopBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
+            let loopBtn = VA_Utils.createEl('button', {className: 'icon-button selected'}, timeLine.footerDiv);
             loopBtn.innerHTML = Icons.getSVG('loop');
             loopBtn.addEventListener('click', (e)=>{
                 loop = !loop;
                 loopBtn.classList.toggle('selected');
             });            
 
-            var audioObject = new AudioObject(null, null, 'song', 120);
-            let audioLine = new ValueChannel(timeLine, timeLine.rootChannelGroup, {valueAt: audioObject.valueAt, name: 'music.mp3', strokeColor: '#f0f'});
-            audioLine.labelDiv.style.flexDirection = 'column';
-            audioLine.labelDiv.style.justifyContent = 'start';
-            audioLine.labelDiv.style.gap = '4px';
-
-            let offsetPair = VA_Utils.createEl('div', {className: 'labeled-input'}, audioLine.labelDiv);
-            VA_Utils.createEl('label', {for: 'offsetInput', innerText: 'Offset (ms)'}, offsetPair);
-            
-            var offsetInput = VA_Utils.createEl('input', {id: 'offsetInput', type: 'number', min: 0, step: '1', value: 143}, offsetPair);
-            offsetInput.addEventListener('input', (e)=>{
-                if (!isNaN(parseInt(offsetInput.value))){
-                    offset = parseInt(offsetInput.value) / 1000;
-                    setWaveDisplay(timeLine.viewStart, timeLine.viewRange);
-                }
-            });
-            
-            audioObject.audioElm.addEventListener('play', (e)=>{
+            let audioChannel = new AudioChannel(timeLine, timeLine.rootChannelGroup, {url:'./music.mp3', name: './music.mp3', offset: 0});
+            audioChannel.audio.addEventListener('play', (e)=>{
                 playBtn.classList.add('active');
             });
             
-            audioObject.audioElm.addEventListener('pause', (e)=>{
+            audioChannel.audio.addEventListener('pause', (e)=>{
                 playBtn.classList.remove('active');
             }); 
 
-            /*
-            audioObject.audioElm.addEventListener('seeked', (e)=>{ 
+           
+            audioChannel.audio.addEventListener('seeked', (e)=>{ 
                 let beat = audioObject.audioElm.currentTime / timePerBeat;
                 let index = timeLine.viewStart + Math.floor(beat / timeLine.duration) * timeLine.duration;
                 console.log('dfg');
             });
-            */
 
-            audioObject.loadAudioURL('./music.mp3').then((waveDisplay)=>{
-                audioObject.audioElm.currentTime = 0;
-                audioObject.setParent(audioLine.svgWrapperDiv, true);
-                samplesPerBeat = audioObject.waveDisplay.options.sampleRate * timePerBeat;
-                audioObject.waveDisplay.svg.style.position = 'absolute';
-                audioObject.waveDisplay.svg.style.height = '100%';
-                audioLine.svgWrapperDiv.parentElement.classList.add('valueAt-wave-line');
-                audioLine.onRender = (viewStart, viewRange)=>{
-                    setWaveDisplay(viewStart, viewRange);                  
-                }
-                timeLine.onTime = (time) =>{
-                    setWaveDisplay(timeLine.viewStart, timeLine.viewRange);
-                }
-                setWaveDisplay(timeLine.viewStart, timeLine.viewRange);
-            });
-
-            function setWaveDisplay(startBeat, beatRange){
-                let currentBeat = audioObject.audioElm.currentTime / timePerBeat;
-                let startIndex = (offset * audioObject.waveDisplay.options.sampleRate) + (startBeat+ Math.floor(currentBeat / timeLine.duration) * timeLine.duration) * samplesPerBeat;
-                audioObject.waveDisplay.setView(startIndex, startIndex + (beatRange * timePerBeat * audioObject.waveDisplay.options.sampleRate));
-            }
-
-            let circlegroup1 = new ChannelGroup(timeLine, timeLine.rootGroup, {name: 'Circle 1', expanded: true});
+            let circlegroup1 = new ChannelGroup(timeLine, timeLine.rootChannelGroup, {name: 'Circle 1', expanded: true});
             let radiusChannel = new ValueChannel(timeLine, circlegroup1, {valueAt: va_radius1, name: 'Radius', strokeWidth: 1, strokeColor: '#f0f'});
             let colorGroup1 = new ChannelGroup(timeLine, circlegroup1, {name: 'Color', expanded: true});
             let redChannel = new ValueChannel(timeLine, colorGroup1, {valueAt: va_red1, name: 'Red', strokeWidth: 1, strokeColor: '#f00'});
@@ -241,7 +203,7 @@
             let xChannel1 = new ValueChannel(timeLine, positionGroup1, {valueAt: va_pos_x1, name: 'Pos X'});
             let yChannel1 = new ValueChannel(timeLine, positionGroup1, {valueAt: va_pos_y1, name: 'Pos Y'});
 
-            timeLine.init();
+            //timeLine.init();
             
             function stepFrame(timestamp) {
                 if (start === undefined) {
@@ -250,19 +212,15 @@
                 }
                 const elapsed = (timestamp - start) / 1000;
                 if (loop){
-                    timeLine.setTimeFast(((audioObject.audioElm.currentTime - offset) / timePerBeat) % timeLine.duration);
+                    timeLine.setTimeFast(((audioChannel.audio.currentTime - audioChannel.options.offset) / timePerBeat) % timeLine.duration);
                 } else {
-                    timeLine.setTimeFast((audioObject.audioElm.currentTime - offset) / timePerBeat);
+                    timeLine.setTimeFast((audioChannel.audio.currentTime - audioChannel.options.offset) / timePerBeat);
                 }
                 
                 if (!playStop){
                     requestAnimationFrame(stepFrame); 
                 }
             }
-
-            // Set up audio context
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
-            const audioContext = new AudioContext();
 
             window.computeStepList = lookupAtExport.computeStepList;
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
@@ -272,8 +230,6 @@
             window.circle1 = circle1;
             window.va_pos_x1 = va_pos_x1;
             window.waveDisplay = waveDisplay;
-            window.audioObject = audioObject;
-            window.audioContext = audioContext;
         </script>
     </body>
 </html>
