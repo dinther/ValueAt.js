@@ -50,7 +50,7 @@ export class Channel{
         //this.#loopBtn.innerHTML = Icons.getSVG('loop');
         this.#freezeBtn = VA_Utils.createEl('button', {title: 'Toggle freeze', className: 'valueAt-line-icon valueAt-disabled'}, this.#lineIconsDiv);
         this.#freezeBtn.innerHTML = Icons.getSVG('freeze');        
-        this.#expandBtn = VA_Utils.createEl('button', {title: 'Toggle channel size', className: 'valueAt-line-icon valueAt-not-maximized'}, this.#lineIconsDiv);
+        this.#expandBtn = VA_Utils.createEl('button', {title: 'Toggle channel size', className: 'valueAt-line-icon'}, this.#lineIconsDiv);
         this.#expandBtn.innerHTML = Icons.getSVG('fullscreen');
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
        
