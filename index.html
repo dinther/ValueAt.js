@@ -172,7 +172,7 @@
             });
 
             let circlegroup1 = new ChannelGroup(timeLine, timeLine.rootChannelGroup, {name: 'Circle 1', expanded: true});
-            let radiusChannel = new ValueChannel(timeLine, circlegroup1, {valueAt: va_radius1, name: 'Radius', strokeWidth: 1, strokeColor: '#f0f'});
+            let radiusChannel = new ValueChannel(timeLine, circlegroup1, {valueAt: va_radius1, name: 'Radius', strokeWidth: 1, strokeColor: '#f0f', maximized: true});
             let colorGroup1 = new ChannelGroup(timeLine, circlegroup1, {name: 'Color', expanded: true});
             let redChannel = new ValueChannel(timeLine, colorGroup1, {valueAt: va_red1, name: 'Red', strokeWidth: 1, strokeColor: '#f00'});
             let greenChannel = new ValueChannel(timeLine, colorGroup1, {valueAt: va_green1, name: 'Green', strokeWidth: 1, strokeColor: '#0f0'});

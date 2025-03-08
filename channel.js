@@ -3,7 +3,7 @@ import {ValueNode} from "./valueNode.js";
 import * as Icons from "./appIcons.js";
 
 export class Channel{
-    #options = {name: '', loop: false, freeze: false};
+    #options = {name: '', loop: false, freeze: false, maximized: false};
     #valueAt;
     #timeLine;
     #channelGroup;
@@ -39,8 +39,10 @@ export class Channel{
         if (channelGroup.expandDiv.classList.contains('valueAt-collapse')){
             collapseClass = ' valueAt-collapse';
         }
-        this.#lineDiv = VA_Utils.createEl('div', { className: 'valueAt-line' + collapseClass});
-        this.#labelDiv = VA_Utils.createEl('div', { className: 'valueAt-line-label' + collapseClass}, this.#lineDiv);
+        let maximizedClass = this.#options.maximized? 'valueAt-maximized' : '';
+
+        this.#lineDiv = VA_Utils.createEl('div', { className: 'valueAt-line ' + collapseClass + ' ' + maximizedClass});
+        this.#labelDiv = VA_Utils.createEl('div', { className: 'valueAt-line-label ' + collapseClass}, this.#lineDiv);
         let span = VA_Utils.createEl('span', {innerText: this.#options.name}, this.#labelDiv);
         span.style.left = this.#channelGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
@@ -48,7 +50,7 @@ export class Channel{
         //this.#loopBtn.innerHTML = Icons.getSVG('loop');
         this.#freezeBtn = VA_Utils.createEl('button', {title: 'Toggle freeze', className: 'valueAt-line-icon valueAt-disabled'}, this.#lineIconsDiv);
         this.#freezeBtn.innerHTML = Icons.getSVG('freeze');        
-        this.#expandBtn = VA_Utils.createEl('button', {title: 'Toggle channel size', className: 'valueAt-line-icon  valueAt-disabled'}, this.#lineIconsDiv);
+        this.#expandBtn = VA_Utils.createEl('button', {title: 'Toggle channel size', className: 'valueAt-line-icon valueAt-not-maximized'}, this.#lineIconsDiv);
         this.#expandBtn.innerHTML = Icons.getSVG('fullscreen');
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
        

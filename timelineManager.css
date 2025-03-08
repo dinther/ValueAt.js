@@ -478,7 +478,7 @@ input:focus {
     touch-action: none;
 }
 
-.valueAt-line.valueAt-maximized{
+.valueAt-line.valueAt-maximized:not(.valueAt-line.valueAt-collapse){
     height: var(--line-maximized-height);
 }
 
