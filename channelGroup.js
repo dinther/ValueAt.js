@@ -14,7 +14,7 @@ export class ChannelGroup{
     #parentChannelGroup;
     #groupIconsDiv;
     #channelGroups = [];
-    #valueChannels = [];
+    #channels = [];
     #onChanged;
     #options = {name:'group', expanded: true, indent:20};
     constructor(timeLine, parentChannelGroup, options){
@@ -117,9 +117,9 @@ export class ChannelGroup{
             this.#expandDiv.classList.remove('valueAt-grouped-lines');
         }
 
-        for (let i=0; i<this.#valueChannels.length; i++){
-            this.#valueChannels[i].lineDiv.classList.add('valueAt-collapse');
-            this.#valueChannels[i].labelDiv.classList.add('valueAt-collapse');
+        for (let i=0; i<this.#channels.length; i++){
+            this.#channels[i].lineDiv.classList.add('valueAt-collapse');
+            this.#channels[i].labelDiv.classList.add('valueAt-collapse');
         }
 
         this.#expandDiv.classList.add('valueAt-collapse');
@@ -133,8 +133,8 @@ export class ChannelGroup{
         //  Hide value lines when the any group between the tree root and this group is logicaly collapsed (!expanded)
         let collapsedParentGroups = this.getLogicallyCollapsedParentGroups();
         if (collapsedParentGroups.length > 1){
-            for (let i=0; i<this.#valueChannels.length; i++){
-                this.#valueChannels[i].lineDiv.classList.add('valueAt-hide');
+            for (let i=0; i<this.#channels.length; i++){
+                this.#channels[i].lineDiv.classList.add('valueAt-hide');
             }
         }
     }
@@ -157,11 +157,11 @@ export class ChannelGroup{
             channelGroup.expand(setState);
         });
         if (this.#parentChannelGroup.expanded){
-            this.#valueChannels.forEach((valueChannel)=>{
+            this.#channels.forEach((valueChannel)=>{
                 valueChannel.lineDiv.classList.remove('valueAt-hide');
             });
         }
-        this.#valueChannels.forEach((valueChannel)=>{
+        this.#channels.forEach((valueChannel)=>{
             if (this.#parentChannelGroup.expanded && this.#options.expanded){
                 valueChannel.labelDiv.classList.remove('valueAt-collapse');
                 valueChannel.lineDiv.classList.remove('valueAt-collapse');
@@ -176,15 +176,16 @@ export class ChannelGroup{
         }
     }
     update(){        
-        this.#valueChannels.forEach((valueChannel)=>{
+        this.#channels.forEach((valueChannel)=>{
             valueChannel.update();
         });
         this.#channelGroups.forEach((channelGroup)=>{
             channelGroup.update();
         });
     }
+
     setTimeAccurate(time){
-        this.#valueChannels.forEach((valueChannel)=>{
+        this.#channels.forEach((valueChannel)=>{
             valueChannel.setTimeAccurate(time);
         });
         this.#channelGroups.forEach((channelGroup)=>{
@@ -193,7 +194,7 @@ export class ChannelGroup{
     }
 
     setTime(time){
-        this.#valueChannels.forEach((valueChannel)=>{
+        this.#channels.forEach((valueChannel)=>{
             valueChannel.setTime(time);
         });
 
@@ -203,7 +204,7 @@ export class ChannelGroup{
     }
 
     setTimeFast(time){
-        this.#valueChannels.forEach((valueChannel)=>{
+        this.#channels.forEach((valueChannel)=>{
             valueChannel.setTimeFast(time);
         });
         this.#channelGroups.forEach((channelGroup)=>{
@@ -211,28 +212,6 @@ export class ChannelGroup{
         });        
     }
 
-    addChannelGroup1(name, expanded=true){
-        let channelGroup = new ChannelGroup(this.#timeLine, this, {name: name, expanded:expanded});
-        this.#channelGroups.push(channelGroup);
-        return channelGroup;
-    }  
-
-    addChannel1(channel){
-        this.#valueChannels.push(valueChannel);
-        this.#handleChanged(valueChannel);
-        if (this.#options.expanded == false){
-            this.collapse();
-        }
-    }
-    addValueAt1(valueAt, labelName='', strokeWidth=1, strokeColor='#fff'){
-        let valueChannel = new ValueChannel(this.#timeLine, this, {valueAt: valueAt, labelName: labelName, strokeWidth: strokeWidth, strokeColor: strokeColor});
-        this.#valueChannels.push(valueChannel);
-        this.#handleChanged(valueChannel);
-        if (this.#options.expanded == false){
-            this.collapse();
-        }
-        return valueChannel;
-    }
     getRootUserGroupName(){
         if (this.#parentChannelGroup == this.#timeLine.rootChannelGroup){
             return this.#options.name;
@@ -240,30 +219,36 @@ export class ChannelGroup{
             return this.#parentChannelGroup? this.#parentChannelGroup.getRootUserGroupName() : '';
         }
     }
-    getvalueChannels(checkInView = false, checkExpanded = false){
-        let valueChannelsList = [];
-        this.#valueChannels.forEach((valueChannel)=>{
-            if (checkInView && valueChannel.inView || !checkInView){
-                if (checkExpanded && !valueChannel.lineDiv.classList.contains('valueAt-collapse') || !checkExpanded){
-                    valueChannelsList.push(valueChannel);
+
+    getChannels(className, checkInView = false, checkExpanded = false, checkMaximized = false){
+        let channelsList = [];
+        for( let i=0; i<this.#channels.length; i++){
+            let channel = this.#channels[i];
+            if (className==undefined || className == channel.constructor.name){
+                if (checkInView && channel.inView || !checkInView){
+                    if (checkExpanded && !channel.lineDiv.classList.contains('valueAt-collapse') || !checkExpanded){
+                        if (checkMaximized && !channel.lineDiv.classList.contains('valueAt-maximized') || !checkMaximized){
+                            channelsList.push(channel);
+                        }
+                    }
                 }
             }
-        });
-        return valueChannelsList;
+        };
+        return channelsList;
     }
 
-    getAllValueChannels(checkInView = false, checkExpanded = false){
-        let valueChannelsList = this.getvalueChannels(checkInView, checkExpanded);
+    getAllChannels(className, checkInView = false, checkExpanded = false, checkMaximized = false){
+        let channelsList = this.getChannels(className, checkInView, checkExpanded, checkMaximized );
         this.#channelGroups.forEach((channelGroup)=>{
-            valueChannelsList = valueChannelsList.concat( channelGroup.getAllValueChannels(checkInView, checkExpanded));
+            channelsList = channelsList.concat( channelGroup.getAllChannels(className, checkInView, checkExpanded, checkMaximized));
         });
-        return valueChannelsList;
+        return channelsList;
     }
 
     getAllValueNodes(checkInView = false, checkExpanded = false){
         let valueNodes = [];
-        let valueChannels = this.getvalueChannels(checkInView, checkExpanded);
-        valueChannels.forEach((valueChannel)=>{
+        let channels = this.getChannels(checkInView, checkExpanded);
+        channels.forEach((valueChannel)=>{
             if (Array.isArray(valueChannel.valueNodes)){
                 valueNodes = valueNodes.concat(valueChannel.valueNodes);
             }
@@ -299,8 +284,8 @@ export class ChannelGroup{
     get labelSpanDiv(){
         return this.#labelSpanDiv;
     }
-    get valueChannels(){
-        return this.#valueChannels;
+    get channels(){
+        return this.#channels;
     }
     get channelGroups(){
         return this.#channelGroups;

@@ -1,7 +1,7 @@
 import * as VA_Utils from "./valueAtUtils.js";
 import {ChannelGroup} from "./channelGroup.js";
-import {ValueChannel} from "./valueChannel.js";
 import * as Easings from "./easings.js";
+import * as Icons from "./appIcons.js";
 
 //['linear','stepped','easeInSine','easeOutSine','easeInOutSine','easeInQuad','easeOutQuad','easeInOutQuad','easeInCubic','easeOutCubic','easeInOutCubic','easeInQuart','easeOutQuart','easeInOutQuart','easeInQuint','easeOutQuint','easeInOutQuint','easeInExpo','easeOutExpo','easeInOutExpo','easeInCirc','easeOutCirc','easeInOutCirc','easeInBack','easeOutBack','easeInOutBack','easeInElastic','easeOutElastic','easeInOutElastic','easeOutBounce','easeInBounce','easeInOutBounce'];
 const EasingMap = new Map;
@@ -46,7 +46,7 @@ EasingMap.set('easeInOutBounce', Easings.easeInOutBounce);
 const EasingNames = Array.from(EasingMap.keys());
 
 export class TimelineManager{
-    #options = {duration: 1, zoomSpeed: 0.02};
+    #options = {duration: 1, zoomSpeed: 0.02, loop: false, scale: 1};
     #parentDiv;
     #containerDiv;
     #containerRect;
@@ -96,13 +96,17 @@ export class TimelineManager{
     #keyFrameP2Input;
 
     #valueAtDiv;
-
+    #toStartBtn
+    #playBtn;
+    #pauseBtn;
+    #toEndBtn
+    #loopBtn
     #viewStart;
     #viewRange;
 
     #cursorTime = 0;
     #root;
-    
+    #audioChannels = [];
     #valueNodeDragStartPoint = null;
     #rootChannelGroup;
     #selectedNodeList = [];
@@ -116,6 +120,8 @@ export class TimelineManager{
     #scrollBarDragoffset = null;
     #suppressedNodesSelectedList = [];
     #suppressedNodesDeSelectedList = [];
+    #startTime;
+    #stopRequest = false;
     #infoValueNode = null;
     onTime = null;
     constructor(parent, options){
@@ -125,7 +131,7 @@ export class TimelineManager{
         //  build scrolling UI container
         this.#containerDiv = VA_Utils.createEl('div', {className: 'valueAt-container'});  //  attach the whole branch to parent at the end
 
-        //  build stickyheader
+        //  build header
         this.#headerDiv = VA_Utils.createEl('div', {className: 'valueAt-header'}, this.#containerDiv);
 
         //  build wave display and scale container
@@ -144,7 +150,6 @@ export class TimelineManager{
         this.#cursorLabelText = VA_Utils.createEl('div', {innerText: '0', className: 'valueAt-cursor-text'}, this.#cursorLabel);
 
         this.#scrollContainerDiv = VA_Utils.createEl('div', {className: 'valueAt-scroll-container'}, this.#containerDiv);
-        //this.#stickyWrapperDiv = VA_Utils.createEl('div', {id: 'stickyWrapper'}, this.#scrollContainerDiv);
 
  
         //  build container to keep the data related objects together.
@@ -164,6 +169,20 @@ export class TimelineManager{
         let durationGroupDiv = VA_Utils.createEl('div', {className: 'labeled-input'}, this.#headerDiv);
         this.#durationLabel = VA_Utils.createEl('label', {className: 'valueAt-input-label', for: 'durationInput', innerText: 'Duration'}, durationGroupDiv);
         this.#durationInput = VA_Utils.createEl('input', {id: 'durationInput', type: 'number', step: '1', value: this.#options.duration.toFixed(0)}, durationGroupDiv);
+
+        // player buttons
+        let playerButtons = VA_Utils.createEl('div', {className: 'player-buttons'}, this.#headerDiv);
+       
+        this.#toStartBtn = VA_Utils.createEl('button', {className: 'icon-button'}, playerButtons);
+        this.#toStartBtn.innerHTML = Icons.getSVG('backToStart');
+        this.#playBtn = VA_Utils.createEl('button', {className: 'icon-button'}, playerButtons);
+        this.#playBtn.innerHTML = Icons.getSVG('play');
+        this.#pauseBtn = VA_Utils.createEl('button', {className: 'icon-button'}, playerButtons);
+        this.#pauseBtn.innerHTML = Icons.getSVG('pause');
+        this.#toEndBtn = VA_Utils.createEl('button', {className: 'icon-button'}, playerButtons);
+        this.#toEndBtn.innerHTML = Icons.getSVG('forwardToEnd');
+        this.#loopBtn = VA_Utils.createEl('button', {className: 'icon-button selected'}, playerButtons);
+        this.#loopBtn.innerHTML = Icons.getSVG('loop');
 
         let zoomGroupDiv = VA_Utils.createEl('div', {className: 'labeled-input'}, this.#headerDiv);
         this.#zoomLabel = VA_Utils.createEl('label', {className: 'valueAt-input-label', for: 'zoominput', innerText: 'Zoom'}, zoomGroupDiv);
@@ -205,12 +224,36 @@ export class TimelineManager{
         this.#p2Div = VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'P2'}, this.#infoKeyFrameDiv);
         this.#keyFrameP2Input = VA_Utils.createEl('input', {type: 'number', step: '0.05', value: 0}, this.#p2Div);
 
+
+
         //  create root valueAt group
         this.#rootChannelGroup = new ChannelGroup(this, null, '', true);
 
         this.#parentDiv.appendChild(this.#containerDiv);
 
         //  event handlers
+
+        this.#toStartBtn.addEventListener('click', (e)=>{
+            this.toStart();
+        });
+
+        this.#playBtn.addEventListener('click', (e)=>{
+            this.play();
+        });
+
+        this.#pauseBtn.addEventListener('click', (e)=>{
+            this.pause();
+        });
+
+        this.#toEndBtn.addEventListener('click', (e)=>{
+            this.toEnd();
+        });
+
+
+        this.#loopBtn.addEventListener('click', (e)=>{
+            this.loop = !this.loop;
+            loopBtn.classList.toggle('selected');
+        });     
 
         this.#scrollContainerDiv.addEventListener('pointerdown', (e)=>{
             if (e.offsetX > this.#labelWidth && !e.ctrlKey && !e.shiftKey){
@@ -437,11 +480,10 @@ export class TimelineManager{
 
     #handleCursorToPreviousKeyFrame(e){
         if (e.button==0){
-            let time = null
             let priorValueNode = null;
-            let valueChannels = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
-            valueChannels.forEach((valueChannel)=>{
-                let valueNode = valueChannel.getValueNodeBefore(this.#cursorTime, false);
+            let channels = this.getAllChannels('ValueChannel', false, true, false); //  only lines that are expanded from the whole tree
+            channels.forEach((channel)=>{
+                let valueNode = channel.getValueNodeBefore(this.#cursorTime, false);
                 if (valueNode != null && valueNode != priorValueNode){
                     priorValueNode = priorValueNode==null? valueNode : (valueNode.valueKey.time > priorValueNode.valueKey.time)? valueNode : priorValueNode;
                     if (this.#infoValueNode != null && this.#infoValueNode.selected){
@@ -460,11 +502,10 @@ export class TimelineManager{
 
     #handleCursorToNextKeyFrame(e){
         if (e.button==0){
-            let time = null
             let nextValueNode = null;
-            let valueChannels = this.getAllValueAtLines(false, true); //  only lines that are expanded from the whole tree
-            valueChannels.forEach((valueChannel)=>{
-                let valueNode = valueChannel.getValueNodeAfter(this.#cursorTime, false);
+            let channels = this.getAllChannels('ValueChannel', false, true, false); //  only lines that are expanded from the whole tree
+            channels.forEach((channel)=>{
+                let valueNode = channel.getValueNodeAfter(this.#cursorTime, false);
                 if (valueNode != null && valueNode != nextValueNode){
                     nextValueNode = nextValueNode==null? valueNode : (valueNode.valueKey.time < nextValueNode.valueKey.time)? valueNode : nextValueNode;
                     if (this.#infoValueNode != null && this.#infoValueNode.selected){
@@ -564,6 +605,23 @@ export class TimelineManager{
         return !(time < this.#viewStart || time > this.#viewStart + this.#viewRange);
     }
 
+    #stepFrame(timestamp) {
+        if (this.#startTime === undefined) {
+            this.#startTime = timestamp;
+        }
+        const elapsed = (timestamp - this.#startTime) / 1000;
+        if (this.#options.loop){
+            //this.setTimeFast(((audioChannel.audio.currentTime - audioChannel.options.offset) / timePerBeat) % timeLine.duration);
+            this.setTimeFast((elapsed / this.#options.scale) % timeLine.duration);
+        } else {
+            this.setTimeFast(elapsed / this.#options.scale);
+        }
+        
+        if (!this.#stopRequest){
+            requestAnimationFrame(this.#stepFrame.bind(this)); 
+        }
+    }
+
     getCSSVariable(name){
         let rs = getComputedStyle(this.#root);
         return rs.getPropertyValue(name);
@@ -576,16 +634,6 @@ export class TimelineManager{
     update(){
         this.#updateCursors();
         this.#rootChannelGroup.update();
-
-        //  temp stats
-        /*
-        let lines = this.#rootChannelGroup.getAllValueAtLines();
-        let inViewCount = 0;
-        lines.forEach((line)=>{
-            inViewCount += line.inView? 1 : 0;
-        });
-        console.log('rendered ' + inViewCount + ' lines');
-        */
     }
 
     addValueNodesToSelectedList(valueNodes){
@@ -691,30 +739,69 @@ export class TimelineManager{
 
     }
 
-    addChannelGroup1(name, expanded=true, parentGroup=null){
-        if (parentGroup==null){
-            return this.#rootChannelGroup.addChannelGroup(name, expanded);
-        } else {
-            return parentGroup.addChannelGroup(name, expanded);
-        }
+    getAllChannels(className, checkInView = false, checkExpanded = false, checkMaximized = false){  //  params are selection criteria
+        let valueChannels = this.#rootChannelGroup.getAllChannels(className, checkInView, checkExpanded, checkMaximized);
+        return valueChannels;
+    }
+    
+    getAllValueNodes(checkInView = false, checkExpanded = false){
+        let valueNodes = this.#rootChannelGroup.getAllValueNodes(checkInView, checkExpanded);
+        return valueNodes;
     }
 
-    addChannel1(channel, parentGroup=null){
-        if (parentGroup==null){
-            return this.#rootChannelGroup.addChannel(channel);
-        } else {
-            return parentGroup.addChannel(channel);
-        }        
+    toStart(){
+        this.#audioChannels.forEach((audioChannel)=>{
+            //todo time check
+            audioChannel.audio.currentTime = 0;
+        });
+        timeLine.setTime(0);
+        //setWaveDisplay(this.#viewStart, this.#viewRange);
     }
 
-    addValueAt1(valueAt, labelName, strokeWidth, strokeColor, parentGroup=null){
-        if (parentGroup==null){
-            return this.#rootChannelGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
-        } else {
-            return parentGroup.addValueAt(valueAt, labelName, strokeWidth, strokeColor);
-        }
-    }    
+    play(){
+        this.#stopRequest = false;
+        this.#startTime = undefined;
+        this.#playBtn.classList.add('active');
+        this.#audioChannels = this.getAllChannels('AudioChannel', false, true, false);
+        this.#audioChannels.forEach((audioChannel)=>{
+            //todo time check
+            audioChannel.audio.play();
+        });
+        requestAnimationFrame((timeStamp)=>{this.#stepFrame(timeStamp)});
+    }
 
+    pause(){
+        this.#audioChannels.forEach((audioChannel)=>{
+            //todo time check
+            audioChannel.audio.pause();
+        });
+        this.#playBtn.classList.remove('active');
+        this.#stopRequest = true;
+    }
+
+    toEnd(){
+        this.#stopRequest = true;
+        this.#startTime = undefined;
+        timeLine.setTime(timeLine.duration);
+    }
+
+    seek(time){
+        //let beat = audioChannel.audio.currentTime / timePerBeat;
+        let viewStart = timeLine.viewStart + Math.floor(time / timeLine.duration) * timeLine.duration;
+        this.setView(viewStart, this.#viewRange);
+    }
+/*  ToDo event handlers
+    audioObject.audioElm.addEventListener('play', (e)=>{
+        playBtn.classList.add('active');
+    });
+    audioObject.audioElm.addEventListener('pause', (e)=>{
+        playBtn.classList.remove('active');
+    }); 
+    audioObject.audioElm.addEventListener('seeked', (e)=>{ 
+        let index = (timeLine.viewStart + Math.floor(audioObject.audioElm.currentTime / timeLine.dataRangeEnd) * timeLine.dataRangeEnd) * audioObject.waveDisplay.options.sampleRate;
+        audioObject.waveDisplay.setStartIndex(index);
+    });  
+*/
     get timeUnitsPerPixel(){
         return this.#timeUnitsPerPixel;
     }
@@ -783,15 +870,13 @@ export class TimelineManager{
             this.#onZoom = value;
         }
     }
-
-    getAllValueAtLines(checkInView = false, checkExpanded = false){  //  params are selection criteria
-        let valueChannels = this.#rootChannelGroup.getAllValueAtLines(checkInView, checkExpanded);
-        return valueChannels;
+    get scale(){
+        return this.#options.scale;
     }
-    
-    getAllValueNodes(checkInView = false, checkExpanded = false){
-        let valueNodes = this.#rootChannelGroup.getAllValueNodes(checkInView, checkExpanded);
-        return valueNodes;
+    set scale(value){
+        if(typeof value === 'function'){
+            this.#options.scale = value;
+        }
     }
 }
 

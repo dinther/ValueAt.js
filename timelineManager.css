@@ -261,6 +261,12 @@ input:focus {
     background-color: var(--header-back-color);
 }
 
+.player-buttons {
+    display: flex;
+    
+    width: var(--label-width);
+}
+
 .valueAt-group{
     position: relative;
 }

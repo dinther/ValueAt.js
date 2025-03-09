@@ -23,23 +23,17 @@
             import {ValueChannel} from "./valueChannel.js";
             import {AudioChannel} from "./audioChannel.js";
             import {ElementBoxSelector} from "./elementBoxSelector.js";
-            //import {WaveDisplay} from "./wavedisplay.js";
-            //import {AudioObject} from "./audioObject.js";
             import * as Icons from "./appIcons.js";
-
-            import {Circle} from "./circle.js"
+            import {Circle} from "./circle.js";
 
             var bpm = 133; //132.97872340425533
             var timePerBeat = 60 / bpm;
-            var waveDisplay;
             var start;
             var cursorStart;
             var samplesPerBeat;
             var offset = 0.143;
             var playStop = false;
             var loop = true;
-            var audioBuffer;
-            var source;
             var generators = [];
 
             var circle1 = new Circle(document.querySelector('#workarea'), '', 'circle',10, 50, 127, 200, 50, 50);
@@ -52,7 +46,7 @@
             va_radius1.addValueKey({time: 0, value: 10});
             for (let i=1; i < 9; i++){
                 va_radius1.addValueKey({time: i, value: 13});
-                va_radius1.addValueKey({time: i+0.001, value: 10, easing: Easings.easeInSine});
+                va_radius1.addValueKey({time: i, value: 10, easing: Easings.easeInSine});
             }
             va_radius1.init(0.1);
 
@@ -100,7 +94,7 @@
             va_pos_y1.init(0.01);
 
 
-            var timeLine = new TimelineManager(document.querySelector('#timeline'), {duration: 8, zoomSpeed: 0.02});
+            var timeLine = new TimelineManager(document.querySelector('#timeline'), {duration: 8, zoomSpeed: 0.02, loop: true, scale: 0.45112781954887216});
             timeLine.durationLabel.innerText = 'Length in beats';
             let bpmpair = VA_Utils.createEl('div', {className: 'labeled-input'}, timeLine.scaleInfoDiv);
             VA_Utils.createEl('label', {className: 'valueAt-info-label', for: 'bpmInput', innerText: 'BPM'}, bpmpair);
@@ -116,61 +110,7 @@
                 }
             });
 
-            let resetBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
-            resetBtn.innerHTML = Icons.getSVG('backToStart');
-            resetBtn.addEventListener('click', (e)=>{
-                audioChannel.audio.currentTime = 0;
-                timeLine.setTimeFast(0);
-                setWaveDisplay(timeLine.viewStart, timeLine.viewRange)
-            });
-
-            let playBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
-            playBtn.innerHTML = Icons.getSVG('play');
-                playBtn.addEventListener('click', (e)=>{
-                playStop = false;
-                start = undefined;
-                audioChannel.audio.play();
-                requestAnimationFrame(stepFrame);
-            });
-
-            let pauseBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
-            pauseBtn.innerHTML = Icons.getSVG('pause');
-            pauseBtn.addEventListener('click', (e)=>{
-                audioChannel.audio.pause();
-                playStop = true;
-            });
-
-            let toEndBtn = VA_Utils.createEl('button', {className: 'icon-button'}, timeLine.footerDiv);
-            toEndBtn.innerHTML = Icons.getSVG('forwardToEnd');
-            toEndBtn.addEventListener('click', (e)=>{
-                playStop = true;
-                start = undefined;
-                timeLine.setTime(timeLine.duration);
-            });
-
-            let loopBtn = VA_Utils.createEl('button', {className: 'icon-button selected'}, timeLine.footerDiv);
-            loopBtn.innerHTML = Icons.getSVG('loop');
-            loopBtn.addEventListener('click', (e)=>{
-                loop = !loop;
-                loopBtn.classList.toggle('selected');
-            });            
-
             let audioChannel = new AudioChannel(timeLine, timeLine.rootChannelGroup, {url:'./music.mp3', name: './music.mp3', offset: 0});
-            audioChannel.audio.addEventListener('play', (e)=>{
-                playBtn.classList.add('active');
-            });
-            
-            audioChannel.audio.addEventListener('pause', (e)=>{
-                playBtn.classList.remove('active');
-            }); 
-
-           
-            audioChannel.audio.addEventListener('seeked', (e)=>{ 
-                let beat = audioObject.audioElm.currentTime / timePerBeat;
-                let index = timeLine.viewStart + Math.floor(beat / timeLine.duration) * timeLine.duration;
-                console.log('dfg');
-            });
-
             let circlegroup1 = new ChannelGroup(timeLine, timeLine.rootChannelGroup, {name: 'Circle 1', expanded: true});
             let radiusChannel = new ValueChannel(timeLine, circlegroup1, {valueAt: va_radius1, name: 'Radius', strokeWidth: 1, strokeColor: '#f0f', maximized: false});
             let colorGroup1 = new ChannelGroup(timeLine, circlegroup1, {name: 'Color', expanded: true});
@@ -182,30 +122,13 @@
             let xChannel1 = new ValueChannel(timeLine, positionGroup1, {valueAt: va_pos_x1, name: 'Pos X'});
             let yChannel1 = new ValueChannel(timeLine, positionGroup1, {valueAt: va_pos_y1, name: 'Pos Y'});
 
-            //timeLine.init();
+            
             new ElementBoxSelector(timeLine.scrollContainerDiv, (e)=>{
                 if (e.type == 'selectbox-finished' && e.ctrlKey){  //  end of box selection event
                     timeLine.selectValueNodes(e.selectRect, e.deselect);
                 };
             })
-
-            function stepFrame(timestamp) {
-                if (start === undefined) {
-                    start = timestamp;
-                    cursorStart = timeLine.cursorTime; 
-                }
-                const elapsed = (timestamp - start) / 1000;
-                if (loop){
-                    timeLine.setTimeFast(((audioChannel.audio.currentTime - audioChannel.options.offset) / timePerBeat) % timeLine.duration);
-                } else {
-                    timeLine.setTimeFast((audioChannel.audio.currentTime - audioChannel.options.offset) / timePerBeat);
-                }
-                
-                if (!playStop){
-                    requestAnimationFrame(stepFrame); 
-                }
-            }
-
+          
             window.computeStepList = lookupAtExport.computeStepList;
             window.typedArrayToFile = lookupAtExport.typedArrayToFile;
             window.Easings = Easings;
@@ -214,7 +137,7 @@
             window.circle1 = circle1;
             window.va_pos_x1 = va_pos_x1;
             window.VA_Utils = VA_Utils;
-            window.ElementBoxSelector = ElementBoxSelector;
+
         </script>
     </body>
 </html>

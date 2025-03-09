@@ -3,19 +3,16 @@ import {ValueNode} from "./valueNode.js";
 import * as Icons from "./appIcons.js";
 
 export class Channel{
-    #options = {name: '', loop: false, freeze: false, maximized: false};
-    #valueAt;
+    #options = {name: '', freeze: false, maximized: false};
     #timeLine;
     #channelGroup;
     #labelDiv;
     #labelSpan;
     #lineIconsDiv;
-    //#loopBtn;
     #freezeBtn;
     #maximizeBtn;
     #lineDiv;
     #svgWrapperDiv;
-    #pointerTime = 0;
     #lineHeight = 0;
     #inView = false;
     onSelectedChanged;
@@ -30,7 +27,7 @@ export class Channel{
         }
         this.#timeLine = timeLine;
         this.#channelGroup = channelGroup;
-        this.#channelGroup.valueChannels.push(this);
+        this.#channelGroup.channels.push(this);
 
         this.#lineHeight = parseFloat(this.#timeLine.getCSSVariable('--line-row-height').replace('px',''));
         let collapseClass = '';
@@ -44,8 +41,6 @@ export class Channel{
         let span = VA_Utils.createEl('span', {innerText: this.#options.name}, this.#labelDiv);
         span.style.left = this.#channelGroup.indent + 'px';
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
-        //this.#loopBtn = VA_Utils.createEl('button', {title: 'Toggle loop', className: 'valueAt-line-icon valueAt-disabled'}, this.#lineIconsDiv);
-        //this.#loopBtn.innerHTML = Icons.getSVG('loop');
 
         this.#freezeBtn = VA_Utils.createEl('button', {title: 'Toggle freeze', className: 'valueAt-line-icon'}, this.#lineIconsDiv);
         this.#freezeBtn.innerHTML = Icons.getSVG('freeze');        
@@ -54,13 +49,6 @@ export class Channel{
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
        
         channelGroup.expandDiv.appendChild(this.#lineDiv);
-
-        //this.#loopBtn.addEventListener('pointerdown', (e)=>{
-        //    if (e.button == 0){
-        //        this.setLoop(!this.#options.loop);
-        //        e.stopPropagation();
-        //    }
-        //});
 
         this.#freezeBtn.addEventListener('pointerdown', (e)=>{
             if (e.button == 0){
@@ -73,21 +61,22 @@ export class Channel{
 
         this.#maximizeBtn.addEventListener('pointerdown', (e)=>{
             if (e.button==0){
+                let channels;
                 if (!e.ctrlKey && !e.shiftKey){
-                    //let channels this.#timeLine.getAllChannels
-                    this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
-                        if (lineDiv != this.#lineDiv){
-                            lineDiv.classList.remove('valueAt-maximized');
-                            this.update();
+                    channels = this.#timeLine.getAllChannels('', false, false, true);
+                    channels.forEach((channel)=>{
+                        if (channel != this){
+                            channel.setMaximized(false);
                         }
                     });
                 }
                 if (this.#options.maximized){
                     this.setMaximized(!this.#options.maximized);
                     this.#lineDiv.classList.remove('valueAt-maximized');
-                    this.update();
+                    //this.update();
                 } else{
                     if (e.shiftKey){
+                        if (channels == undefined) { channels = this.#timeLine.getAllChannels('', false, false, true); }
                         let firstMaximizedDiv = this.#timeLine.containerDiv.querySelector('.valueAt-line.valueAt-maximized');
                         if (firstMaximizedDiv && firstMaximizedDiv != this.#lineDiv){
                             let lineDivs = Array.from(this.#timeLine.containerDiv.querySelectorAll('.valueAt-line'));
@@ -143,15 +132,13 @@ export class Channel{
     }
 
     setMaximized(value){
-
-
-
-        
         this.#options.maximized = value;
         if (this.#options.maximized){
             this.#maximizeBtn.classList.add('valueAt-on');
+            this.#lineDiv.classList.add('valueAt-maximized');
         } else {
             this.#maximizeBtn.classList.remove('valueAt-on');
+            this.#lineDiv.classList.remove('valueAt-maximized');
         }
     }
 
