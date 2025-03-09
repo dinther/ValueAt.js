@@ -11,7 +11,6 @@
 	<body>
         <div id="workarea"></div>
         <div id="timeline"></div>
-
         <script type="module">
             import * as VA_Utils from "./valueAtUtils.js";
             import {LookupAtTime} from "./valueat.js"
@@ -23,6 +22,7 @@
             import {Channel} from "./channel.js";
             import {ValueChannel} from "./valueChannel.js";
             import {AudioChannel} from "./audioChannel.js";
+            import {ElementBoxSelector} from "./elementBoxSelector.js";
             //import {WaveDisplay} from "./wavedisplay.js";
             //import {AudioObject} from "./audioObject.js";
             import * as Icons from "./appIcons.js";
@@ -183,7 +183,12 @@
             let yChannel1 = new ValueChannel(timeLine, positionGroup1, {valueAt: va_pos_y1, name: 'Pos Y'});
 
             //timeLine.init();
-            
+            new ElementBoxSelector(timeLine.scrollContainerDiv, (e)=>{
+                if (e.type == 'selectbox-finished' && e.ctrlKey){  //  end of box selection event
+                    timeLine.selectValueNodes(e.selectRect, e.deselect);
+                };
+            })
+
             function stepFrame(timestamp) {
                 if (start === undefined) {
                     start = timestamp;
@@ -208,7 +213,8 @@
             window.va_red1 = va_red1;
             window.circle1 = circle1;
             window.va_pos_x1 = va_pos_x1;
-            window.waveDisplay = waveDisplay;
+            window.VA_Utils = VA_Utils;
+            window.ElementBoxSelector = ElementBoxSelector;
         </script>
     </body>
 </html>

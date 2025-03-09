@@ -64,9 +64,7 @@ export class TimelineManager{
     #scrollbarRect;
     #remainingDiv;
     #footerDiv;
-
-    #selectBoxDiv;
-    
+  
     #durationGroupDiv;
     #durationLabel;
     #durationInput;
@@ -105,7 +103,6 @@ export class TimelineManager{
     #cursorTime = 0;
     #root;
     
-    #boxSelectStartPoint = null;
     #valueNodeDragStartPoint = null;
     #rootChannelGroup;
     #selectedNodeList = [];
@@ -208,12 +205,8 @@ export class TimelineManager{
         this.#p2Div = VA_Utils.createEl('div', {className: 'valueAt-info-label', innerText: 'P2'}, this.#infoKeyFrameDiv);
         this.#keyFrameP2Input = VA_Utils.createEl('input', {type: 'number', step: '0.05', value: 0}, this.#p2Div);
 
-
         //  create root valueAt group
         this.#rootChannelGroup = new ChannelGroup(this, null, '', true);
-
-        //  build select box
-        this.#selectBoxDiv = VA_Utils.createEl('div', {className: 'valueAt-select-box', style: 'display: none'}, this.#containerDiv);
 
         this.#parentDiv.appendChild(this.#containerDiv);
 
@@ -299,7 +292,6 @@ export class TimelineManager{
             if (e.button == 0){
                 this.#scrollBarDragoffset = e.offsetX;
             }
-            //this.setView(this.#totalTimeStart + (this.#scrollbarDiv.scrollLeft / this.#scrollbarDiv.scrollWidth * this.#totalTime), this.#viewRange);
         });
 
         this.#cursorDragBoxDiv.addEventListener('pointerdown', (e)=>{
@@ -333,42 +325,21 @@ export class TimelineManager{
         document.addEventListener('pointerdown', (e)=>{
             if ( e.button == 0 ){
                 if ((e.ctrlKey || e.shiftKey)){
-                    this.#boxSelectStartPoint = {left: e.pageX - this.#containerRect.left, top: e.pageY - this.#containerRect.top};
-                }
-                if (e.target.classList.contains('valueAt-node')){
-                    this.#valueNodeDragStartPoint = {left: e.pageX, top: e.pageY};
-
-                    console.log('nodedrag', this.#valueNodeDragStartPoint);
-                    e.stopPropagation();
+                    if (e.target.classList.contains('valueAt-node')){
+                        this.#valueNodeDragStartPoint = {left: e.pageX, top: e.pageY};
+                        e.stopPropagation();
+                    }
                 }
             }
         });
         document.addEventListener('pointermove', (e)=>{
             if (e.buttons == 1 ){
-                if (this.#valueNodeDragStartPoint==null && this.#boxSelectStartPoint != null && (e.ctrlKey || e.shiftKey)){
-                    let x = Math.min(this.#boxSelectStartPoint.left, this.#boxSelectStartPoint.left, e.pageX - this.#containerRect.left);
-                    let y = Math.min(this.#boxSelectStartPoint.top, this.#boxSelectStartPoint.top, e.pageY - this.#containerRect.top);
-                    this.#selectBoxDiv.style.display = '';
-                    this.#selectBoxDiv.style.left = x + 'px';
-                    this.#selectBoxDiv.style.top = y + 'px';      
-                    this.#selectBoxDiv.style.width = Math.abs(e.pageX - this.#containerRect.left - this.#boxSelectStartPoint.left) + 'px';
-                    this.#selectBoxDiv.style.height = Math.abs(e.pageY - this.#containerRect.top - this.#boxSelectStartPoint.top) + 'px';
-                    console.log('select', this.#selectBoxDiv.offsetWidth);
-                } else {
-                    this.#handleValueNodeDrag(e);
-                    this.#handleCursorDrag(e);
-                    this.#handleScrollBar(e);
-                }
+                this.#handleValueNodeDrag(e);
+                this.#handleCursorDrag(e);
+                this.#handleScrollBar(e);
             }
         });
         document.addEventListener('pointerup', (e)=>{
-            if ( this.#boxSelectStartPoint != null &&  (e.ctrlKey || e.shiftKey)){
-                let deselect = (this.#boxSelectStartPoint.left > (e.pageX - this.#containerRect.left) && this.#boxSelectStartPoint.top > (e.pageY - this.#containerRect.top))? true : false;
-                let selectRect = this.#selectBoxDiv.getBoundingClientRect();
-                this.#selectBoxDiv.style.display = 'none';
-                this.#boxSelectStartPoint = null;  
-                this.selectValueNodes(selectRect, deselect); 
-            }
             this.#cursorDragging = false;
             this.#scrollBarDragoffset = null;
             this.#valueNodeDragStartPoint = null;
@@ -553,7 +524,6 @@ export class TimelineManager{
 
     #handleZoomSlider(e){
         let zoomTarget = this.#viewStart;  //  left align by default
-        //let zoomTarget = this.#viewStart + (this.#viewRange * 0.5);  //  center by default
         if (this.#timeInView(this.#cursorTime)){  //  center around cursor if on-screen
             zoomTarget = this.#cursorTime;
         }
@@ -585,7 +555,6 @@ export class TimelineManager{
 
     #handleScrollBar(e){
         if (this.#scrollBarDragoffset != null){
-            //let timePerScrollPixel = this.#totalTime / this.#scrollbarRect.width;
             let x = e.pageX - this.#scrollbarRect.left - this.#scrollBarDragoffset;
             let viewStart = x * (this.#options.duration / this.#scrollbarRect.width);
             this.setView(viewStart, this.#viewRange);
@@ -698,7 +667,6 @@ export class TimelineManager{
 
             this.#zoomSlider.value = 1 - this.#zoomFactor;
             let widthPercent = ((this.#viewRange / this.#options.duration) * 100);
-            //let widthPercent = this.#zoomFactor * 100;
             this.#scrollbarContentDiv.style.width = widthPercent + '%';
 
             let scrollLeft = this.#viewStart / (this.#options.duration / this.#scrollbarRect.width);
@@ -792,9 +760,6 @@ export class TimelineManager{
     get valueAtDiv(){
         return this.#valueAtDiv;
     }
-    get selectBoxDiv(){
-        return this.#selectBoxDiv;
-    }   
     get footerDiv(){
         return this.#footerDiv;
     }   

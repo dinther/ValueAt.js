@@ -427,9 +427,7 @@ input:focus {
     opacity: 0;
 }
 
-.valueAt-disabled {
-    opacity: 0.5;
-}
+
 
 .valueAt-line-icons {
     display: flex;
@@ -459,6 +457,11 @@ input:focus {
     background-color: transparent;
     padding: 0;
     border: none;
+    opacity: 0.5;
+}
+
+.valueAt-on {
+    opacity: 1;
 }
 
 .valueAt-line-icon:hover {

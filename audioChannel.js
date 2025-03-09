@@ -19,7 +19,7 @@ export class AudioChannel extends Channel{
     onSelectedChanged;
     onRender = null;
     constructor(timeLine, channelGroup, options){
-        super(timeLine, channelGroup, Object.assign({url: '', offset: 0, pixelsPerSegment: 3, samplesPerPoint: 60, strokeWidth: 1, strokeColor: '#fff'}, options));
+        super(timeLine, channelGroup, Object.assign({url: '', offset: 0, pixelsPerSegment: 2, samplesPerPoint: 60, strokeWidth: 1, strokeColor: '#fff'}, options));
         //this.lineDiv.classList.add('valueAt-wave-line');
         this.lineDiv.style.height = 'calc(var(--line-row-height)* 2)';
         this.lineDiv.style.backgroundColor = 'var(--scale-back-color)';

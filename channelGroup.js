@@ -264,7 +264,7 @@ export class ChannelGroup{
         let valueNodes = [];
         let valueChannels = this.getvalueChannels(checkInView, checkExpanded);
         valueChannels.forEach((valueChannel)=>{
-            if (typeof valueChannel.valueNodes == 'Array'){
+            if (Array.isArray(valueChannel.valueNodes)){
                 valueNodes = valueNodes.concat(valueChannel.valueNodes);
             }
         });

@@ -12,7 +12,7 @@ export class Channel{
     #lineIconsDiv;
     //#loopBtn;
     #freezeBtn;
-    #expandBtn;
+    #maximizeBtn;
     #lineDiv;
     #svgWrapperDiv;
     #pointerTime = 0;
@@ -21,8 +21,6 @@ export class Channel{
     onSelectedChanged;
     onRender = null;
     constructor(timeLine, channelGroup, options){
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioContext = new AudioContext();
         Object.assign(this.#options, options);
         if (typeof timeLine != 'object' || timeLine.constructor.name !== 'TimelineManager'){
             throw new Error('A object of type TimeLineManager is required for parameter timeLine');
@@ -48,10 +46,11 @@ export class Channel{
         this.#lineIconsDiv = VA_Utils.createEl('div', {className: 'valueAt-line-icons'}, this.#labelDiv);
         //this.#loopBtn = VA_Utils.createEl('button', {title: 'Toggle loop', className: 'valueAt-line-icon valueAt-disabled'}, this.#lineIconsDiv);
         //this.#loopBtn.innerHTML = Icons.getSVG('loop');
-        this.#freezeBtn = VA_Utils.createEl('button', {title: 'Toggle freeze', className: 'valueAt-line-icon valueAt-disabled'}, this.#lineIconsDiv);
+
+        this.#freezeBtn = VA_Utils.createEl('button', {title: 'Toggle freeze', className: 'valueAt-line-icon'}, this.#lineIconsDiv);
         this.#freezeBtn.innerHTML = Icons.getSVG('freeze');        
-        this.#expandBtn = VA_Utils.createEl('button', {title: 'Toggle channel size', className: 'valueAt-line-icon'}, this.#lineIconsDiv);
-        this.#expandBtn.innerHTML = Icons.getSVG('fullscreen');
+        this.#maximizeBtn = VA_Utils.createEl('button', {title: 'Toggle channel size', className: 'valueAt-line-icon'}, this.#lineIconsDiv);
+        this.#maximizeBtn.innerHTML = Icons.getSVG('fullscreen');
         this.#svgWrapperDiv = VA_Utils.createEl('div', {className: 'valueAt-svg-wrapper'}, this.#lineDiv);
        
         channelGroup.expandDiv.appendChild(this.#lineDiv);
@@ -72,9 +71,10 @@ export class Channel{
 
         this.#lineIconsDiv.addEventListener("contextmenu", e => e.preventDefault());
 
-        this.#expandBtn.addEventListener('pointerdown', (e)=>{
+        this.#maximizeBtn.addEventListener('pointerdown', (e)=>{
             if (e.button==0){
                 if (!e.ctrlKey && !e.shiftKey){
+                    //let channels this.#timeLine.getAllChannels
                     this.#timeLine.containerDiv.querySelectorAll('.valueAt-line.valueAt-maximized').forEach((lineDiv)=>{
                         if (lineDiv != this.#lineDiv){
                             lineDiv.classList.remove('valueAt-maximized');
@@ -82,7 +82,8 @@ export class Channel{
                         }
                     });
                 }
-                if (this.#lineDiv.classList.contains('valueAt-maximized')){
+                if (this.#options.maximized){
+                    this.setMaximized(!this.#options.maximized);
                     this.#lineDiv.classList.remove('valueAt-maximized');
                     this.update();
                 } else{
@@ -101,10 +102,12 @@ export class Channel{
                     this.#lineDiv.classList.add('valueAt-maximized');
                     this.update();
                 }
+                this.setMaximized(this)
             }
             e.preventDefault();
             e.stopPropagation();
         });
+        this.setFreeze(this.#options.freeze);
     }
 
     #handleOnChange(){
@@ -139,21 +142,25 @@ export class Channel{
         }
     }
 
-    //setLoop(value){
-    //    this.#options.loop = value;
-    //    if (this.#options.loop){
-    //        this.#loopBtn.classList.remove('valueAt-disabled');
-    //    } else {
-    //        this.#loopBtn.classList.add('valueAt-disabled');
-    //    }
-    //}
+    setMaximized(value){
+
+
+
+        
+        this.#options.maximized = value;
+        if (this.#options.maximized){
+            this.#maximizeBtn.classList.add('valueAt-on');
+        } else {
+            this.#maximizeBtn.classList.remove('valueAt-on');
+        }
+    }
 
     setFreeze(value){
         this.#options.freeze = value;
         if (this.#options.freeze){
-            this.#freezeBtn.classList.remove('valueAt-disabled');
+            this.#freezeBtn.classList.add('valueAt-on');
         } else {
-            this.#freezeBtn.classList.add('valueAt-disabled');
+            this.#freezeBtn.classList.remove('valueAt-on');
         }
     }
 
