@@ -7,6 +7,7 @@ Depending on the accuracy desired an output of 100 million points in 500ms is po
 And it does not matter how many keyframes are used to animate the value.
 
 Demo here: https://dinther.github.io/ValueAt.js/
+
 Generated documentation here: https://deepwiki.com/dinther/ValueAt.js
 
 ![image](https://github.com/user-attachments/assets/1664b21c-74fc-4f0c-96e4-a93af78db335)
